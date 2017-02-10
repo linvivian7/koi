@@ -1,5 +1,6 @@
 import os
 import json
+import re
 
 from jinja2 import StrictUndefined
 from flask import Flask, render_template, request, session, flash, redirect
@@ -35,12 +36,19 @@ def homepage():
             return redirect('/')
 
         else:
-            user = User(email=email, password=pw_hash, fname=fname, lname=lname)
-            db.session.add(user)
-            db.session.commit()
+            match_obj = re.search(r"(\w+)@(\w+\.\w+)", email)
 
-            flash("registered!")
-            return redirect('/map')
+            if match_obj:
+                user = User(email=email, password=pw_hash, fname=fname, lname=lname)
+                db.session.add(user)
+                db.session.commit()
+
+                flash("registered!")
+                return redirect('/map')
+
+            else:
+                flash("Please enter a valid email!")
+                return redirect('/')
 
     else:
         return render_template("homepage.html")
@@ -91,15 +99,42 @@ def show_dashboard():
 
     if "user" in session:
         user_id = 2
-        user = User.query.get(user_id)
+        user = User.query.options(db.joinedload('balances')).get(user_id)
 
         balances = user.balances
-        print "*" * 30
-        print user 
-        print balances       
-        print "*" * 30
+        programs = Program.query.all()
 
-        return render_template("dashboard.html", transactions=balances, user=user)
+        return render_template("dashboard.html", programs=programs, balances=balances, user=user)
+
+    flash("Please sign in first")
+    return redirect("/login")
+
+
+@app.route("/update-balance", methods=["POST"])
+# @login_required
+def update_balance():
+    """Update user balance."""
+
+    if "user" in session:
+        user_id = 2
+
+        program = request.form.get("program")
+        balance = request.form.get("balance")
+        print "*" * 40
+        print program, balance
+        print "*" * 40
+
+        existing_balance = Balance.query.filter((Balance.program_id == program) & (Balance.user_id == user_id)).first()
+
+        if existing_balance:
+            existing_balance.current_balance = balance
+            db.session.commit()
+            return "Your balance has been updated!"
+        else:
+            balance = Balance(user_id=user_id, program_id=program, current_balance=balance, action_id=1)
+            db.session.add(balance)
+            db.session.commit()
+            return "Your new program balance has been added!"
 
     flash("Please sign in first")
     return redirect("/login")
@@ -111,12 +146,6 @@ def process_logout():
     """Show logout page."""
 
     session.pop('user')
-
-    # user = current_user
-    # user.authenticated = False
-    # db.session.add(user)
-    # db.session.commit()
-    # logout_user()
 
     flash("You've been succesfully logged out!")
 

@@ -13,7 +13,7 @@ svg {
     margin-left: auto;
     margin-right: auto;
     background:rgba(255,255,255,0.5);
-
+    box-shadow: 0px -5px 5px rgba(255,255,255,0.5);
 }
 
 #d3 {
@@ -21,7 +21,7 @@ svg {
     margin-left: 0;
     margin-right: auto;
     background:rgba(255,255,255,0.5);
-    box-shadow: 0 0 15px 10px #41CCB3;
+    box-shadow: 0 0 15px 10px rgba(255,255,255,0.5);
 
 }
 

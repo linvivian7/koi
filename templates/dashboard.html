@@ -6,43 +6,122 @@
 </head>
 
 {% block body %}
+<div id="overflow">
+
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <link rel="stylesheet" href="/static/css/D3.css"/>
 
 <div class="container-fluid">
-        <!-- Row for table. -->
-        <div class="row" id="tablerow">
+    <div class="row" id="tabs">
 
-            <section class="col-xs-12 col-md-5 col-lg-5 col-md-offset-1 col-lg-offset-1">
-              <h4>Replace with personal D3</h4><br>
-              <div id="user_d3"></div> 
-                <script src="/static/js/userD3.js"></script>
-            </section>
+        <div class="panel with-nav-tabs panel-default">
+    <div class="panel-heading">
+      <!-- Nav tabs -->
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+        <li role="presentation"><a href="#points" aria-controls="points" role="tab" data-toggle="tab">Points</a></li>
+        <li role="presentation"><a href="#activities" aria-controls="activities" role="tab" data-toggle="tab">Activities</a></li>
+        <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
+      </ul>
 
-            <section class="col-xs-12 col-md-5 col-lg-5 col-md-offset-1 col-lg-offset-1">
-                <table class="table table-hover table-striped">
-                    <thead>
-                    <tr>
-                        <th>Program</th>
-                        <th>Current Balance</th>
-                        <th>Last Updated</th>
-                    </tr>
-                    </thead>
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="home">
 
-                    {% if transactions %}
-                        {% for transaction in transactions %}
+            <!-- Div for home dash. -->
+            <div class="row" id="tablerow">
+                <section class="col-xs-12 col-md-5 col-lg-5">
+                    <table class="table table-hover table-striped">
+                        <thead>
                             <tr>
-                                <td>{{ transaction.program.program_name }}</td>
-                                <td>{{ transaction.ending_balance }}</td>
-                                <td>{{ transaction.updated_at.strftime('%Y-%m-%d') }}</td>
+                                <th>#</th>
+                                <th>Program</th>
+                                <th>Current Balance</th>
+                                <th>Last Updated</th>
                             </tr>
-                        {% endfor %}
-                    {% endif %}
-                </table>
-            </section>
+                        </thead>
 
-        </div> 
-        <!-- End of table row. -->
+                        {% if balances %}
+                            {% for balance in balances %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ balance.program.program_name }}</td>
+                                    <td>{{ balance.current_balance }}</td>
+                                    <td>{{ balance.updated_at.strftime('%m-%d-%Y') }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </table>
+                </section>
+
+                <section class="hidden-sm-down col-md-5 col-lg-5 col-md-offset-1 col-lg-offset-1" id="bottom-padding">
+                  <div id="user_d3"></div> 
+                    <script src="/static/js/userD3.js"></script>
+                </section>
+            </div> 
+
+        </div>
+        <!-- End of home dash. -->
+
+    <div role="tabpanel" class="tab-pane" id="points">
+        <!-- Div for points dash. -->
+        <div class="row">
+            <section class="col-xs-12 col-md-12 col-lg-12">
+                <form id="update-balance-form">
+                    
+                    <label for="all-programs">Program: </label>
+                    <select name="program" id="all-programs"> 
+                        {% for program in programs %}
+                            <option value="{{ program.program_id }}">{{ program.program_name }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <label for="current-balance">Current Balance: </label>
+                    <input type="number" name="balance" id="current-balance" min="1" max="1000000000000" maxlength="30" placeholder="enter points" required></input>
+                    
+                    <input type="submit" id="submit-balance" value="Submit">
+                </form>
+            </section>
+        </div>
+    </div>
+
+        <script>
+            "use strict";
+
+            function confirmUpdate(results) {
+                alert(results);
+            }
+
+            function updateBalance(evt) {
+                evt.preventDefault();
+                console.log(1);
+
+                var formValues = $("#update-balance-form").serialize();
+
+                $.post("/update-balance", formValues, confirmUpdate);
+
+            } 
+
+                $("#update-balance-form").submit(updateBalance);
+        </script>
+        <!-- End of points dash. -->
+
+
+        <div role="tabpanel" class="tab-pane" id="activities">Activities</div>
+        <div role="tabpanel" class="tab-pane" id="settings">Settings</div>
+      </div>
 
     </div>
+
+
+
+    </div>
+</div>
+</div>
+</div>
+
+
+
+
+
 {% endblock %}

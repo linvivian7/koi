@@ -5,32 +5,44 @@
     <link rel="stylesheet" href="/static/css/styles.css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="http://code.jquery.com/ui/1.11.0/jquery-ui.min.js"> </script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 
 <body>
 
 <div class="navbar navbar-inverse navbar-static-top">
-    <div class="container">
+    <div class="container-fluid">
 
         <div class="navbar-header">
+          <button type="button" 
+                  class="navbar-toggle" 
+                  data-toggle="collapse" 
+                  data-target=".navbar-collapse"
+                  aria-expanded="false"
+                  aria-controls="navbar">>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span> 
+          </button>
             <a class="navbar-brand" href="/">Koi.</a>
         </div>
 
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-               <li><a href="/map">Mapping</a></li>
-                {% if "user" in session %}
-                  <li><a href="/dashboard">Dashboard</a></li>
-                    {% else %}
-                  <li><a href="/login">Log In</a><li>
-                    {% endif %}
-            <ul class="nav navbar-nav navbar-right">
-                {% if "user" in session %}
-                  <li><a href="/logout">Log Out</a></li>
-                {% endif %}
-            </ul>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/map">Mapping</a></li>
+            {% if "user" in session %}
+              <li><a href="/dashboard">Dashboard</a></li>
+            {% else %}
+              <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Log In</a><li>
+            {% endif %}
+          </ul>
+       
+          <ul class="nav navbar-nav navbar-right">
+            {% if "user" in session %}
+              <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
+            {% endif %}
+          </ul>
         </div>
-
     </div>
 </div>
 

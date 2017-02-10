@@ -119,7 +119,7 @@ class Balance(db.Model):
     balance_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     program_id = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
-    updated_at = db.Column(db.DateTime, default="CURRENT_TIMESTAMP")
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     current_balance = db.Column(db.Integer, nullable=False)
     action_id = db.Column(db.Integer, db.ForeignKey('actions.action_id'), nullable=False)
 
@@ -146,7 +146,7 @@ class TransactionHistory(db.Model):
     balance_id = db.Column(db.Integer, db.ForeignKey('balances.balance_id'), nullable=False)
     beginning_balance = db.Column(db.Integer, nullable=False)
     ending_balance = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, default="CURRENT_TIMESTAMP")
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     balance = db.relationship('Balance', backref=db.backref('transaction_history', order_by=transaction_id))
 
@@ -174,13 +174,13 @@ class Transfer(db.Model):
     __tablename__ = "transfers"
 
     transfer_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    transferred_at = db.Column(db.DateTime, default="CURRENT_TIMESTAMP")
+    transferred_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     outgoing_program = db.Column(db.Integer, db.ForeignKey('ratios.outgoing_program'), nullable=False)
     receiving_program = db.Column(db.Integer, db.ForeignKey('ratios.receiving_program'), nullable=False)
     amount = db.Column(db.Integer, nullable=False)
 
-    ratio = db.relationship('Ratio', backref=db.backref('tranfers'))
+    ratio_from = db.relationship("Ratio", primaryjoin="Transfer.outgoing_program==Ratio.outgoing_program")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
