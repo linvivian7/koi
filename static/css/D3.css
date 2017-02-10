@@ -1,0 +1,32 @@
+.link {
+  stroke: #ccc;
+}
+
+.node text {
+  pointer-events: none;
+  font: 9px helvetica;
+  letter-spacing: 2px;
+}
+
+svg {
+    display:block;
+    margin-left: auto;
+    margin-right: auto;
+    background:rgba(255,255,255,0.5);
+
+}
+
+#d3 {
+    width: 400;
+    margin-left: 0;
+    margin-right: auto;
+    background:rgba(255,255,255,0.5);
+    box-shadow: 0 0 15px 10px #41CCB3;
+
+}
+
+d3-tip {
+    line-height: 1;
+    color: black;
+}
+

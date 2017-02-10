@@ -1,0 +1,54 @@
+<html lang="en">
+<head>
+    <link rel="stylesheet"
+          href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.css"/>
+    <link rel="stylesheet" href="/static/css/styles.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.0/jquery-ui.min.js"> </script>
+</head>
+
+<body>
+
+<div class="navbar navbar-inverse navbar-static-top">
+    <div class="container">
+
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">Koi.</a>
+        </div>
+
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+               <li><a href="/map">Mapping</a></li>
+                {% if "user" in session %}
+                  <li><a href="/dashboard">Dashboard</a></li>
+                    {% else %}
+                  <li><a href="/login">Log In</a><li>
+                    {% endif %}
+            <ul class="nav navbar-nav navbar-right">
+                {% if "user" in session %}
+                  <li><a href="/logout">Log Out</a></li>
+                {% endif %}
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<div class="container">
+
+  <!-- Show flashed messages -->
+  {% with messages = get_flashed_messages() %}
+      {% for message in messages %}
+          <div class="alert alert-warning">{{ message }}</div>
+      {% endfor %}
+  {% endwith %}
+
+  <!-- This is where the main content goes. -->
+  {% block body %}
+      BODY OF PAGE GOES HERE VIA INHERITANCE
+  {% endblock %}
+
+</div>
+
+</body>
+</html>

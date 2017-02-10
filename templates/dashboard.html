@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+<html lang="en">
+<head>
+  <title>Homepage</title>
+</head>
+
+{% block body %}
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" href="/static/css/D3.css"/>
+
+<div class="container-fluid">
+        <!-- Row for table. -->
+        <div class="row" id="tablerow">
+
+            <section class="col-xs-12 col-md-5 col-lg-5 col-md-offset-1 col-lg-offset-1">
+              <h4>Replace with personal D3</h4><br>
+              <div id="user_d3"></div> 
+                <script src="/static/js/userD3.js"></script>
+            </section>
+
+            <section class="col-xs-12 col-md-5 col-lg-5 col-md-offset-1 col-lg-offset-1">
+                <table class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>Program</th>
+                        <th>Current Balance</th>
+                        <th>Last Updated</th>
+                    </tr>
+                    </thead>
+
+                    {% if transactions %}
+                        {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.program.program_name }}</td>
+                                <td>{{ transaction.ending_balance }}</td>
+                                <td>{{ transaction.updated_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </table>
+            </section>
+
+        </div> 
+        <!-- End of table row. -->
+
+    </div>
+{% endblock %}
