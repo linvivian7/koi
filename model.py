@@ -9,6 +9,21 @@ db = SQLAlchemy()
 
 ##############################################################################
 # Model definitions
+class Action(db.Model):
+    """."""
+
+    __tablename__ = "actions"
+
+    action_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    action_type = db.Column(db.String(32), nullable=False, unique=True)
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<action {}: {}>".format(self.action_id,
+                                        self.action_type,
+                                        )
+
 
 class Vendor(db.Model):
     """Vendors with loyalty programs."""
@@ -68,38 +83,6 @@ class User(db.Model):
                                                   self.email,
                                                   )
 
-    def is_active(self):
-        """True, as all users are active."""
-        return True
-
-    def get_id(self):
-        """Return the email address to satisfy Flask-Login's requirements."""
-        return self.email
-
-    def is_authenticated(self):
-        """Return True if the user is authenticated."""
-        return self.authenticated
-
-    def is_anonymous(self):
-        """False, as anonymous users aren't supported."""
-        return False
-
-    def check_password(self, password):
-        if self.password is None:
-            return False
-        return bcrypt.check_password_hash(user.password, password)
-
-   # methods
-    @classmethod
-    def authenticate(cls, user_name, password):
-        user = User.query.filter(db.or_(User.user_name == user_name)).first()
-
-        if user:
-            authenticated = user.check_password(password)
-        else:
-            authenticated = False
-        return user, authenticated
-
 
 class Ratio(db.Model):
     """Transfer ratios between two programs."""
@@ -128,33 +111,87 @@ class Ratio(db.Model):
                                                                                )
 
 
-class Transaction(db.Model):
-    """Transactions that impact program balance."""
+class Balance(db.Model):
+    """Balance a user has at program."""
 
-    __tablename__ = "transactions"
+    __tablename__ = "balances"
 
-    transaction_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    updated_at = db.Column(db.DateTime, default="CURRENT_TIMESTAMP")
+    balance_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     program_id = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
-    beginning_balance = db.Column(db.Integer, nullable=False)
-    amount = db.Column(db.Integer, nullable=False)
-    ending_balance = db.Column(db.Integer, nullable=False)
+    updated_at = db.Column(db.DateTime, default="CURRENT_TIMESTAMP")
+    current_balance = db.Column(db.Integer, nullable=False)
+    action_id = db.Column(db.Integer, db.ForeignKey('actions.action_id'), nullable=False)
 
-    user = db.relationship('User', backref=db.backref('transactions', order_by=transaction_id))
-    program = db.relationship('Program', backref=db.backref('transactions', order_by=transaction_id))
+    user = db.relationship('User', backref=db.backref('balances', order_by=balance_id))
+    program = db.relationship('Program', backref=db.backref('balances', order_by=balance_id))
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<{} |user: {} |program: {} | balance: {} | {}>".format(self.balance_id,
+                                                                       self.user_id,
+                                                                       self.program.program_name,
+                                                                       self.current_balance,
+                                                                       self.updated_at,
+                                                                       )
+
+
+class TransactionHistory(db.Model):
+    """Transactions that impact program balance."""
+
+    __tablename__ = "transaction_history"
+
+    transaction_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    balance_id = db.Column(db.Integer, db.ForeignKey('balances.balance_id'), nullable=False)
+    beginning_balance = db.Column(db.Integer, nullable=False)
+    ending_balance = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default="CURRENT_TIMESTAMP")
+
+    balance = db.relationship('Balance', backref=db.backref('transaction_history', order_by=transaction_id))
 
     def __repr__(self):
         """Provide helpful representation when printed."""
 
         return "<{} |user: {} |program: {} | beg: {} amount: {} end: {} | {}>".format(self.transaction_id,
-                                                                                      self.user_id,
-                                                                                      self.program.program_name,
+                                                                                      self.balance.user_id,
+                                                                                      self.balance.program_id,
                                                                                       self.beginning_balance,
-                                                                                      self.amount,
                                                                                       self.ending_balance,
-                                                                                      self.updated_at,
+                                                                                      self.created_at,
                                                                                       )
+
+    def calc_change(self):
+
+        self.delta = self.ending_balance - self.beginning_balance
+
+        return
+
+
+class Transfer(db.Model):
+    """Transfers between two programs."""
+
+    __tablename__ = "transfers"
+
+    transfer_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    transferred_at = db.Column(db.DateTime, default="CURRENT_TIMESTAMP")
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    outgoing_program = db.Column(db.Integer, db.ForeignKey('ratios.outgoing_program'), nullable=False)
+    receiving_program = db.Column(db.Integer, db.ForeignKey('ratios.receiving_program'), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+
+    ratio = db.relationship('Ratio', backref=db.backref('tranfers'))
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<{} |user: {} |program: {} to program: {}| amount: {} | {}>".format(self.transfer_id,
+                                                                                    self.user_id,
+                                                                                    self.outgoing_program,
+                                                                                    self.receiving_program,
+                                                                                    self.amount,
+                                                                                    self.transferred_at,
+                                                                                    )
 
 
 ##############################################################################

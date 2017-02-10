@@ -8,7 +8,7 @@ from flask.ext.bcrypt import Bcrypt
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from model import connect_to_db, db, User, Ratio, Transaction, Program
+from model import connect_to_db, db, User, Ratio, Balance, Program, Action, Transfer, TransactionHistory
 
 
 app = Flask(__name__)
@@ -76,7 +76,7 @@ def show_login():
             user.authenticated = True
             session["user"] = user.user_id
 
-            return redirect("/")
+            return redirect("/dashboard")
 
         else:
             flash("This is not a valid email/password combination")
@@ -89,12 +89,20 @@ def show_login():
 def show_dashboard():
     """Show user dashboard."""
 
-    user_id = 2
-    user = User.query.get(user_id)
+    if "user" in session:
+        user_id = 2
+        user = User.query.get(user_id)
 
-    transactions = user.transactions
+        balances = user.balances
+        print "*" * 30
+        print user 
+        print balances       
+        print "*" * 30
 
-    return render_template("dashboard.html", transactions=transactions, user=user)
+        return render_template("dashboard.html", transactions=balances, user=user)
+
+    flash("Please sign in first")
+    return redirect("/login")
 
 
 @app.route("/logout")
