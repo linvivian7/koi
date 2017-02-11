@@ -1,15 +1,11 @@
 {% extends 'base.html' %}
 
-<html lang="en">
-<head>
-  <title>Homepage</title>
-</head>
+{% block title %}
+  <title>Dashboard</title>
+{% endblock%}}
 
 {% block body %}
-<div id="overflow">
-
-<script src="https://d3js.org/d3.v3.min.js"></script>
-<link rel="stylesheet" href="/static/css/D3.css"/>
+<div id="dashboard-page">
 
 <div class="container-fluid">
     <div class="row" id="tabs">
@@ -17,21 +13,40 @@
         <div class="panel with-nav-tabs panel-default">
     <div class="panel-heading">
       <!-- Nav tabs -->
-      <ul class="nav nav-tabs" role="tablist">
+      <ul class="nav nav-tabs" role="tablist" id="all-tabs">
         <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
-        <li role="presentation"><a href="#points" aria-controls="points" role="tab" data-toggle="tab">Points</a></li>
-        <li role="presentation"><a href="#activities" aria-controls="activities" role="tab" data-toggle="tab">Activities</a></li>
+        <li role="presentation"><a href="#activities" aria-controls="activity" role="tab" data-toggle="tab">Activity</a></li>
+        <li role="presentation"><a href="#visual" aria-controls="visual" role="tab" data-toggle="tab">Visualization</a></li>
         <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
       </ul>
 
+
+
       <!-- Tab panes -->
       <div class="tab-content">
-        <div role="tabpanel" class="tab-pane active" id="home">
 
-            <!-- Div for home dash. -->
-            <div class="row" id="tablerow">
+        <!-- Div for home dash. -->
+        <div role="tabpanel" class="tab-pane active" id="home">
+            <div class="row">
+                <section class="col-xs-12 col-md-12 col-lg-12">
+                    <form id="update-balance-form" method="POST">
+                        
+                        <label for="all-programs">Program: </label>
+                        <select name="program" id="all-programs"> 
+                            {% for program in programs %}
+                                <option value="{{ program.program_id }}">{{ program.program_name }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <label for="current-balance">Current Balance: </label>
+                        <input type="number" name="balance" id="current-balance" min="1" max="1000000000000" maxlength="30" placeholder="enter points" required></input>
+                        
+                        <input type="submit" id="submit-balance" value="Submit">
+                    </form>
+                </section>
+
                 <section class="col-xs-12 col-md-5 col-lg-5">
-                    <table class="table table-hover table-striped">
+                    <table class="table table-hover table-striped" id="program-balance">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -47,67 +62,56 @@
                                     <td>{{ loop.index }}</td>
                                     <td>{{ balance.program.program_name }}</td>
                                     <td>{{ balance.current_balance }}</td>
-                                    <td>{{ balance.updated_at.strftime('%m-%d-%Y') }}</td>
+                                    <td>{{ moment(balance.updated_at).format('MMMM Do YYYY, h:mm a') }}</td>
                                 </tr>
                             {% endfor %}
                         {% endif %}
                     </table>
                 </section>
-
-                <section class="hidden-sm-down col-md-5 col-lg-5 col-md-offset-1 col-lg-offset-1" id="bottom-padding">
-                  <div id="user_d3"></div> 
-                    <script src="/static/js/userD3.js"></script>
-                </section>
-            </div> 
-
+            </div>
         </div>
-        <!-- End of home dash. -->
-
-    <div role="tabpanel" class="tab-pane" id="points">
-        <!-- Div for points dash. -->
-        <div class="row">
-            <section class="col-xs-12 col-md-12 col-lg-12">
-                <form id="update-balance-form">
-                    
-                    <label for="all-programs">Program: </label>
-                    <select name="program" id="all-programs"> 
-                        {% for program in programs %}
-                            <option value="{{ program.program_id }}">{{ program.program_name }}</option>
-                        {% endfor %}
-                    </select>
-                    
-                    <label for="current-balance">Current Balance: </label>
-                    <input type="number" name="balance" id="current-balance" min="1" max="1000000000000" maxlength="30" placeholder="enter points" required></input>
-                    
-                    <input type="submit" id="submit-balance" value="Submit">
-                </form>
-            </section>
-        </div>
-    </div>
 
         <script>
-            "use strict";
+          "use strict";
 
-            function confirmUpdate(results) {
-                alert(results);
+          function appendNew(data) {
+              console.log(data.program_name);
+              console.log(data.current_balance);
+
+              var index = $("#program-balance tr:last").index()
+
+              $("#program-balance tr:last").after("<tr><td>"+(index + 1)+"</td><td>"+data.program_name+"</td><td>"+data.current_balance+"</td><td>"+moment().format('MMMM Do YYYY, h:mm a')+"</td></tr>");
+
             }
 
-            function updateBalance(evt) {
-                evt.preventDefault();
-                console.log(1);
+          function updateBalance(evt) {
+              evt.preventDefault();
+              console.log(1);
 
-                var formValues = $("#update-balance-form").serialize();
+              var formValues = $("#update-balance-form").serialize();
 
-                $.post("/update-balance", formValues, confirmUpdate);
-
+              $.post("/update-balance", formValues, appendNew);
             } 
 
-                $("#update-balance-form").submit(updateBalance);
+              $("#update-balance-form").submit(updateBalance);
+
         </script>
-        <!-- End of points dash. -->
+        <!-- End of home dash. -->
+
+        <!-- Div for D3 dash. -->
+        <div role="tabpanel" class="tab-pane" id="visual">
+          <div class="row">
+                  <section class="col-sm-12 col-xs-offset-1" id="top-padding">
+                    <div id="d3-div"></div> 
+                      <script src="/static/js/userD3.js"></script>
+                  </section>
+          </div>
+        </div>
+        <!-- End of D3 dash. -->
 
 
-        <div role="tabpanel" class="tab-pane" id="activities">Activities</div>
+
+        <div role="tabpanel" class="tab-pane" id="activity">Activity</div>
         <div role="tabpanel" class="tab-pane" id="settings">Settings</div>
       </div>
 
@@ -121,6 +125,22 @@
 </div>
 
 
+      <script>
+          $('#all-tabs a').click(function(e) {
+          e.preventDefault();
+          $(this).tab('show');
+        });
+
+        // store the currently selected tab in the hash value
+        $("ul.nav-tabs > li > a").on("shown.bs.tab", function(e) {
+          var id = $(e.target).attr("href").substr(1);
+          window.location.hash = id;
+        });
+
+        // on load of the page: switch to the currently selected tab
+        var hash = window.location.hash;
+        $('#all-tabs a[href="' + hash + '"]').tab('show');
+      </script>
 
 
 

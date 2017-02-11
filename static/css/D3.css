@@ -25,6 +25,16 @@ svg {
 
 }
 
+#user_d3 {
+    width: 800;
+    margin-left: 0;
+    margin-right: auto;
+    background:rgba(255,255,255,0.5);
+    box-shadow: 0 0 15px 10px rgba(255,255,255,0.5);
+
+}
+
+
 d3-tip {
     line-height: 1;
     color: black;

@@ -1,5 +1,5 @@
 //Constants for the SVG
-var width = 400,
+var width = 800,
     height = 400;
 
 //Set up the force layout
@@ -10,9 +10,9 @@ var force = d3.layout.force()
     .size([width, height]);
 
 //Append a SVG to the body of the html page. Assign this SVG as an object to svg
-var svg = d3.select("#user_d3")
+var svg = d3.select("#d3-div")
     .append("svg")
-    .attr("id", "d3")
+    .attr("id", "user_d3")
     .attr("width", width)
     .attr("height", height);
 

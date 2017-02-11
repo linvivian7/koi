@@ -1,11 +1,26 @@
 import os
 import json
 import re
+from datetime import datetime, tzinfo, timedelta
+
+
+class UTC(tzinfo):
+    def utcoffset(self, dt):
+        return timedelta(0)
+
+    def tzname(self, dt):
+        return "UTC"
+
+    def dst(self, dt):
+        return timedelta(0)
+
+utc = UTC()
 
 from jinja2 import StrictUndefined
 from flask import Flask, render_template, request, session, flash, redirect
 from flask import make_response, jsonify, send_file
 from flask.ext.bcrypt import Bcrypt
+from flask.ext.moment import Moment
 
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -13,6 +28,8 @@ from model import connect_to_db, db, User, Ratio, Balance, Program, Action, Tran
 
 
 app = Flask(__name__)
+moment = Moment(app)
+
 app.config["CACHE_TYPE"] = 'null'
 bcrypt = Bcrypt(app)
 
@@ -20,6 +37,7 @@ bcrypt = Bcrypt(app)
 app.secret_key = os.environ['APP_SECRET']
 
 app.jinja_env.undefined = StrictUndefined
+
 
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
@@ -120,21 +138,31 @@ def update_balance():
 
         program = request.form.get("program")
         balance = request.form.get("balance")
-        print "*" * 40
-        print program, balance
-        print "*" * 40
 
         existing_balance = Balance.query.filter((Balance.program_id == program) & (Balance.user_id == user_id)).first()
 
         if existing_balance:
             existing_balance.current_balance = balance
             db.session.commit()
+
             return "Your balance has been updated!"
         else:
             balance = Balance(user_id=user_id, program_id=program, current_balance=balance, action_id=1)
             db.session.add(balance)
             db.session.commit()
-            return "Your new program balance has been added!"
+
+            new_bal = Balance.query.filter((Balance.program_id == program) & (Balance.user_id == user_id)).first().__dict__
+
+            # for jsonification of User object
+            del new_bal['_sa_instance_state']
+
+            new_bal['program_name'] = Program.query.get(program).program_name
+
+            print "*" * 40
+            print new_bal
+            print "*" * 40
+
+            return jsonify(new_bal)
 
     flash("Please sign in first")
     return redirect("/login")

@@ -52,7 +52,7 @@ background-size: cover;
 }
 
 #bottom-padding {
-  margin-bottom: 150px;
+  margin-top: 150px;
 }
 
 table {
@@ -64,26 +64,27 @@ table {
   margin-left: 1em;
 }
 
-#points label {
+#home label {
   max-width: 700px;
   margin: 2em auto 0 auto;  /* TRBL */
   font-family: serif;
   font-size: 13px;
 }
 
-#points select {
+#home select {
   font-family: serif;
   font-size: 13px;
 }
 
 
-#points input {
+#home input {
   font-family: serif;
   font-size: 13px;
 }
 
 input label {
-    float:right;
-    margin:5px;
+  float:right;
+  margin:5px;
 }
+
 
