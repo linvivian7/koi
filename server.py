@@ -19,8 +19,8 @@ utc = UTC()
 from jinja2 import StrictUndefined
 from flask import Flask, render_template, request, session, flash, redirect
 from flask import make_response, jsonify, send_file
-from flask.ext.bcrypt import Bcrypt
-from flask.ext.moment import Moment
+from flask_bcrypt import Bcrypt
+from flask_moment import Moment
 
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -128,6 +128,13 @@ def show_dashboard():
     return redirect("/login")
 
 
+@app.route("/custom-d3.json")
+def d3_info():
+    """ """
+
+    return 'static/map.json'
+
+
 @app.route("/update-balance", methods=["POST"])
 # @login_required
 def update_balance():
@@ -143,26 +150,21 @@ def update_balance():
 
         if existing_balance:
             existing_balance.current_balance = balance
-            db.session.commit()
 
-            return "Your balance has been updated!"
         else:
             balance = Balance(user_id=user_id, program_id=program, current_balance=balance, action_id=1)
             db.session.add(balance)
-            db.session.commit()
 
-            new_bal = Balance.query.filter((Balance.program_id == program) & (Balance.user_id == user_id)).first().__dict__
+        db.session.commit()
 
-            # for jsonification of User object
-            del new_bal['_sa_instance_state']
+        new_bal = Balance.query.filter((Balance.program_id == program) & (Balance.user_id == user_id)).first().__dict__
 
-            new_bal['program_name'] = Program.query.get(program).program_name
+        # for jsonification of User object
+        del new_bal['_sa_instance_state']
 
-            print "*" * 40
-            print new_bal
-            print "*" * 40
+        new_bal['program_name'] = Program.query.get(program).program_name
 
-            return jsonify(new_bal)
+        return jsonify(new_bal)
 
     flash("Please sign in first")
     return redirect("/login")

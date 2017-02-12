@@ -1,3 +1,23 @@
+// $("#visualization").on("click", getCustomD3);
+// // $('#visualization').on("click", (function() {
+// //     location.reload();
+// // }));
+$("#visualization").bind('beforeunload',function(){
+  return "Bye now!";
+   // $("#d3-div").find("svg").remove();
+});
+// $( window ).unload(function() {
+// });
+
+getCustomD3();
+
+function getCustomD3() {
+    $.get('/custom-d3.json', renderD3);
+}
+
+function renderD3(results) {
+    console.log(1);
+    console.log(results);
 //Constants for the SVG
 var width = 800,
     height = 400;
@@ -40,8 +60,9 @@ var node_drag = d3.behavior.drag()
     }
 //-- End insert for pinning
 
+
 //Read the data from JSON 
-d3.json("/static/js/map.json", function(error, json) {
+d3.json(results, function(error, json) {
     if (error) throw error;
 
 //Creates the json data structure out of the json data
@@ -261,3 +282,5 @@ function resize() {
 }
  
 d3.select(window).on('resize', resize);
+
+}

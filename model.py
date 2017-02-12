@@ -120,7 +120,7 @@ class Balance(db.Model):
     balance_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     program_id = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
-    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp()+timedelta(minutes=13))
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     current_balance = db.Column(db.Integer, nullable=False)
     action_id = db.Column(db.Integer, db.ForeignKey('actions.action_id'), nullable=False)
 

@@ -16,7 +16,7 @@
       <ul class="nav nav-tabs" role="tablist" id="all-tabs">
         <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
         <li role="presentation"><a href="#activities" aria-controls="activity" role="tab" data-toggle="tab">Activity</a></li>
-        <li role="presentation"><a href="#visual" aria-controls="visual" role="tab" data-toggle="tab">Visualization</a></li>
+        <li role="presentation"><a href="#visual" aria-controls="visual" role="tab" data-toggle="tab" id="visualization">Visualization</a></li>
         <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
       </ul>
 
@@ -57,12 +57,12 @@
                         </thead>
 
                         {% if balances %}
-                            {% for balance in balances %}
-                                <tr>
-                                    <td>{{ loop.index }}</td>
-                                    <td>{{ balance.program.program_name }}</td>
-                                    <td>{{ balance.current_balance }}</td>
-                                    <td>{{ moment(balance.updated_at).format('MMMM Do YYYY, h:mm a') }}</td>
+                            {% for balance in balances | sort(attribute="program.program_name") %}
+                                <tr id="{{ balance.program_id }}">
+                                    <td class="index">{{ loop.index }}</td>
+                                    <td class="program_name">{{ balance.program.program_name }}</td>
+                                    <td class="current_balance">{{ balance.current_balance }}</td>
+                                    <td class="updated_at">{{ moment(balance.updated_at).format('MMMM Do YYYY, h:mm a') }}</td>
                                 </tr>
                             {% endfor %}
                         {% endif %}
@@ -76,21 +76,31 @@
 
           function appendNew(data) {
               console.log(data.program_name);
-              console.log(data.current_balance);
+              console.log($("#program-balance").text().indexOf(data.program_name));
 
-              var index = $("#program-balance tr:last").index()
+              if ($("#program-balance").text().indexOf(data.program_name) == -1) {
 
-              $("#program-balance tr:last").after("<tr><td>"+(index + 1)+"</td><td>"+data.program_name+"</td><td>"+data.current_balance+"</td><td>"+moment().format('MMMM Do YYYY, h:mm a')+"</td></tr>");
+                var index = $("#program-balance tr:last").index()
+
+                $("#program-balance tr:last").after("<tr><td>"+(index + 2)+"</td><td>"+data.program_name+"</td><td>"+data.current_balance+"</td><td>"+moment().format('MMMM Do YYYY, h:mm a')+"</td></tr>");
+              } else {
+                $("#" + data.program_id + " td.current_balance").html(data.current_balance);
+                console.log(moment(data.updated_at).format('MMMM Do YYYY, h:mm a'));
+
+
+                $("#" + data.program_id + " td.updated_at").html(moment(data.updated_at).format('MMMM Do YYYY, h:mm a'));
+
+              }
 
             }
 
           function updateBalance(evt) {
               evt.preventDefault();
-              console.log(1);
 
               var formValues = $("#update-balance-form").serialize();
 
               $.post("/update-balance", formValues, appendNew);
+              $('#update-balance-form')[0].reset();
             } 
 
               $("#update-balance-form").submit(updateBalance);
