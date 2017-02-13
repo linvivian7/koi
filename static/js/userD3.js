@@ -1,15 +1,16 @@
-// $("#visualization").on("click", getCustomD3);
-// // $('#visualization').on("click", (function() {
-// //     location.reload();
-// // }));
-$("#visualization").bind('beforeunload',function(){
-  return "Bye now!";
-   // $("#d3-div").find("svg").remove();
-});
-// $( window ).unload(function() {
-// });
+$(document).ready(function(){
 
-getCustomD3();
+    $("a").on('click', function() {
+        if (window.location.href === "http://localhost:5000/dashboard#visual") {
+           $("#user_d3").remove();
+        }
+    });
+
+   $('a[href="#visual"]').on("click", (function(){
+       getCustomD3();
+   }));
+
+});
 
 function getCustomD3() {
     $.get('/custom-d3.json', renderD3);
