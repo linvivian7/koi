@@ -90,3 +90,24 @@ input label {
 .glyphicon-minus-sign {
   color: #b45151;
 }
+
+datalist {
+  font-family: serif;
+}
+
+#transaction-history_wrapper {
+  overflow-x: hidden; /* this is what fixes the expansion */
+  white-space: nowrap;
+}
+
+table {
+    table-layout: fixed;
+}
+
+#program-balance {
+    table-layout: auto;
+}
+
+
+
+

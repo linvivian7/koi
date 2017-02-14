@@ -7,6 +7,7 @@
 {% block body %}
 <div id="dashboard-page">
 
+<body>
 <div class="container-fluid">
     <div class="row" id="tabs">
 
@@ -29,25 +30,19 @@
             <div class="row">
                 <section class="col-xs-12">
 
-                    <input type="text" id="ajax" list="programs" placeholder="e.g. datalist">
-
-                    <datalist id="programs">
-                        {% for program in programs | sort(attribute="program_name") %}
-                            <option value="{{ program.program_name }}">
-                        {% endfor %}
-                    </datalist>
-
                     <form id="update-balance-form" method="POST">
                         
-                        <label for="all-programs">Program: </label>
-                        <select name="program" id="all-programs"> 
+                        <label for="program">Program: </label>
+                        <input type="text" id="program" list="all-programs" placeholder="Select program" required>
+
+                        <datalist id="all-programs">
                             {% for program in programs | sort(attribute="program_name") %}
-                                <option value="{{ program.program_id }}">{{ program.program_name }}</option>
+                                <option data-value="{{ program.program_id }}" value="{{ program.program_name }}">
                             {% endfor %}
-                        </select>
+                        </datalist>
                         
                         <label for="current-balance">Current Balance: </label>
-                        <input type="number" name="balance" id="current-balance" min="1" max="1000000000000" maxlength="30" placeholder="enter points" required></input>
+                        <input type="number" name="balance" id="current-balance" min="1" max="1000000000000" maxlength="30" placeholder="Enter points" required></input>
                         
                         <input type="submit" id="submit-balance" value="Submit">
                     </form>
@@ -65,7 +60,7 @@
                                 <th>Last Updated</th>
                             </tr>
                         </thead>
-
+                        <tbody>
                         {% if balances %}
                             {% for balance in balances | sort(attribute="program.program_name") %}
                                 <tr id="{{ balance.program_id }}">
@@ -73,10 +68,11 @@
                                     <td class="index">{{ loop.index }}</td>
                                     <td class="program_name">{{ balance.program.program_name }}</td>
                                     <td class="current_balance">{{ "{:,}".format(balance.current_balance) }}</td>
-                                    <td class="updated_at">{{ moment(balance.updated_at).format('MMMM Do YYYY, h:mm a') }}</td>
+                                    <td class="updated_at">{{ moment(balance.updated_at).fromNow(no_suffix = False) }}</td>
                                 </tr>
                             {% endfor %}
                         {% endif %}
+                    </tbody>
                     </table>
                 </section>
             </div>
@@ -102,27 +98,41 @@
         <div role="tabpanel" class="tab-pane" id="activity">
             <div class="row">
                 <section class="col-xs-12">
+
                     <input type="button" value="Refresh" class="refresh">
-                    <table class="table table-hover table-striped" id="program-balance">
+                    <table class="table table-hover table-striped" 
+                           id="transaction-history" class="display" cellspacing="0" width="100%">
+
                         <thead>
                             <tr>
                                 <th>#</th>
                                 <th>Type</th>
                                 <th>Program</th>
-                                <th>Beginning Balance</th>
-                                <th>Delta</th>
-                                <th>Ending Balance</th>
+                                <th>Beginning</th>
+                                <th>Change</th>
+                                <th>Ending</th>
                                 <th>Timestamp</th>
                             </tr>
                         </thead>
+                        <tfoot>
+                            <tr>
+                                <th>#</th>
+                                <th>Type</th>
+                                <th>Program</th>
+                                <th>Beginning</th>
+                                <th>Change</th>
+                                <th>Ending</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </tfoot>
 
                         {% if activities %}
-                            {% for activity in activities | sort(attribute="program.program_name") %}
+                            {% for activity in activities | sort(attribute="created_at", reverse=True) %}
                                 <tr id="{{ activity.program_id }}">
                                     <td class="index">{{ loop.index }}</td>
                                     <td class="action">{{ activity.action.action_type }}</td>                     
                                     <td class="program_name">{{ activity.program.program_name }}</td>
-                                    <td class="beginning_balance">
+                                    <td class="beginning">
                                     {% if activity.beginning_balance == 0 %}
                                         - 
                                     {% else %}
@@ -131,21 +141,21 @@
                                     {% endif %}  
 
 
-                                    <td class="delta">
+                                    <td class="change">
                                     {% if (activity.ending_balance - activity.beginning_balance) < 0 %}
                                         ({{ "{:,}".format((activity.ending_balance - activity.beginning_balance * -1)) }})</td>
                                     {% else %}
                                         {{ "{:,}".format(activity.ending_balance - activity.beginning_balance) }}</td>
                                     {% endif %}
 
-                                    <td class="ending_balance">
+                                    <td class="ending">
                                     {% if activity.ending_balance == 0 %}
                                         - 
                                     {% else %}
                                         {{ "{:,}".format(activity.ending_balance) }}
                                     </td>
                                     {% endif %}  
-                                    <td class="timestamp">{{ moment(activity.created_at).format('MMMM Do YYYY, h:mm a') }}</td>
+                                    <td class="timestamp">{{ moment(activity.created_at).fromNow(no_suffix = False) }}</td>
                                 </tr>
                             {% endfor %}
                         {% endif %}
@@ -159,7 +169,7 @@
         <!-- End of activity dash. -->
 
       
-        <div role="tabpanel" class="tab-pane" id="settings">Settings</div>
+        <div role="tabpanel" class="tab-pane" id="settings"></div>
       </div>
 
     </div>
@@ -171,6 +181,7 @@
 </div>
 </div>
     <script src="/static/js/dashboard_home.js"></script>
+    <script src="/static/js/dashboard_activity.js"></script>
 
       <script>
           $('#all-tabs a').click(function(e) {
