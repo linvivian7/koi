@@ -27,7 +27,16 @@
         <!-- Div for home dash. -->
         <div role="tabpanel" class="tab-pane active" id="home">
             <div class="row">
-                <section class="col-xs-12 col-md-12 col-lg-12">
+                <section class="col-xs-12">
+
+                    <input type="text" id="ajax" list="programs" placeholder="e.g. datalist">
+
+                    <datalist id="programs">
+                        {% for program in programs | sort(attribute="program_name") %}
+                            <option value="{{ program.program_name }}">
+                        {% endfor %}
+                    </datalist>
+
                     <form id="update-balance-form" method="POST">
                         
                         <label for="all-programs">Program: </label>
@@ -42,10 +51,10 @@
                         
                         <input type="submit" id="submit-balance" value="Submit">
                     </form>
-                        <input type="button" value="Refresh" id="refresh">
+                        <input type="button" value="Refresh" class="refresh">
                 </section>
 
-                <section class="col-xs-12 col-md-5 col-lg-5">
+                <section class="col-xs-12">
                     <table class="table table-hover table-striped" id="program-balance">
                         <thead>
                             <tr>
@@ -63,7 +72,7 @@
                                     <td class="remove"><span class="glyphicon glyphicon-minus-sign"></span></td>
                                     <td class="index">{{ loop.index }}</td>
                                     <td class="program_name">{{ balance.program.program_name }}</td>
-                                    <td class="current_balance">{{ balance.current_balance }}</td>
+                                    <td class="current_balance">{{ "{:,}".format(balance.current_balance) }}</td>
                                     <td class="updated_at">{{ moment(balance.updated_at).format('MMMM Do YYYY, h:mm a') }}</td>
                                 </tr>
                             {% endfor %}
@@ -73,7 +82,6 @@
             </div>
         </div>
 
-        <script src="/static/js/dashboard_home.js"></script>
         <!-- End of home dash. -->
 
         <!-- Div for D3 dash. -->
@@ -94,6 +102,7 @@
         <div role="tabpanel" class="tab-pane" id="activity">
             <div class="row">
                 <section class="col-xs-12">
+                    <input type="button" value="Refresh" class="refresh">
                     <table class="table table-hover table-striped" id="program-balance">
                         <thead>
                             <tr>
@@ -161,7 +170,7 @@
 </div>
 </div>
 </div>
-
+    <script src="/static/js/dashboard_home.js"></script>
 
       <script>
           $('#all-tabs a').click(function(e) {

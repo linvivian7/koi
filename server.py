@@ -129,6 +129,30 @@ def show_dashboard():
     return redirect("/login")
 
 
+@app.route("/programs.json")
+# @login_required
+def programs_info():
+    """ ."""
+
+    if "user" in session:
+        programs = Program.query.options(db.joinedload('vendor')).all()
+
+        program_info = {}
+
+        for program in programs:
+            program_info[program.program_id] = {'program_name': program.program_name,
+                                                'vendor_name': program.vendor.vendor_name
+                                                }
+        print "*" * 30
+        print program_info
+        print "*" * 30
+
+        return jsonify(program_info)
+
+    flash("Please sign in first")
+    return redirect("/login")
+
+
 @app.route("/custom-d3.json")
 def d3_info():
     """ """
@@ -182,9 +206,6 @@ def remove_balance():
         program = request.form.get("program_id")
 
         balance = Balance.query.filter((Balance.program_id == program) & (Balance.user_id == user_id)).one()
-        print "*" * 30
-        print balance
-        print "*" * 30
 
         db.session.delete(balance)
 
