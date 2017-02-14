@@ -87,4 +87,6 @@ input label {
   margin:5px;
 }
 
-
+.glyphicon-minus-sign {
+  color: #b45151;
+}

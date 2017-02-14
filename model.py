@@ -10,13 +10,29 @@ db = SQLAlchemy()
 
 ##############################################################################
 # Model definitions
+class ProgramType(db.Model):
+    """."""
+
+    __tablename__ = "program_types"
+
+    type_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    program_type = db.Column(db.String(20), nullable=False, unique=True)
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<action {}: {}>".format(self.type_id,
+                                        self.program_type,
+                                        )
+
+
 class Action(db.Model):
     """."""
 
     __tablename__ = "actions"
 
     action_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    action_type = db.Column(db.String(32), nullable=False, unique=True)
+    action_type = db.Column(db.String(20), nullable=False, unique=True)
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -122,7 +138,6 @@ class Balance(db.Model):
     program_id = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     current_balance = db.Column(db.Integer, nullable=False)
-    action_id = db.Column(db.Integer, db.ForeignKey('actions.action_id'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('balances', order_by=balance_id))
     program = db.relationship('Program', backref=db.backref('balances', order_by=balance_id))
@@ -144,29 +159,26 @@ class TransactionHistory(db.Model):
     __tablename__ = "transaction_history"
 
     transaction_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    balance_id = db.Column(db.Integer, db.ForeignKey('balances.balance_id'), nullable=False)
+    action_id = db.Column(db.Integer, db.ForeignKey('actions.action_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    program_id = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
     beginning_balance = db.Column(db.Integer, nullable=False)
     ending_balance = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    balance = db.relationship('Balance', backref=db.backref('transaction_history', order_by=transaction_id))
+    user = db.relationship('User', backref=db.backref('transaction_history'))
+    program = db.relationship('Program', backref=db.backref('transaction_history'))
 
     def __repr__(self):
         """Provide helpful representation when printed."""
 
-        return "<{} |user: {} |program: {} | beg: {} amount: {} end: {} | {}>".format(self.transaction_id,
-                                                                                      self.balance.user_id,
-                                                                                      self.balance.program_id,
-                                                                                      self.beginning_balance,
-                                                                                      self.ending_balance,
-                                                                                      self.created_at,
-                                                                                      )
-
-    def calc_change(self):
-
-        self.delta = self.ending_balance - self.beginning_balance
-
-        return
+        return "<{} |user: {} |program: {} | beg: {} end: {} | {}>".format(self.transaction_id,
+                                                                           self.user_id,
+                                                                           self.program_id,
+                                                                           self.beginning_balance,
+                                                                           self.ending_balance,
+                                                                           self.created_at,
+                                                                           )
 
 
 class Transfer(db.Model):

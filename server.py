@@ -116,13 +116,14 @@ def show_dashboard():
     """Show user dashboard."""
 
     if "user" in session:
-        user_id = 2
+        user_id = session["user"]
         user = User.query.options(db.joinedload('balances')).get(user_id)
 
         balances = user.balances
         programs = Program.query.all()
+        transactions = TransactionHistory.query.filter_by(user_id=user_id).all()
 
-        return render_template("dashboard.html", programs=programs, balances=balances, user=user)
+        return render_template("dashboard.html", programs=programs, balances=balances, user=user, activities=transactions)
 
     flash("Please sign in first")
     return redirect("/login")
@@ -141,7 +142,7 @@ def update_balance():
     """Update user balance."""
 
     if "user" in session:
-        user_id = 2
+        user_id = session["user"]
 
         program = request.form.get("program")
         balance = request.form.get("balance")
@@ -152,7 +153,7 @@ def update_balance():
             existing_balance.current_balance = balance
 
         else:
-            balance = Balance(user_id=user_id, program_id=program, current_balance=balance, action_id=1)
+            balance = Balance(user_id=user_id, program_id=program, current_balance=balance)
             db.session.add(balance)
 
         db.session.commit()
@@ -165,6 +166,31 @@ def update_balance():
         new_bal['program_name'] = Program.query.get(program).program_name
 
         return jsonify(new_bal)
+
+    flash("Please sign in first")
+    return redirect("/login")
+
+
+@app.route("/remove-balance", methods=["POST"])
+# @login_required
+def remove_balance():
+    """Delete user balance."""
+
+    if "user" in session:
+        user_id = session["user"]
+
+        program = request.form.get("program_id")
+
+        balance = Balance.query.filter((Balance.program_id == program) & (Balance.user_id == user_id)).one()
+        print "*" * 30
+        print balance
+        print "*" * 30
+
+        db.session.delete(balance)
+
+        db.session.commit()
+
+        return "deleted"
 
     flash("Please sign in first")
     return redirect("/login")

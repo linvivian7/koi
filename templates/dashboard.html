@@ -24,7 +24,6 @@
 
       <!-- Tab panes -->
       <div class="tab-content">
-
         <!-- Div for home dash. -->
         <div role="tabpanel" class="tab-pane active" id="home">
             <div class="row">
@@ -43,12 +42,14 @@
                         
                         <input type="submit" id="submit-balance" value="Submit">
                     </form>
+                        <input type="button" value="Refresh" id="refresh">
                 </section>
 
                 <section class="col-xs-12 col-md-5 col-lg-5">
                     <table class="table table-hover table-striped" id="program-balance">
                         <thead>
                             <tr>
+                                <th></th>
                                 <th>#</th>
                                 <th>Program</th>
                                 <th>Current Balance</th>
@@ -59,6 +60,7 @@
                         {% if balances %}
                             {% for balance in balances | sort(attribute="program.program_name") %}
                                 <tr id="{{ balance.program_id }}">
+                                    <td class="remove"><span class="glyphicon glyphicon-minus-sign"></span></td>
                                     <td class="index">{{ loop.index }}</td>
                                     <td class="program_name">{{ balance.program.program_name }}</td>
                                     <td class="current_balance">{{ balance.current_balance }}</td>
@@ -71,41 +73,7 @@
             </div>
         </div>
 
-        <script>
-          "use strict";
-
-          function appendNew(data) {
-              console.log(data.program_name);
-              console.log($("#program-balance").text().indexOf(data.program_name));
-
-              if ($("#program-balance").text().indexOf(data.program_name) == -1) {
-
-                var index = $("#program-balance tr:last").index()
-
-                $("#program-balance tr:last").after("<tr><td>"+(index + 2)+"</td><td>"+data.program_name+"</td><td>"+data.current_balance+"</td><td>"+moment().format('MMMM Do YYYY, h:mm a')+"</td></tr>");
-              } else {
-                $("#" + data.program_id + " td.current_balance").html(data.current_balance);
-                console.log(moment(data.updated_at).format('MMMM Do YYYY, h:mm a'));
-
-
-                $("#" + data.program_id + " td.updated_at").html(moment(data.updated_at).format('MMMM Do YYYY, h:mm a'));
-
-              }
-
-            }
-
-          function updateBalance(evt) {
-              evt.preventDefault();
-
-              var formValues = $("#update-balance-form").serialize();
-
-              $.post("/update-balance", formValues, appendNew);
-              $('#update-balance-form')[0].reset();
-            } 
-
-              $("#update-balance-form").submit(updateBalance);
-
-        </script>
+        <script src="/static/js/dashboard_home.js"></script>
         <!-- End of home dash. -->
 
         <!-- Div for D3 dash. -->
@@ -121,8 +89,45 @@
         <!-- End of D3 dash. -->
 
 
+        <!-- Div for activity dash. -->
 
-        <div role="tabpanel" class="tab-pane" id="activity">adfadffsdf</div>
+        <div role="tabpanel" class="tab-pane" id="activity">
+            <div class="row">
+                <section class="col-xs-12 col-md-5 col-lg-5">
+                    <table class="table table-hover table-striped" id="program-balance">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Program</th>
+                                <th>Beginning Balance</th>
+                                <th>Delta</th>
+                                <th>Ending Balance</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+
+                        {% if activities %}
+                            {% for activity in activities | sort(attribute="program.program_name") %}
+                                <tr id="{{ activity.program_id }}">
+                                    <td class="index">{{ loop.index }}</td>
+                                    <td class="program_name">{{ activity.program.program_name }}</td>
+                                    <td class="beginning_balance">{{ activity.beginning_balance }}</td>
+                                    <td class="delta">{{ activity.ending_balance - activity.beginning_balance }}</td>
+                                    <td class="ending_balance">{{ activity.ending_balance }}</td>
+                                    <td class="timestamp">{{ moment(activity.created_at).format('MMMM Do YYYY, h:mm a') }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+
+                    </table>
+                </section>
+            </div>
+        </div>
+
+
+        <!-- End of activity dash. -->
+
+      
         <div role="tabpanel" class="tab-pane" id="settings">Settings</div>
       </div>
 
