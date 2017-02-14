@@ -58,10 +58,19 @@ background-size: cover;
 table {
   font-family: serif;
   font-size: 13px;
+  table-layout: fixed;
 }
 
 #update-balance-form {
-  margin-left: 1em;
+  font-family: serif;
+  font-size: 13px;
+  margin-bottom: -1em;
+}
+
+#transfer-form {
+  font-family: serif;
+  font-size: 13px;
+  margin-bottom: -1em;
 }
 
 #home label {
@@ -100,14 +109,16 @@ datalist {
   white-space: nowrap;
 }
 
-table {
-    table-layout: fixed;
-}
-
 #program-balance {
     table-layout: auto;
 }
 
+.refresh {
+  display: inline-block;
+  vertical-align: middle;
+}
 
-
-
+.panel-heading {
+  font-family: serif;
+  font-size: 13px;
+}

@@ -112,7 +112,8 @@ class Ratio(db.Model):
     ratio_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     outgoing_program = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
     receiving_program = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
-    ratio = db.Column(db.Numeric, nullable=False)
+    numerator = db.Column(db.Numeric, nullable=False)
+    denominator = db.Column(db.Numeric, nullable=False)
 
     outgoing = db.relationship("Program", primaryjoin="Ratio.outgoing_program==Program.program_id")
     receiving = db.relationship("Program", primaryjoin="Ratio.receiving_program==Program.program_id")
@@ -192,7 +193,7 @@ class Transfer(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     outgoing_program = db.Column(db.Integer, db.ForeignKey('ratios.outgoing_program'), nullable=False)
     receiving_program = db.Column(db.Integer, db.ForeignKey('ratios.receiving_program'), nullable=False)
-    amount = db.Column(db.Integer, nullable=False)
+    outgoing_amount = db.Column(db.Integer, nullable=False)
 
     ratio_from = db.relationship("Ratio", primaryjoin="Transfer.outgoing_program==Ratio.outgoing_program")
 

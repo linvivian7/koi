@@ -22,7 +22,6 @@
       </ul>
 
 
-
       <!-- Tab panes -->
       <div class="tab-content">
         <!-- Div for home dash. -->
@@ -32,7 +31,7 @@
 
                     <form id="update-balance-form" method="POST">
                         
-                        <label for="program">Program: </label>
+                        <label for="program">Update </label>
                         <input type="text" id="program" list="all-programs" placeholder="Select program" required>
 
                         <datalist id="all-programs">
@@ -41,13 +40,45 @@
                             {% endfor %}
                         </datalist>
                         
-                        <label for="current-balance">Current Balance: </label>
+                        <label for="current-balance">Balance: </label>
                         <input type="number" name="balance" id="current-balance" min="1" max="1000000000000" maxlength="30" placeholder="Enter points" required></input>
                         
                         <input type="submit" id="submit-balance" value="Submit">
+                        <input type="button" value="Refresh" class="refresh" class="refresh">
+
                     </form>
-                        <input type="button" value="Refresh" class="refresh">
                 </section>
+
+                <section class="col-xs-12">
+
+                    <form id="transfer-form" method="POST">
+                        
+                        <label for="outgoing">Transfer </label>
+                        <input type="text" id="outgoing" list="all-programs" placeholder="Select program" required>
+
+                        <datalist id="all-programs">
+                            {% for program in programs | sort(attribute="program_name") %}
+                                <option data-value="{{ program.program_id }}" value="{{ program.program_name }}">
+                            {% endfor %}
+                        </datalist>
+                        
+                        <label for="receiving">To </label>
+                        <input type="text" id="receiving" list="all-programs" placeholder="Select program" required>
+
+                        <datalist id="all-programs">
+                            {% for program in programs | sort(attribute="program_name") %}
+                                <option data-value="{{ program.program_id }}" value="{{ program.program_name }}">
+                            {% endfor %}
+                        </datalist>
+
+                        <label for="transfer-amount">Amount: </label>
+                        <input type="number" name="balance" id="transfer-amount" min="1" max="1000000000000" maxlength="30" placeholder="Enter points" required></input>
+
+                        <input type="submit" id="submit-balance" value="Submit">
+                        <input type="button" value="Refresh" class="refresh" class="refresh">
+                    </form>
+                </section>
+
 
                 <section class="col-xs-12">
                     <table class="table table-hover table-striped" id="program-balance">
@@ -68,7 +99,7 @@
                                     <td class="index">{{ loop.index }}</td>
                                     <td class="program_name">{{ balance.program.program_name }}</td>
                                     <td class="current_balance">{{ "{:,}".format(balance.current_balance) }}</td>
-                                    <td class="updated_at">{{ moment(balance.updated_at).fromNow(no_suffix = False) }}</td>
+                                    <td class="updated_at">{{ moment(balance.updated_at).format('M/D/YYYY, h:mm a') }}</td>
                                 </tr>
                             {% endfor %}
                         {% endif %}
@@ -155,7 +186,7 @@
                                         {{ "{:,}".format(activity.ending_balance) }}
                                     </td>
                                     {% endif %}  
-                                    <td class="timestamp">{{ moment(activity.created_at).fromNow(no_suffix = False) }}</td>
+                                    <td class="timestamp">{{ moment(activity.created_at).format('M/D/YYYY, h:mm a') }}</td>
                                 </tr>
                             {% endfor %}
                         {% endif %}
