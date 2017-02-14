@@ -93,11 +93,12 @@
 
         <div role="tabpanel" class="tab-pane" id="activity">
             <div class="row">
-                <section class="col-xs-12 col-md-5 col-lg-5">
+                <section class="col-xs-12">
                     <table class="table table-hover table-striped" id="program-balance">
                         <thead>
                             <tr>
                                 <th>#</th>
+                                <th>Type</th>
                                 <th>Program</th>
                                 <th>Beginning Balance</th>
                                 <th>Delta</th>
@@ -110,10 +111,31 @@
                             {% for activity in activities | sort(attribute="program.program_name") %}
                                 <tr id="{{ activity.program_id }}">
                                     <td class="index">{{ loop.index }}</td>
+                                    <td class="action">{{ activity.action.action_type }}</td>                     
                                     <td class="program_name">{{ activity.program.program_name }}</td>
-                                    <td class="beginning_balance">{{ activity.beginning_balance }}</td>
-                                    <td class="delta">{{ activity.ending_balance - activity.beginning_balance }}</td>
-                                    <td class="ending_balance">{{ activity.ending_balance }}</td>
+                                    <td class="beginning_balance">
+                                    {% if activity.beginning_balance == 0 %}
+                                        - 
+                                    {% else %}
+                                        {{ "{:,}".format(activity.beginning_balance) }}
+                                    </td>
+                                    {% endif %}  
+
+
+                                    <td class="delta">
+                                    {% if (activity.ending_balance - activity.beginning_balance) < 0 %}
+                                        ({{ "{:,}".format((activity.ending_balance - activity.beginning_balance * -1)) }})</td>
+                                    {% else %}
+                                        {{ "{:,}".format(activity.ending_balance - activity.beginning_balance) }}</td>
+                                    {% endif %}
+
+                                    <td class="ending_balance">
+                                    {% if activity.ending_balance == 0 %}
+                                        - 
+                                    {% else %}
+                                        {{ "{:,}".format(activity.ending_balance) }}
+                                    </td>
+                                    {% endif %}  
                                     <td class="timestamp">{{ moment(activity.created_at).format('MMMM Do YYYY, h:mm a') }}</td>
                                 </tr>
                             {% endfor %}

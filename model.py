@@ -168,6 +168,7 @@ class TransactionHistory(db.Model):
 
     user = db.relationship('User', backref=db.backref('transaction_history'))
     program = db.relationship('Program', backref=db.backref('transaction_history'))
+    action = db.relationship('Action', backref=db.backref('transaction_history'))
 
     def __repr__(self):
         """Provide helpful representation when printed."""
