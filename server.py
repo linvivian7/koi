@@ -68,6 +68,16 @@ def homepage():
                 flash("Please enter a valid email!")
                 return redirect('/')
 
+    if "user" in session:
+        user_id = session["user"]
+        user = User.query.options(db.joinedload('balances')).get(user_id)
+
+        balances = user.balances
+        programs = Program.query.all()
+        transactions = TransactionHistory.query.filter_by(user_id=user_id).all()
+
+        return render_template("homepage.html", programs=programs, balances=balances, user=user, activities=transactions)
+
     else:
         return render_template("homepage.html")
 

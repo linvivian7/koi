@@ -1,7 +1,7 @@
 $(document).ready(function(){
 
     $("a").on('click', function() {
-        if (window.location.href === "http://localhost:5000/dashboard#visual") {
+        if (window.location.href === "http://localhost:5000/#visual") {
            $("#user_d3").remove();
         }
     });
