@@ -10,6 +10,13 @@ $(document).ready(function(){
        getCustomD3();
    }));
 
+    $(window).on('load',function(){
+        if (window.location.href === "http://localhost:5000/#visual") {
+            getCustomD3();
+            console.log(123123);
+        }
+    });
+
 });
 
 function getCustomD3() {

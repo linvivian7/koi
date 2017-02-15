@@ -72,11 +72,19 @@ def homepage():
         user_id = session["user"]
         user = User.query.options(db.joinedload('balances')).get(user_id)
 
+        # User-specific data
         balances = user.balances
-        programs = Program.query.all()
         transactions = TransactionHistory.query.filter_by(user_id=user_id).all()
 
-        return render_template("homepage.html", programs=programs, balances=balances, user=user, activities=transactions)
+        # for datalist generation
+        programs = Program.query.all()
+
+        outgoing = db.session.query(Ratio)\
+                             .distinct(Ratio.outgoing_program)\
+                             .join(Balance, Balance.program_id == Ratio.outgoing_program)\
+                             .filter(Balance.user_id == user_id).all()
+
+        return render_template("homepage.html", programs=programs, balances=balances, user=user, activities=transactions, outgoing=outgoing)
 
     else:
         return render_template("homepage.html")
@@ -112,7 +120,7 @@ def show_login():
             user.authenticated = True
             session["user"] = user.user_id
 
-            return redirect("/dashboard")
+            return redirect("/")
 
         else:
             flash("This is not a valid email/password combination")
@@ -120,30 +128,53 @@ def show_login():
     return render_template("login.html")
 
 
-@app.route("/dashboard")
-# @login_required
-def show_dashboard():
-    """Show user dashboard."""
-
-    if "user" in session:
-        user_id = session["user"]
-        user = User.query.options(db.joinedload('balances')).get(user_id)
-
-        balances = user.balances
-        programs = Program.query.all()
-        transactions = TransactionHistory.query.filter_by(user_id=user_id).all()
-
-        return render_template("dashboard.html", programs=programs, balances=balances, user=user, activities=transactions)
-
-    flash("Please sign in first")
-    return redirect("/login")
-
-
 @app.route("/custom-d3.json")
 def d3_info():
     """ """
 
     return 'static/map.json'
+
+
+@app.route("/ratio-info")
+# @login_required
+def return_ratio():
+    """Return ratio."""
+
+    if "user" in session:
+        user_id = session["user"]
+        outgoing = request.args.get("outgoing")
+        receiving = request.args.get("receiving")
+
+        if receiving:
+            ratio = Ratio.query.filter((Ratio.outgoing_program == outgoing) & (Ratio.receiving_program == receiving)).first()
+            ratio = str(ratio.numerator / ratio.denominator)
+
+            return jsonify(ratio)
+
+        else:
+            receiving = Ratio.query.filter(Ratio.outgoing_program == outgoing)\
+                                   .distinct(Ratio.receiving_program)\
+                                   .join(Balance, Balance.program_id == Ratio.receiving_program)\
+                                   .filter(Balance.user_id == user_id).all()
+
+            program_id = [program.receiving_program for program in receiving]
+
+            program_name = [program.receiving.program_name for program in receiving]
+
+            receiving = {}
+
+            receiving["program_id"] = program_id
+            receiving["program_name"] = program_name
+
+            print "*" * 40
+            print outgoing
+            print receiving
+            print "*" * 40
+
+            return jsonify(receiving)
+
+    flash("Please sign in first")
+    return redirect("/login")
 
 
 @app.route("/update-balance", methods=["POST"])
@@ -198,6 +229,79 @@ def remove_balance():
         db.session.commit()
 
         return "deleted"
+
+    flash("Please sign in first")
+    return redirect("/login")
+
+
+@app.route("/transfer-balance", methods=["POST"])
+# @login_required
+def transfer_balance():
+    """transfer user balance from one program to another."""
+
+    if "user" in session:
+        user_id = session["user"]
+
+        outgoing = request.form.get("outgoing")
+        receiving = request.form.get("receiving")
+        amount = int(request.form.get("amount"))
+
+        existing_balance_from = Balance.query.filter((Balance.program_id == outgoing) & (Balance.user_id == user_id)).first()
+
+        # Constraint for positive balance
+        if existing_balance_from.current_balance < amount:
+            return "Not enough outstanding points for this transfer"
+
+        existing_balance_to = Balance.query.filter((Balance.program_id == receiving) & (Balance.user_id == user_id)).first()
+
+        try:
+            outgoing_ratio = Ratio.query.filter((Ratio.outgoing_program == outgoing) & (Ratio.receiving_program == receiving)).one()
+            print "*" * 40
+            print outgoing_ratio
+            print "*" * 40
+
+            numerator = outgoing_ratio.numerator
+            denominator = outgoing_ratio.denominator
+
+            print "*" * 40
+            print numerator, denominator
+            print "*" * 40
+        except:
+            flash("There's no ratio for this yet! Please submit your input in the feedback form")
+            redirect("/login")
+
+        if amount % denominator != 0:
+            flash("Please enter a transferable amount. See ratio on the dashboard view")
+            redirect("/#home")
+
+        existing_balance_to.current_balance = existing_balance_to.current_balance + amount * (numerator / denominator)
+        existing_balance_from.current_balance = existing_balance_from.current_balance - amount
+
+        db.session.add(existing_balance_from)
+        db.session.add(existing_balance_to)
+
+        db.session.commit()
+
+        # return json of outgoing program name, receiving program name, and respective balances
+
+        transferred = {}
+
+        transferred["outgoing"] = {"program_id": outgoing,
+                                   "program_name": outgoing_ratio.outgoing.program_name,
+                                   "current_balance": existing_balance_from.current_balance,
+                                   "updated_at": existing_balance_from.updated_at,
+                                   }
+
+        transferred["receiving"] = {"program_id": receiving,
+                                    "program_name": outgoing_ratio.receiving.program_name,
+                                    "current_balance": existing_balance_to.current_balance,
+                                    "updated_at": existing_balance_to.updated_at,
+                                    }
+        print "*" * 40
+        print transferred
+        print "*" * 40
+
+        return jsonify(transferred)
 
     flash("Please sign in first")
     return redirect("/login")

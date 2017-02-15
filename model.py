@@ -121,12 +121,13 @@ class Ratio(db.Model):
     def __repr__(self):
             """Provide helpful representation when printed."""
 
-            return "<ratio of [program {}] {} to [program {}] {} = {}>".format(self.outgoing_program,
-                                                                               self.outgoing.program_name,
-                                                                               self.receiving_program,
-                                                                               self.receiving.program_name,
-                                                                               self.ratio,
-                                                                               )
+            return "<ratio of [program {}] {} to [program {}] {} = {} / {}>".format(self.outgoing_program,
+                                                                                    self.outgoing.program_name,
+                                                                                    self.receiving_program,
+                                                                                    self.receiving.program_name,
+                                                                                    self.numerator,
+                                                                                    self.denominator,
+                                                                                    )
 
 
 class Balance(db.Model):

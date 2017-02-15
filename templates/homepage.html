@@ -11,11 +11,9 @@
 {% endblock%}}
 
 {% block body %}
+<body class="header">
 
 {% if "user" in session %}
-<div id="dashboard-page">
-
-<body>
 <div class="container-fluid">
     <div class="row" id="tabs">
 
@@ -35,11 +33,12 @@
         <!-- Div for home dash. -->
         <div role="tabpanel" class="tab-pane active" id="home">
             <div class="row">
-                <section class="col-xs-12">
+                <section class="col-xs-4">
 
-                    <form id="update-balance-form" method="POST">
+                    <form id="update-balance-form" method="POST" autocomplete="off">
                         
                         <label for="program">Update </label>
+
                         <input type="text" id="program" list="all-programs" placeholder="Select program" required>
 
                         <datalist id="all-programs">
@@ -47,44 +46,47 @@
                                 <option data-value="{{ program.program_id }}" value="{{ program.program_name }}">
                             {% endfor %}
                         </datalist>
-                        
+                        <br>
                         <label for="current-balance">Balance: </label>
                         <input type="number" name="balance" id="current-balance" min="1" max="1000000000000" maxlength="30" placeholder="Enter points" required></input>
-                        
+
+                        <input type="reset" class="reset-btn" value="Reset">
                         <input type="submit" id="submit-balance" value="Submit">
-                        <input type="button" value="Refresh" class="refresh" class="refresh">
 
                     </form>
                 </section>
 
-                <section class="col-xs-12">
+                <section class="col-xs-5">
 
-                    <form id="transfer-form" method="POST">
+                    <form id="transfer-form" method="POST" autocomplete="off">
                         
                         <label for="outgoing">Transfer </label>
-                        <input type="text" id="outgoing" list="all-programs" placeholder="Select program" required>
+                        <input type="text" id="outgoing" list="all-outgoing-programs" placeholder="Select program" required>
 
-                        <datalist id="all-programs">
-                            {% for program in programs | sort(attribute="program_name") %}
-                                <option data-value="{{ program.program_id }}" value="{{ program.program_name }}">
+                        <datalist id="all-outgoing-programs">
+                            {% for program in outgoing %}
+                                <option data-value="{{ program.outgoing_program }}" value="{{ program.outgoing.program_name }}">
                             {% endfor %}
                         </datalist>
                         
                         <label for="receiving">To </label>
-                        <input type="text" id="receiving" list="all-programs" placeholder="Select program" required>
+                        <input type="text" id="receiving" list="all-receiving-programs" placeholder="Select program" required>
 
-                        <datalist id="all-programs">
-                            {% for program in programs | sort(attribute="program_name") %}
-                                <option data-value="{{ program.program_id }}" value="{{ program.program_name }}">
-                            {% endfor %}
+                        <datalist id="all-receiving-programs">
                         </datalist>
 
+                        <label id="ratio" hidden></label>
+                        <br>
                         <label for="transfer-amount">Amount: </label>
-                        <input type="number" name="balance" id="transfer-amou" min="1" max="1000000000000" maxlength="30" placeholder="Enter points" required></input>
+                        <input type="number" name="balance" id="transfer-amount" min="1" max="1000000000000" maxlength="30" placeholder="Enter points" required></input>
 
+                        <input type="reset" class="reset-btn" value="Reset">
                         <input type="submit" id="submit-balance" value="Submit">
-                        <input type="button" value="Refresh" class="refresh" class="refresh">
                     </form>
+
+                </section>
+                <section class="col-xs-1 col-xs-offset-1">
+                    <input type="button" value="Refresh" class="refresh">
                 </section>
 
 
@@ -99,6 +101,15 @@
                                 <th>Last Updated</th>
                             </tr>
                         </thead>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>#</th>
+                                <th>Program</th>
+                                <th>Current Balance</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </tfoot>
                         <tbody>
                         {% if balances %}
                             {% for balance in balances | sort(attribute="program.program_name") %}
@@ -135,7 +146,7 @@
         <!-- Div for activity dash. -->
 
         <div role="tabpanel" class="tab-pane" id="activity">
-            <div class="row">
+            <div class="row"  id="activity-section">
                 <section class="col-xs-12">
 
                     <input type="button" value="Refresh" class="refresh">
@@ -182,7 +193,7 @@
 
                                     <td class="change">
                                     {% if (activity.ending_balance - activity.beginning_balance) < 0 %}
-                                        ({{ "{:,}".format((activity.ending_balance - activity.beginning_balance * -1)) }})</td>
+                                        ({{ "{:,}".format((activity.beginning_balance - activity.ending_balance)) }})</td>
                                     {% else %}
                                         {{ "{:,}".format(activity.ending_balance - activity.beginning_balance) }}</td>
                                     {% endif %}
@@ -218,8 +229,8 @@
     </div>
 </div>
 </div>
-</div>
-    <script src="/static/js/dashboard_home.js"></script>
+    <script src="/static/js/dashboard_update.js"></script>
+    <script src="/static/js/dashboard_transfer.js"></script>
     <script src="/static/js/dashboard_activity.js"></script>
 
       <script>
@@ -241,15 +252,13 @@
 
 {% else %}
 
-<body class="header">
-
   {% if "user" in session %}
     <div>
       <a class="btn" href="/dashboard">Take me to my dashboard</a>
     </div>
   {% else %}
   <div class="transparent">
-    <form class="form-signup" action="/" method="POST">
+    <form class="form-signup" action="/" method="POST" autocomplete="off">
 
         <div class="form-group">
           <label for="fname-field" class="sr-only">First Name</label>
@@ -302,7 +311,6 @@
 
     </form>
   </div>
-</body>
 
 {% endif %}
 {% endif %}
