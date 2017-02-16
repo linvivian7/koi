@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-    var url = "/custom-d3.json";
+    var url = "/dynamic-d3.json";
 
     var dispatcher = d3.dispatch('jsonLoad');
 
@@ -15,7 +15,8 @@ $(document).ready(function(){
    }));
 
     $(window).on('load',function(){
-        if (window.location.href === "http://localhost:5000/#visual") {
+        if ((window.location.href === "http://localhost:5000/#visual") ||
+            (window.location.href === "data:text/html,chromewebdata")) {
             renderD3(url);
         }
     });
@@ -36,6 +37,9 @@ $(document).ready(function(){
     var svg = d3.select("#d3-div")
         .append("svg")
         .attr("id", "user_d3")
+        .classed("svg-content-responsive", true)
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 800 400")
         .attr("width", width)
         .attr("height", height);
 
@@ -66,7 +70,6 @@ $(document).ready(function(){
     //Read the data from JSON 
     d3.json(url, function(error, json) {
         if (error) throw error;
-        debugger;
 
     //Creates the json data structure out of the json data
     force.nodes(json.nodes)
@@ -92,8 +95,9 @@ $(document).ready(function(){
 
     node.append("image")
         .attr("xlink:href", function(d) { return d.img;})
-        .attr("x", -8)
-        .attr("y", -8)
+        .attr("class", "circle")
+        .attr("cx", -8)
+        .attr("cy", -8)
         .attr("width", 16)
         .attr("height", 16);
 

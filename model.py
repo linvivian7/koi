@@ -2,7 +2,6 @@
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.schema import UniqueConstraint
-from datetime import datetime, timedelta
 
 # Instantiate database
 db = SQLAlchemy()
@@ -138,12 +137,14 @@ class Balance(db.Model):
 
     balance_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    action_id = db.Column(db.Integer, db.ForeignKey('actions.action_id'), nullable=False)
     program_id = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     current_balance = db.Column(db.Integer, nullable=False)
 
     user = db.relationship('User', backref=db.backref('balances', order_by=balance_id))
     program = db.relationship('Program', backref=db.backref('balances', order_by=balance_id))
+    action = db.relationship('Action', backref=db.backref('balances', order_by=balance_id))
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -193,11 +194,12 @@ class Transfer(db.Model):
     transfer_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     transferred_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    outgoing_program = db.Column(db.Integer, db.ForeignKey('ratios.outgoing_program'), nullable=False)
-    receiving_program = db.Column(db.Integer, db.ForeignKey('ratios.receiving_program'), nullable=False)
+    outgoing_program = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
+    receiving_program = db.Column(db.Integer, db.ForeignKey('programs.program_id'), nullable=False)
     outgoing_amount = db.Column(db.Integer, nullable=False)
 
-    ratio_from = db.relationship("Ratio", primaryjoin="Transfer.outgoing_program==Ratio.outgoing_program")
+    outgoing = db.relationship("Program", primaryjoin="Transfer.outgoing_program==Program.program_id")
+    receiving = db.relationship("Program", primaryjoin="Transfer.receiving_program==Program.program_id")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -209,6 +211,46 @@ class Transfer(db.Model):
                                                                                     self.amount,
                                                                                     self.transferred_at,
                                                                                     )
+
+
+class Feedback(db.Model):
+    """."""
+
+    __tablename__ = "feedback"
+
+    feedback_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    email = db.Column(db.String(255), nullable=False)
+    feedback = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<from {}: {}>".format(self.email,
+                                      self.feedback,
+                                      )
+
+
+class UserFeedback(db.Model):
+    """."""
+
+    __tablename__ = "user_feedback"
+
+    user_feedback_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    outgoing_program = db.Column(db.String(32))
+    receiving_program = db.Column(db.String(32))
+    numerator = db.Column(db.Integer)
+    denominator = db.Column(db.Integer)
+    feedback = db.Column(db.Text)
+
+    user = db.relationship('User', backref=db.backref('user_feedback'))
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<from {}: {}>".format(self.user_id,
+                                      self.feedback,
+                                      )
 
 
 ##############################################################################

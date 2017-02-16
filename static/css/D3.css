@@ -27,5 +27,17 @@ d3-tip {
 }
 
 #d3-div {
-    width: 90%;       /* container fits window (accommodates padding) */
+    display: inline-block;
+    position: relative;
+    width: 90%;
+    padding-bottom: 40%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
 }
