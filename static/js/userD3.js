@@ -11,7 +11,7 @@ $(document).ready(function(){
     });
 
    $('a[href="#visual"]').on("click", (function(){
-       renderD3();
+       renderD3(url);
    }));
 
     $(window).on('load',function(){
@@ -90,14 +90,8 @@ $(document).ready(function(){
         .on('click', connectedNodes) //Added code for highlighting
         .on('dblclick', releasenode); //Added for pinning
 
-    var imageByGroup = {
-        1: "/static/img/cc.png",
-        2: "/static/img/hotel.png",
-        3: "/static/img/flight.png"
-    };
-
     node.append("image")
-        .attr("xlink:href", function(d) { return imageByGroup[d.group];})
+        .attr("xlink:href", function(d) { return d.img;})
         .attr("x", -8)
         .attr("y", -8)
         .attr("width", 16)

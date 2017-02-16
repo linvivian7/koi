@@ -61,13 +61,13 @@ def homepage():
         balances = user.balances
         transactions = TransactionHistory.query.filter_by(user_id=user_id).all()
 
-        # for datalist generation
-        programs = Program.query.all()
-
         outgoing = db.session.query(Ratio)\
                              .distinct(Ratio.outgoing_program)\
                              .join(Balance, Balance.program_id == Ratio.outgoing_program)\
                              .filter(Balance.user_id == user_id).all()
+
+        # for update-form all programs generation
+        programs = Program.query.all()
 
         return render_template("homepage.html", programs=programs, balances=balances, user=user, activities=transactions, outgoing=outgoing)
 
@@ -120,16 +120,16 @@ def show_login():
     return render_template("login.html")
 
 
-@app.route("/custom-d3.json")
-def d3_info():
+@app.route("/mapping.json")
+def all_d3_info():
     """ """
 
     all_programs = {}
     i = 0
 
-    custom_d3 = {}
-    custom_d3["nodes"] = []
-    custom_d3["links"] = []
+    dynamic_d3 = {}
+    dynamic_d3["nodes"] = []
+    dynamic_d3["links"] = []
 
     outgoing = db.session.query(Ratio).distinct(Ratio.outgoing_program).all()
 
@@ -137,7 +137,7 @@ def d3_info():
         if program.outgoing_program not in all_programs:
             all_programs[program.outgoing_program] = i
             i += 1
-            custom_d3["nodes"].append({"name": program.outgoing.program_name,
+            dynamic_d3["nodes"].append({"name": program.outgoing.program_name,
                                        "group": program.outgoing.type_id})
 
     receiving = db.session.query(Ratio).distinct(Ratio.receiving_program).all()
@@ -146,18 +146,73 @@ def d3_info():
         if program.receiving_program not in all_programs:
             all_programs[program.receiving_program] = i
             i += 1
-            custom_d3["nodes"].append({"name": program.receiving.program_name,
+            dynamic_d3["nodes"].append({"name": program.receiving.program_name,
                                        "group": program.receiving.type_id})
 
     ratios = db.session.query(Ratio).join(Program, Program.program_id == Ratio.outgoing_program).all()
 
     for ratio in ratios:
 
-        custom_d3["links"].append({"source": all_programs[ratio.outgoing_program],
+        dynamic_d3["links"].append({"source": all_programs[ratio.outgoing_program],
                                    "target": all_programs[ratio.receiving_program],
                                    "value": 1})
 
-    return jsonify(custom_d3)
+    return jsonify(dynamic_d3)
+
+
+@app.route("/custom-d3.json")
+def d3_info():
+    """ """
+    if "user" in session:
+        user_id = session["user"]
+
+        # User-specific data
+        outgoing = db.session.query(Ratio)\
+                             .distinct(Ratio.outgoing_program)\
+                             .join(Balance, Balance.program_id == Ratio.outgoing_program)\
+                             .filter(Balance.user_id == user_id).all()
+
+        receiving = db.session.query(Ratio)\
+                              .distinct(Ratio.receiving_program)\
+                              .join(Balance, Balance.program_id == Ratio.receiving_program)\
+                              .filter(Balance.user_id == user_id).all()
+
+        user_programs = {}
+        i = 0
+
+        custom_d3 = {}
+        custom_d3["nodes"] = []
+        custom_d3["links"] = []
+
+        # Refactor with eager-load
+
+        for program in receiving:
+            if program.receiving_program not in user_programs:
+                user_programs[program.receiving_program] = i
+                i += 1
+                custom_d3["nodes"].append({"name": program.receiving.program_name,
+                                           "group": program.receiving.type_id,
+                                           "img": program.receiving.vendor.img})
+
+        # O(n^2) refactor if possible
+        for program_from in outgoing:
+            if program_from.outgoing_program not in user_programs:
+                user_programs[program_from.outgoing_program] = i
+                i += 1
+                custom_d3["nodes"].append({"name": program_from.outgoing.program_name,
+                                           "group": program_from.outgoing.type_id,
+                                           "img": program_from.outgoing.vendor.img})
+
+            for program_to in receiving:
+                ratio = Ratio.query.filter((Ratio.outgoing_program == program_from.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
+                if ratio:
+                    custom_d3["links"].append({"source": user_programs[ratio.outgoing_program],
+                                               "target": user_programs[ratio.receiving_program],
+                                               "value": 1})
+        return jsonify(custom_d3)
+
+    flash("Please sign in first")
+    return redirect("/login")
 
 
 @app.route("/ratio-info")
@@ -190,11 +245,6 @@ def return_ratio():
 
             receiving["program_id"] = program_id
             receiving["program_name"] = program_name
-
-            print "*" * 40
-            print outgoing
-            print receiving
-            print "*" * 40
 
             return jsonify(receiving)
 
@@ -279,25 +329,13 @@ def transfer_balance():
 
         existing_balance_to = Balance.query.filter((Balance.program_id == receiving) & (Balance.user_id == user_id)).first()
 
-        try:
-            outgoing_ratio = Ratio.query.filter((Ratio.outgoing_program == outgoing) & (Ratio.receiving_program == receiving)).one()
-            print "*" * 40
-            print outgoing_ratio
-            print "*" * 40
+        outgoing_ratio = Ratio.query.filter((Ratio.outgoing_program == outgoing) & (Ratio.receiving_program == receiving)).one()
 
-            numerator = outgoing_ratio.numerator
-            denominator = outgoing_ratio.denominator
-
-            print "*" * 40
-            print numerator, denominator
-            print "*" * 40
-        except:
-            flash("There's no ratio for this yet! Please submit your input in the feedback form")
-            redirect("/login")
+        numerator = outgoing_ratio.numerator
+        denominator = outgoing_ratio.denominator
 
         if amount % denominator != 0:
-            flash("Please enter a transferable amount. See ratio on the dashboard view")
-            redirect("/#home")
+            return "Please enter a transferable amount. See ratio above"
 
         existing_balance_to.current_balance = existing_balance_to.current_balance + amount * (numerator / denominator)
         existing_balance_from.current_balance = existing_balance_from.current_balance - amount
@@ -307,6 +345,7 @@ def transfer_balance():
 
         db.session.commit()
 
+        # to update DOM through jQuery
         # return json of outgoing program name, receiving program name, and respective balances
 
         transferred = {}
@@ -322,9 +361,6 @@ def transfer_balance():
                                     "current_balance": existing_balance_to.current_balance,
                                     "updated_at": existing_balance_to.updated_at,
                                     }
-        print "*" * 40
-        print transferred
-        print "*" * 40
 
         return jsonify(transferred)
 
