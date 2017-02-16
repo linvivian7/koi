@@ -47,7 +47,7 @@ def homepage():
                 db.session.commit()
 
                 flash("registered!")
-                return redirect('/map')
+                return redirect('/')
 
             else:
                 flash("Please enter a valid email!")
@@ -124,31 +124,38 @@ def show_login():
 def d3_info():
     """ """
 
+    all_programs = {}
+    i = 0
+
     custom_d3 = {}
-
     custom_d3["nodes"] = []
-
     custom_d3["links"] = []
 
-    programs = Program.query.all()
+    outgoing = db.session.query(Ratio).distinct(Ratio.outgoing_program).all()
 
-    for program in programs:
-        custom_d3["nodes"].append({"name": program.program_name,
-                                   "group": program.type_id})
+    for program in outgoing:
+        if program.outgoing_program not in all_programs:
+            all_programs[program.outgoing_program] = i
+            i += 1
+            custom_d3["nodes"].append({"name": program.outgoing.program_name,
+                                       "group": program.outgoing.type_id})
 
-    ratios = db.session.query(Ratio.outgoing_program,
-                              Ratio.receiving_program).join(Program, Program.program_id == Ratio.outgoing_program).all()
+    receiving = db.session.query(Ratio).distinct(Ratio.receiving_program).all()
 
-    # print "*" * 40
-    # print ratios
-    # print "*" * 40
+    for program in receiving:
+        if program.receiving_program not in all_programs:
+            all_programs[program.receiving_program] = i
+            i += 1
+            custom_d3["nodes"].append({"name": program.receiving.program_name,
+                                       "group": program.receiving.type_id})
 
-    for outgoing, receiving in ratios:
-        custom_d3["links"].append({"source": outgoing-1,
-                                   "target": receiving-1,
+    ratios = db.session.query(Ratio).join(Program, Program.program_id == Ratio.outgoing_program).all()
+
+    for ratio in ratios:
+
+        custom_d3["links"].append({"source": all_programs[ratio.outgoing_program],
+                                   "target": all_programs[ratio.receiving_program],
                                    "value": 1})
-
-    print custom_d3
 
     return jsonify(custom_d3)
 

@@ -1,5 +1,9 @@
 $(document).ready(function(){
 
+    var url = "/custom-d3.json";
+
+    var dispatcher = d3.dispatch('jsonLoad');
+
     $("a").on('click', function() {
         if (window.location.href === "http://localhost:5000/#visual") {
            $("#user_d3").remove();
@@ -7,22 +11,16 @@ $(document).ready(function(){
     });
 
    $('a[href="#visual"]').on("click", (function(){
-       getCustomD3();
+       renderD3();
    }));
 
     $(window).on('load',function(){
         if (window.location.href === "http://localhost:5000/#visual") {
-            getCustomD3();
+            renderD3(url);
         }
     });
 
-
-    function getCustomD3() {
-        $.get('/custom-d3.json', renderD3);
-    }
-
-    function renderD3(results, error, root) {
-        debugger;
+    function renderD3(url) {
     //Constants for the SVG
     var width = 800,
         height = 400;
@@ -65,10 +63,10 @@ $(document).ready(function(){
         }
     //-- End insert for pinning
 
-
     //Read the data from JSON 
-    d3.json(results, function(error, json) {
+    d3.json(url, function(error, json) {
         if (error) throw error;
+        debugger;
 
     //Creates the json data structure out of the json data
     force.nodes(json.nodes)
