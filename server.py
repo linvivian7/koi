@@ -1,30 +1,15 @@
 import os
-import json
 import re
-from datetime import datetime, tzinfo, timedelta
-
-
-class UTC(tzinfo):
-    def utcoffset(self, dt):
-        return timedelta(0)
-
-    def tzname(self, dt):
-        return "UTC"
-
-    def dst(self, dt):
-        return timedelta(0)
-
-utc = UTC()
 
 from jinja2 import StrictUndefined
-from flask import Flask, render_template, request, session, flash, redirect
-from flask import make_response, jsonify, send_file
+from flask import Flask, render_template, request, session, flash, redirect, jsonify
 from flask_bcrypt import Bcrypt
 from flask_moment import Moment
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from model import connect_to_db, db, User, Ratio, Balance, Program, Action, Transfer, TransactionHistory
+from model import connect_to_db, db, User, Ratio, Balance, Program, TransactionHistory
+from model import Transfer
 
 
 app = Flask(__name__)
@@ -90,11 +75,18 @@ def homepage():
         return render_template("homepage.html")
 
 
-@app.route('/map')
-def map():
-    """Return mapping of reward programs."""
+@app.route('/about')
+def about_page():
+    """Return about page."""
 
-    return render_template("/mapping.html")
+    return render_template("/about.html")
+
+
+@app.route('/contact')
+def contact_page():
+    """Return contact page and feedback form."""
+
+    return render_template("/contact.html")
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -132,7 +124,33 @@ def show_login():
 def d3_info():
     """ """
 
-    return 'static/map.json'
+    custom_d3 = {}
+
+    custom_d3["nodes"] = []
+
+    custom_d3["links"] = []
+
+    programs = Program.query.all()
+
+    for program in programs:
+        custom_d3["nodes"].append({"name": program.program_name,
+                                   "group": program.type_id})
+
+    ratios = db.session.query(Ratio.outgoing_program,
+                              Ratio.receiving_program).join(Program, Program.program_id == Ratio.outgoing_program).all()
+
+    # print "*" * 40
+    # print ratios
+    # print "*" * 40
+
+    for outgoing, receiving in ratios:
+        custom_d3["links"].append({"source": outgoing-1,
+                                   "target": receiving-1,
+                                   "value": 1})
+
+    print custom_d3
+
+    return jsonify(custom_d3)
 
 
 @app.route("/ratio-info")

@@ -67,6 +67,7 @@ class Program(db.Model):
 
     program_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.vendor_id'), nullable=False)
+    type_id = db.Column(db.Integer, db.ForeignKey('program_types.type_id'), nullable=False)
     program_name = db.Column(db.String(32), nullable=False, unique=True)
 
     vendor = db.relationship('Vendor', backref=db.backref('programs', order_by=program_id))
