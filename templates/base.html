@@ -21,8 +21,8 @@
     <link rel="stylesheet"
           href="/static/bootstrap-3.3.4/css/bootstrap.css"/>
     <script src="/static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
-    <link rel="stylesheet"
-          href="/static/css/googlefonts.css">
+    <link rel="stylesheet" 
+          href="https://fonts.googleapis.com/css?family=Lato" >
     <link rel="stylesheet" href="/static/css/styles.css"/>
 
 </head>
@@ -32,41 +32,6 @@
   {% endblock %}
 
 <body>
-
-<div class="navbar navbar-inverse navbar-static-top">
-    <div class="container-fluid">
-
-        <div class="navbar-header">
-          <button type="button" 
-                  class="navbar-toggle" 
-                  data-toggle="collapse" 
-                  data-target=".navbar-collapse"
-                  aria-expanded="false"
-                  aria-controls="navbar">>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span> 
-          </button>
-            <a class="navbar-brand" id="brand" href="/">Koi</a>
-        </div>
-
-        <div class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-              <li><a href="/about">About</a></li>
-            {% if "user" not in session %}
-              <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Log In</a><li>
-            {% endif %}
-          </ul>
-       
-          <ul class="nav navbar-nav navbar-right">
-              <li><a href="/contact">Contact Us</a></li>
-            {% if "user" in session %}
-              <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
-            {% endif %}
-          </ul>
-        </div>
-    </div>
-</div>
 
 <div class="container">
 

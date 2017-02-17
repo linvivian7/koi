@@ -1,185 +1,136 @@
-/* homepage */
-
-navbar-header {
-  width: 30px;
-  float: left;
-  margin-top: 7px;
-  margin-right: 7px;
-}
-
-navbar-right {
-  margin-right: 30px;
-}
-
-/*"already have an account? and don't have an account?"*/
-h5 {
-  font-weight: bold;
-  background:rgba(255,255,255,0.6);
-  border-radius: 25px;
-  text-align: center;
-}
+/* landing page */
 
 html {
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
-
-#about-page-div {
-  background-color:rgba(255,255,255,0.6);
-  height: 80px;
-  text-align: center;
-}
-
-#contact-div {
-  height: 80px;
-  text-align: center;
-  max-width: 600px;
-  margin: 5em auto 0 auto; 
-}
-
 
 .header {
   display: table;
   position: relative;
   width: 100%;
   height: 100%;
-  background: url(/static/img/home2.jpg) no-repeat center center;
+  background: url(/static/img/home.jpg) no-repeat center center;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   background-size: cover;
   -o-background-size: cover;
 }
 
-.form-signup {
-  max-width: 330px;
-  margin: 5em auto 0 auto;  /* TRBL */
+.intro-container {
+  margin-top: 12em;
 }
 
-/* login form */
-
-.form-signin {
-  max-width: 330px;
-  margin: 5em auto 0 auto;  /* TRBL */
-}
-
-#bottom-padding {
-  margin-top: 150px;
-}
-
-table {
-  font-family: serif;
-  font-size: 13px;
-  table-layout: fixed;
-}
-
-#update-balance-form {
-  font-family: serif;
-  font-size: 13px;
-}
-
-#transfer-form {
-  font-family: serif;
-  font-size: 13px;
-  margin-bottom: -0.5em;
-  color: #3d5b8c;
-}
-
-#home label {
-  max-width: 700px;
-  margin: 2em auto 0 auto;  /* TRBL */
-  font-family: serif;
-  font-size: 13px;
-}
-
-#home select {
-  font-family: serif;
-  font-size: 13px;
-}
-
-
-#home input {
-  font-family: serif;
-  font-size: 13px;
-}
-
-input label {
-  float:right;
-  margin:5px;
-}
-
-.glyphicon-minus-sign {
-  color: #b45151;
-}
-
-datalist {
-  font-family: serif;
-}
-
-#transaction-history_wrapper {
-  overflow-x: scroll;
-  overflow-y: scroll;
-  white-space: nowrap;
-  font-family: serif;
-  font-size: 13px;
-}
-
-#program-balance_wrapper {
-  overflow-x: scroll;
-  white-space: nowrap;
-  font-family: serif;
-  font-size: 13px;
-}
-
-#program-balance {
-  table-layout: auto;
-}
-
-.refresh {
-  display: inline-block;
-  vertical-align: middle;
-  margin-top: 25px;
-  background-color: #5d9451;
+.intro-message {
+  font-family: 'Lato', sans-serif;
+  margin-top: 5em;
+  color: ghostwhite;
+  max-width: 380px;
+  margin: auto;
   border-radius: 25px;
+  border: 1px solid #FFFFFF;
+  padding: 2em; 
+}
+
+.intro-message > h1 {
+  margin: 0;
+  font-size: 5em;
+}
+
+.intro-message > h4 {
+  margin: 15px 0 0 0;
+}
+
+#login-btn {
+  float: right;
+  margin: 0.5em 0 0 2em;
+  border: 1px solid #FFFFFF;
+  background: transparent;
+  font-weight: bold;
+}
+
+#login-btn:hover {
+  background-color: #12133d;
+  margin: 0.5em 0 0 2em;
+  border: 1px solid transparent;
+}
+
+
+/* login page */
+
+.modal {
+  margin: 10em auto;
+  border-radius: 20px;
+}
+
+.login-form {
+  max-width: 330px;
+  margin: 5em 0;
+}
+
+#submit-login-btn {
+  float: right;
+  margin: 0 0 1em 2em;
+  border: 1px solid transparent;
+  background: #12133d;
+  font-weight: bold;
+}
+
+#submit-login-btn:hover {
+  margin: 0 0 1em 2em;
+}
+
+.modal-open[style] {
+  padding-right: 0 !important;
+}
+
+.modal-open .modal,.btn:focus {
+  outline:none !important;
+  overflow: hidden;
+}
+
+.modal-content {
+    max-width: 450px;
+    margin: auto;
+    color: white;
+    font-weight: bold;
+    padding: 10px 10px 10px 35px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+        max-height: 450px;
+  background: url(/static/img/modal1.jpg) no-repeat center center;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+  -o-background-size: cover;
+}
+
+.modal-content img {
+    max-width: 600;
+    margin-top: -130;
+    border-radius: 61px;
+    position: relative;
+    left: -48%;
+}
+
+.modal h5 {
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
+  font-weight: lighter;
+}
+
+.modal-body {
+  position: relative;
+  padding: 15px;
+  height: 325;
+}
+
+.modal a {
   color: #FFFFFF;
-  border: none;
-  font-family: serif;
-  font-size: 13px;
+  font-weight: 900;
+  text-shadow: 0.2px 0.2px #DEDEDE;
+  text-decoration: italic;
 }
 
-.panel-heading {
-  font-family: serif;
-  font-size: 13px;
-}
-
-.navbar {
-  background:rgba(255,255,255,0.1);
-  background-image: none;
-  border-bottom: none;
-  background-repeat: no-repeat;
-  font-size: 15px;
- }
-
- #brand {
-  font-size: 40px;
-  font-family: 'Raleway', sans-serif;
-  color: #FFFFFF;
- }
-
-.navbar .brand, .navbar .nav > li > a {
-  color: #DDDDDD;
-}
-.navbar .brand, .navbar .nav > li > a:hover {
-  color: #FFFFFF;
-}
-
-#transferBtn {
-  display: inline-block;
-  vertical-align: middle;
-  margin-top: 25px;
-  background-color: #5381CC;
-  border-radius: 25px;
-  color: #FFFFFF;
-  border: none;
-  font-family: serif;
-  font-size: 15px;
-  padding: 2.2px 10px;
-}

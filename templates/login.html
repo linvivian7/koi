@@ -7,10 +7,8 @@
 {% block body %}
 
 <body class="header">
-
-  <div>
-
-    <form class="form-signin" action="/login" method="POST" autocomplete="off">
+  <div class="login-container">
+    <form class="login-form" action="/login" method="POST" autocomplete="off">
 
         <div class="form-group">
             <label for="email-field" class="sr-only">Email Address</label>
@@ -35,7 +33,7 @@
           <span class="glyphicon glyphicon-send fa-fw"></span>  Sign In
         </button>
 
-        <h5>Don't have an account? Click <a href="/">here</a> to sign up</h5>
+        <h5>Don't have an account? Click <a href="/register">here</a> to sign up</h5>
 
     </form>
   </div>
