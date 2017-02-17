@@ -55,8 +55,9 @@ html {
   border: 1px solid transparent;
 }
 
+/*landing page css end*/
 
-/* login page */
+/* login modal */
 
 .modal {
   margin: 10em auto;
@@ -70,7 +71,7 @@ html {
 
 #submit-login-btn {
   float: right;
-  margin: 0 0 1em 2em;
+  margin: 1em 0 1em 2em;
   border: 1px solid transparent;
   background: #12133d;
   font-weight: bold;
@@ -133,4 +134,26 @@ html {
   text-shadow: 0.2px 0.2px #DEDEDE;
   text-decoration: italic;
 }
+
+.alert-warning {
+  margin: 1em 0 -3.5em 0;
+}
+
+.login-section {
+  margin-top: 50px;
+}
+
+#password-field {
+  margin-top: 1em;
+}
+
+.form-group {
+    margin-bottom: 1em;
+}
+
+
+/* login modal end */
+
+/*register page*/
+
 

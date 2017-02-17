@@ -28,6 +28,27 @@ app.jinja_env.undefined = StrictUndefined
 def homepage():
     """Return homepage."""
 
+    return render_template("homepage.html")
+
+
+# For processing form only (AJAX)
+@app.route('/contact', methods=['POST'])
+def contact_page():
+    """ Store information from feedback form."""
+
+    email = request.form.get('email')
+    feedback_content = request.form.get('feedback')
+
+    feedback = Feedback(email=email, feedback=feedback_content)
+    db.session.add(feedback)
+    db.session.commit()
+
+    return "Your feedback has been received!"
+
+
+@app.route("/register", methods=['GET', 'POST'])
+def register_user():
+
     if request.method == 'POST':
 
         if "user" not in session:
@@ -37,7 +58,7 @@ def homepage():
             pw_hash = bcrypt.generate_password_hash(request.form.get('password'))
 
             if User.query.filter_by(email=email).first():
-                flash("the account already exists")
+                flash("This email has already been registered")
                 return redirect('/')
 
             else:
@@ -58,104 +79,42 @@ def homepage():
                     return redirect('/')
 
         else:
-            user_id = session["user"]
-
-            outgoing_program = request.form.get('program-1')
-            receiving_program = request.form.get('program-2')
-            numerator = request.form.get('numerator')
-            denominator = request.form.get('denominator')
-            feedback_content = request.form.get('feedback')
-
-            feedback = UserFeedback(user_id=user_id,
-                                    outgoing_program=outgoing_program,
-                                    receiving_program=receiving_program,
-                                    numerator=numerator,
-                                    denominator=denominator,
-                                    feedback=feedback_content)
-
-            db.session.add(feedback)
-            db.session.commit()
-
-            flash("Your form has been submitted")
-            return redirect("/")
+            flash("Please log out prior to making a new account")
+            return render_template("dashboard.html")
 
     else:
-        if "user" in session:
-            user_id = session["user"]
-            user = User.query.options(db.joinedload('balances')).get(user_id)
-
-            # User-specific data
-            balances = user.balances
-            transactions = TransactionHistory.query.filter_by(user_id=user_id).all()
-
-            outgoing = db.session.query(Ratio)\
-                                 .distinct(Ratio.outgoing_program)\
-                                 .join(Balance, Balance.program_id == Ratio.outgoing_program)\
-                                 .filter(Balance.user_id == user_id).all()
-
-            # for update-form all programs generation
-            programs = Program.query.all()
-
-            return render_template("homepage.html", programs=programs, balances=balances, user=user, activities=transactions, outgoing=outgoing)
-
-        else:
-            return render_template("homepage.html")
+        return render_template("register.html")
 
 
-@app.route('/about')
-def about_page():
-    """Return about page."""
-
-    return render_template("/about.html")
-
-
-@app.route('/contact')
-def contact_page():
-    """Return contact page and feedback form."""
-
-    if request.method == 'POST':
-        email = request.form.get('email')
-        feedback_content = request.form.get('feedback')
-
-        feedback = Feedback(email=email, feedback=feedback_content)
-        db.session.add(feedback)
-        db.session.commit()
-
-        flash("Your feedback has been received!")
-        return redirect("/")
-
-    return render_template("/contact.html")
-
-
-@app.route("/login", methods=['GET', 'POST'])
+# For processing form only (AJAX)
+@app.route("/login", methods=['POST'])
 def show_login():
     """Show login form."""
 
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+    email = request.form.get('email')
+    password = request.form.get('password')
 
-        # Check user existence in database
-        try:
-            User.query.filter_by(email=email).one()
-
-        except NoResultFound:
-            flash("This email has not been registered")
-            return redirect('/login')
-
+    # Check user existence in database
+    try:
         user = User.query.filter_by(email=email).one()
 
-        # Validate log in information
-        if bcrypt.check_password_hash(user.password, password):
-            user.authenticated = True
-            session["user"] = user.user_id
+        print "*" * 30
 
-            return redirect("/")
+        print user
 
-        else:
-            flash("This is not a valid email/password combination")
+    except NoResultFound:
+        return "This email has not been registered"
 
-    return render_template("login.html")
+    user = User.query.filter_by(email=email).one()
+
+    # Validate log in information
+    if bcrypt.check_password_hash(user.password, password):
+        session["user"] = user.user_id
+
+        return "You've been succesfully logged in"
+
+    else:
+        return "This is not a valid email/password combination"
 
 
 @app.route("/dynamic-d3.json")
