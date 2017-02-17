@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-    var url = "/dynamic-d3.json";
+    var url = "/custom-d3.json";
 
     var dispatcher = d3.dispatch('jsonLoad');
 
