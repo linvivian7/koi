@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  <title>
+  Koi Dashboard
+  </title>
+{% endblock%}}
+
+{% block body %}
+  <div class="dashboard-wrapper">
+    <div class="row">
+      <div class="navbar navbar-inverse navbar-fixed-left">
+        
+        <a class="navbar-brand" href="/dashboard">Koi</a>
+
+      <ul class="nav navbar-nav">
+        <li><a href="/dashboard">Main<span></span></a></li>
+        <li><a href="/activity">Activity<span></span></a></li>
+        <li><a href="/optimize">Optimize<span></span></a></li>
+        <li><a href="/logout">Log Out<span></span></a></li>
+      </ul>
+
+      </div>
+    </div>
+  </div>
+
+  <div> 
+      <div class="row"  id="activity-section">
+          <section class="col-xs-9 col-xs-offset-2">
+              <table class="table table-hover table-striped display" id="transaction-history"cellspacing="0">
+
+                <thead>
+                    <tr>
+                        <th class="nitems"></th>
+                        <th>Type</th>
+                        <th>Program</th>
+                        <th>Beginning</th>
+                        <th>Change</th>
+                        <th>Ending</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th>Type</th>
+                        <th>Program</th>
+                        <th>Beginning</th>
+                        <th>Change</th>
+                        <th>Ending</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </tfoot>
+
+                {% if activities %}
+                    {% for activity in activities | sort(attribute="created_at", reverse=True) %}
+                        <tr id="{{ activity.program_id }}">
+                            <td class="index">{{ loop.index }}</td>
+                            <td class="action">{{ activity.action.action_type }}</td>                     
+                            <td class="program_name">{{ activity.program.program_name }}</td>
+                            <td class="beginning">
+                            {% if activity.beginning_balance == 0 %}
+                                - 
+                            {% else %}
+                                {{ "{:,}".format(activity.beginning_balance) }}
+                            </td>
+                            {% endif %}  
+
+
+                            <td class="change">
+                            {% if (activity.ending_balance - activity.beginning_balance) < 0 %}
+                                ({{ "{:,}".format((activity.beginning_balance - activity.ending_balance)) }})</td>
+                            {% else %}
+                                {{ "{:,}".format(activity.ending_balance - activity.beginning_balance) }}</td>
+                            {% endif %}
+
+                            <td class="ending">
+                            {% if activity.ending_balance == 0 %}
+                                - 
+                            {% else %}
+                                {{ "{:,}".format(activity.ending_balance) }}
+                            </td>
+                            {% endif %}  
+                            <td class="timestamp">{{ moment(activity.created_at).format('M/D/YYYY, h:mm a') }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+              </table>
+          </section>
+      </div>
+    </div>
+
+  <script src="/static/js/dashboard_activity.js"></script>
+{% endblock%}}

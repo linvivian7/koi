@@ -9,35 +9,37 @@
 }
 
 svg {
-    display:block;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: #FFFFFF;
+  display:block;
+  margin-left: auto;
+  margin-right: auto;
+  background-color:rgba(255,255,255,0.6);
+  border-radius: 4px;
 }
 
 #user_d3 {
-    width: 800;
-    margin-left: 0;
-    margin-right: auto;
+  margin-left: 0;
+  margin-right: auto;
 }
 
 d3-tip {
-    line-height: 1;
-    color: black;
+  line-height: 5;
+  color: black;
 }
 
 #d3-div {
-    display: inline-block;
-    position: relative;
-    width: 90%;
-    padding-bottom: 40%; /* aspect ratio */
-    vertical-align: top;
-    overflow: hidden;
+  display: inline-block;
+  position: relative;
+  width: 80%;
+  padding-bottom: 40%; /* aspect ratio */
+  vertical-align: top;
+  overflow: hidden;
+  margin-top: 5%;
 }
 
 .svg-content-responsive {
-    display: inline-block;
-    position: absolute;
-    top: 10px;
-    left: 0;
+  display: inline-block;
+  position: absolute;
+  width: 800;
+  top: 10px;
+  left: 0;
 }

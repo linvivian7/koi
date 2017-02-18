@@ -12,8 +12,8 @@
     <link rel="stylesheet" href="/static/css/D3.css"/>
     
     <!-- datatable-related -->
-    <link rel="stylesheet" type="text/css" href="static/DataTables/datatables.min.css"/>
-    <script type="text/javascript" src="static/DataTables/datatables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
 
     <!-- momentJS for timestamp rendering -->
     <script src="/static/js/moment.js"></script>
@@ -33,9 +33,6 @@
       TITLE GOES HERE VIA INHERITANCE
   {% endblock %}
 
-<body>
-
-<div class="container">
 
   <!-- Show flashed messages -->
   {% with messages = get_flashed_messages() %}
@@ -49,7 +46,5 @@
       BODY OF PAGE GOES HERE VIA INHERITANCE
   {% endblock %}
 
-</div>
 
-</body>
 </html>

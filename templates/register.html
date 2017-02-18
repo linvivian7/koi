@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  <title>Register</title>
+{% endblock%}}
+
+{% block body %}
+<div class="container">
+  <body class="header">
+    <div class="signup-container">
+      <section class="register-section col-xs-6 col-xs-offset-3">
+        <form id="signup-form" action="/register" method="POST" autocomplete="off">
+
+            <div class="form-group">
+              <label for="fname-field" class="sr-only">First Name</label>
+              <input type="text"
+                     name="fname"
+                     id="fname-field"
+                     class="form-control input-lg"
+                     placeholder="First Name"
+                     required
+                     autofocus>
+            </div>
+
+            <div class="form-group">
+              <label for="lname-field" class="sr-only">Last Name</label>
+              <input type="text"
+                     name="lname"
+                     id="lname-field"
+                     class="form-control input-lg"
+                     placeholder="Last Name"
+                     required
+                     autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="email-field" class="sr-only">Email Address</label>
+                <input type="email"
+                       name="email"
+                       id="email-field"
+                       class="form-control input-lg"
+                       placeholder="Email Address"
+                       required
+                       autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password-field" class="sr-only">Password</label>
+                <input type="password"
+                       name="password"
+                       id="password-field"
+                       class="form-control input-lg"
+                       placeholder="Password"
+                       required>
+            </div>
+
+            <button class="btn btn-lg btn-primary btn-block"
+                    id="submit-signup-btn"
+                    type="submit" disabled>
+              <span class="glyphicon glyphicon-send fa-fw"></span> Sign Up
+            </button>
+
+            <h5>Already have an account?
+                Log in from our &nbsp;<a href="/">homepage</a>. </h5>
+
+        </form>
+      </section>
+    </div>
+    <script src="/static/js/register.js"></script>
+  </body>
+</div>
+{% endblock %}

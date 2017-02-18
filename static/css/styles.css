@@ -91,15 +91,15 @@ html {
 }
 
 .modal-content {
-    max-width: 450px;
-    margin: auto;
-    color: white;
-    font-weight: bold;
-    padding: 10px 10px 10px 35px;
-    -moz-border-radius: 15px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-        max-height: 450px;
+  max-width: 450px;
+  margin: auto;
+  color: white;
+  font-weight: bold;
+  padding: 10px 10px 10px 35px;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  margin-bottom: 10px;
+  max-height: 450px;
   background: url(/static/img/modal1.jpg) no-repeat center center;
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -108,11 +108,11 @@ html {
 }
 
 .modal-content img {
-    max-width: 600;
-    margin-top: -130;
-    border-radius: 61px;
-    position: relative;
-    left: -48%;
+  max-width: 600;
+  margin-top: -130;
+  border-radius: 61px;
+  position: relative;
+  left: -48%;
 }
 
 .modal h5 {
@@ -156,4 +156,177 @@ html {
 
 /*register page*/
 
+.register-section {
+  margin-top: 20%;
+  border-radius: 25px;
+  border: 1px solid #FFFFFF;
+  padding: 2em; 
+  background-color: rgba(18, 19, 61,0.2);
+}
+
+.register-section h5 {
+  color: white;
+  font-family: 'Lato', sans-serif;
+}
+
+#signup-form {
+  max-width: 400px;
+  margin: 3em auto 0 auto;  /* TRBL */
+}
+
+#submit-signup-btn {
+  float: right;
+  margin: 0.5em 0 1em 2em;
+  border: 1px solid transparent;
+  background: #12133d;
+  font-weight: bold;
+}
+
+h5 a {
+  font-family: 'Lato', sans-serif;
+  font-weight: bolder;
+}
+
+
+label.error {
+    color: white;
+}
+
+
+/*register page end*/
+
+/*main dashboard */
+
+body {
+  background-color: #EDEDED;
+}
+
+.navbar-inverse .navbar-brand {
+  color: ghostwhite;
+  margin: 1em .5em 1em .8em;
+}
+
+a.navbar-brand {
+  font-size: 3em;
+  font-family: 'Lato', sans-serif;
+}
+
+.navbar-fixed-left {
+  width: 180px;
+  position: fixed;
+  border-radius: 0;
+  height: 100%;
+  background: #12133d;
+  text-align: center;
+  font-size: 1.1em;
+  font-family: 'Lato', sans-serif;
+}
+
+.navbar-fixed-left .navbar-nav > li {
+  width: 139px;
+  color: ghostwhite;
+}
+
+
+.navbar-inverse .navbar-nav > li > a {
+  color: ghostwhite;
+  margin-left: 2.5em;
+  margin-bottom: 2em;
+  margin-top: 0;
+}
+
+a span {
+  display:block;
+  border-bottom:3px solid white;
+  width: 50%;
+  padding-bottom: 4px;
+  margin-left: 1.2em;
+}
+
+.dashboard-wrapper {
+  min-width:500px;
+  padding: 0 15px;
+}
+
+.navbar-fixed-left + .container {
+  padding-left: 160px;
+}
+
+.d3-section {
+  text-align: center;
+}
+
+
+/*main dashboard end*/
+
+#update-balance-form {
+  font-family: serif;
+  font-size: 13px;
+}
+
+/*program-balance table*/
+
+.glyphicon-minus-sign {
+  color: #b45151;
+}
+
+datalist {
+  font-family: serif;
+}
+
+#program-balance_wrapper {
+  overflow-x: scroll;
+  white-space: nowrap;
+  font-family: serif;
+  font-size: 13px;
+}
+
+.panel-heading {
+  font-family: serif;
+  font-size: 13px;
+}
+
+#program-balance {
+  table-layout: auto;
+}
+
+
+/*activity dashboard*/
+
+#transaction-history_wrapper {
+  margin-top: 5%;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: serif;
+  font-size: 13px;
+}
+
+#transaction-history, #program-balance {
+  font-family: serif;
+  font-size: 13px;
+  table-layout: fixed;
+  width: 90%;
+  background-color: white;
+  text-align: center;
+}
+
+.nitems {
+  width: 8px;
+}
+
+.Type-search {
+  width: 80px;
+}
+
+.current_bal_col {
+  width: 100px;
+}
+
+.Program-search, .Beginning-search, .Change-search, .Ending-search {
+  width: 120px;
+}
+
+.Timestamp-search {
+  width: 130px;
+}
 

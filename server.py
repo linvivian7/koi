@@ -8,20 +8,20 @@ from flask_moment import Moment
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from model import connect_to_db, db, User, Ratio, Balance, Program, TransactionHistory
-from model import Transfer, Action, Feedback, UserFeedback
-
+from model import connect_to_db, db, User, Ratio, Balance, Program
+from model import Transfer, Action, Feedback, UserFeedback, TransactionHistory
 
 app = Flask(__name__)
-moment = Moment(app)
+app.secret_key = os.environ['APP_SECRET']
 
 app.config["CACHE_TYPE"] = 'null'
 bcrypt = Bcrypt(app)
 
-# Required to use Flask sessions and the debug toolbar
-app.secret_key = os.environ['APP_SECRET']
+moment = Moment(app)
 
 app.jinja_env.undefined = StrictUndefined
+
+###### Homepage-related routes ######
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -32,18 +32,41 @@ def homepage():
 
 
 # For processing form only (AJAX)
-@app.route('/contact', methods=['POST'])
-def contact_page():
-    """ Store information from feedback form."""
+@app.route("/login", methods=['POST'])
+def show_login():
+    """Show login form."""
 
     email = request.form.get('email')
-    feedback_content = request.form.get('feedback')
+    password = request.form.get('password')
 
-    feedback = Feedback(email=email, feedback=feedback_content)
-    db.session.add(feedback)
-    db.session.commit()
+    # Check user existence in database
+    try:
+        user = User.query.filter_by(email=email).one()
 
-    return "Your feedback has been received!"
+    except NoResultFound:
+        return "This email has not been registered"
+
+    user = User.query.filter_by(email=email).one()
+
+    # Validate log in information
+    if bcrypt.check_password_hash(user.password, password):
+        session["user"] = user.user_id
+
+        return "You've been succesfully logged in"
+
+    else:
+        return "This is not a valid email/password combination"
+
+
+@app.route("/logout")
+def process_logout():
+    """Show logout page."""
+
+    session.pop('user')
+
+    # flash("You've been succesfully logged out!")
+
+    return redirect("/")
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -52,9 +75,9 @@ def register_user():
     if request.method == 'POST':
 
         if "user" not in session:
-            fname = request.form.get('fname')
-            lname = request.form.get('lname')
-            email = request.form.get('email')
+            fname = request.form.get('fname').rstrip()
+            lname = request.form.get('lname').rstrip()
+            email = request.form.get('email').rstrip()
             pw_hash = bcrypt.generate_password_hash(request.form.get('password'))
 
             if User.query.filter_by(email=email).first():
@@ -87,36 +110,51 @@ def register_user():
 
 
 # For processing form only (AJAX)
-@app.route("/login", methods=['POST'])
-def show_login():
-    """Show login form."""
+@app.route('/contact', methods=['POST'])
+def contact_page():
+    """ Store information from feedback form."""
 
     email = request.form.get('email')
-    password = request.form.get('password')
+    feedback_content = request.form.get('feedback')
 
-    # Check user existence in database
-    try:
-        user = User.query.filter_by(email=email).one()
+    feedback = Feedback(email=email, feedback=feedback_content)
+    db.session.add(feedback)
+    db.session.commit()
 
-        print "*" * 30
+    return "Your feedback has been received!"
 
-        print user
 
-    except NoResultFound:
-        return "This email has not been registered"
+###### User Dashboard routes ######
 
-    user = User.query.filter_by(email=email).one()
+@app.route('/dashboard')
+def user_dashboard():
+    """Return dashboard."""
 
-    # Validate log in information
-    if bcrypt.check_password_hash(user.password, password):
-        session["user"] = user.user_id
+    if "user" in session:
+        user_id = session["user"]
+        user = User.query.options(db.joinedload('balances')).get(user_id)
 
-        return "You've been succesfully logged in"
+        balances = user.balances
 
+        programs = Program.query.all()
+
+        return render_template("dashboard.html", balances=balances, programs=programs)
     else:
-        return "This is not a valid email/password combination"
+        flash("Please log in before navigating to the dashboard")
+        return redirect('/')
 
 
+@app.route('/activity')
+def transaction_history():
+    if "user" in session:
+        user_id = session["user"]
+
+        transactions = TransactionHistory.query.filter_by(user_id=user_id).all()
+
+        return render_template("activity.html", activities=transactions)
+
+
+### D3-related ###
 @app.route("/dynamic-d3.json")
 def all_d3_info():
     """ """
@@ -214,45 +252,10 @@ def d3_info():
     return redirect("/login")
 
 
-@app.route("/ratio-info")
-# @login_required
-def return_ratio():
-    """Return ratio."""
-
-    if "user" in session:
-        user_id = session["user"]
-        outgoing = request.args.get("outgoing")
-        receiving = request.args.get("receiving")
-
-        if receiving:
-            ratio = Ratio.query.filter((Ratio.outgoing_program == outgoing) & (Ratio.receiving_program == receiving)).first()
-            ratio = str(ratio.numerator / ratio.denominator)
-
-            return jsonify(ratio)
-
-        else:
-            receiving = Ratio.query.filter(Ratio.outgoing_program == outgoing)\
-                                   .distinct(Ratio.receiving_program)\
-                                   .join(Balance, Balance.program_id == Ratio.receiving_program)\
-                                   .filter(Balance.user_id == user_id).all()
-
-            program_id = [program.receiving_program for program in receiving]
-
-            program_name = [program.receiving.program_name for program in receiving]
-
-            receiving = {}
-
-            receiving["program_id"] = program_id
-            receiving["program_name"] = program_name
-
-            return jsonify(receiving)
-
-    flash("Please sign in first")
-    return redirect("/login")
+### Balance-related ###
 
 
 @app.route("/update-balance", methods=["POST"])
-# @login_required
 def update_balance():
     """Update user balance."""
 
@@ -289,7 +292,6 @@ def update_balance():
 
 
 @app.route("/remove-balance", methods=["POST"])
-# @login_required
 def remove_balance():
     """Delete user balance."""
 
@@ -311,7 +313,6 @@ def remove_balance():
 
 
 @app.route("/transfer-balance", methods=["POST"])
-# @login_required
 def transfer_balance():
     """transfer user balance from one program to another."""
 
@@ -375,16 +376,40 @@ def transfer_balance():
     return redirect("/login")
 
 
-@app.route("/logout")
-# @login_required
-def process_logout():
-    """Show logout page."""
+@app.route("/ratio-info")
+def return_ratio():
+    """Return ratio."""
 
-    session.pop('user')
+    if "user" in session:
+        user_id = session["user"]
+        outgoing = request.args.get("outgoing")
+        receiving = request.args.get("receiving")
 
-    flash("You've been succesfully logged out!")
+        if receiving:
+            ratio = Ratio.query.filter((Ratio.outgoing_program == outgoing) & (Ratio.receiving_program == receiving)).first()
+            ratio = str(ratio.numerator / ratio.denominator)
 
-    return redirect("/")
+            return jsonify(ratio)
+
+        else:
+            receiving = Ratio.query.filter(Ratio.outgoing_program == outgoing)\
+                                   .distinct(Ratio.receiving_program)\
+                                   .join(Balance, Balance.program_id == Ratio.receiving_program)\
+                                   .filter(Balance.user_id == user_id).all()
+
+            program_id = [program.receiving_program for program in receiving]
+
+            program_name = [program.receiving.program_name for program in receiving]
+
+            receiving = {}
+
+            receiving["program_id"] = program_id
+            receiving["program_name"] = program_name
+
+            return jsonify(receiving)
+
+    flash("Please sign in first")
+    return redirect("/login")
 
 
 if __name__ == "__main__":

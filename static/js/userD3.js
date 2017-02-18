@@ -1,11 +1,11 @@
 $(document).ready(function(){
 
-    var url = "/custom-d3.json";
+    var url = "/dynamic-d3.json";
 
     var dispatcher = d3.dispatch('jsonLoad');
 
     $("a").on('click', function() {
-        if (window.location.href === "http://localhost:5000/#visual") {
+        if (window.location.href === "http://localhost:5000/dashboard") {
            $("#user_d3").remove();
         }
     });
@@ -15,7 +15,7 @@ $(document).ready(function(){
    }));
 
     $(window).on('load',function(){
-        if ((window.location.href === "http://localhost:5000/#visual") ||
+        if ((window.location.href === "http://localhost:5000/dashboard") ||
             (window.location.href === "data:text/html,chromewebdata")) {
             renderD3(url);
         }
@@ -23,8 +23,8 @@ $(document).ready(function(){
 
     function renderD3(url) {
     //Constants for the SVG
-    var width = 800,
-        height = 400;
+    var width = 700,
+        height = 350;
 
     //Set up the force layout
     var force = d3.layout.force()

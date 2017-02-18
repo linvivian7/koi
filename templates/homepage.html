@@ -7,79 +7,76 @@
 {% endblock%}}
 
 {% block body %}
-<body class="header">
+<div class="container">
+  <body class="header">
+
+    <div class="intro-container row">
+
+      <section class="intro-message col-xs-5 col-xs-offset-2">
+        <h1>Koi</h1>
+        <h3>Smart, optimal tracking</h3>
+        <h4>We're here to help you achieve your rewards goals. 
+            Koi maps out how the programs relate to each other,
+            so you don't have to.</h4>
+
+        <!-- Modal button for login form -->
+        <button class="btn btn-md btn-primary login-btn" 
+                data-toggle="modal" 
+                data-target="#login-modal"
+                id="login-btn">Get Started
+        </button>
 
 
-  <div class="intro-container row">
+        <!-- Modal -->
+        <div id="login-modal" class="modal fade" role="dialog">
 
-    <section class="intro-message col-xs-5 col-xs-offset-2">
-      <h1>Koi</h1>
-      <h3>Smart, optimal tracking</h3>
-      <h4>We're here to help you achieve your rewards goals. 
-          Koi maps out how the programs relate to each other,
-          so you don't have to.</h4>
+            <!-- Modal content-->
+            <div class="modal-content">
+              <div class="modal-body">
+                <div>
+                   <section class="col-xs-12 login-section">
+                     <form name="login-form" id="login-form" autocomplete="off" method="POST">
 
-      <!-- Modal button for login form -->
-      <button class="btn btn-md btn-primary login-btn" 
-              data-toggle="modal" 
-              data-target="#login-modal"
-              id="login-btn">Get Started
-      </button>
+                      <div class="form-group">
+                          <label for="email-field" class="sr-only">Email Address</label>
+                          <input type="email"
+                                 name="email"
+                                 id="email-field"
+                                 class="form-control input-lg"
+                                 placeholder="Email Address"
+                                 required
+                                 autofocus>
+                      </div>
 
+                      <div class="form-group">
+                          <label for="password-field" class="sr-only">Password</label>
+                          <input type="password"
+                                 name="password"
+                                 id="password-field"
+                                 class="form-control input-lg"
+                                 placeholder="Password"
+                                 required>
+                      </div>
 
-      <!-- Modal -->
-      <div id="login-modal" class="modal fade" role="dialog">
+                      <button class="btn btn-lg btn-primary btn-block" 
+                              id="submit-login-btn" disabled>
+                        <span class="glyphicon glyphicon-send fa-fw"></span>  Sign In
+                      </button>
+                      
+                    </form>
 
-          <!-- Modal content-->
-          <div class="modal-content">
-            <div class="modal-body">
-
-              <div>
-
-            <section class="col-xs-12 login-section">
-
-              <form name="login-form" id="login-form" autocomplete="off" method="POST">
-
-                  <div class="form-group">
-                      <label for="email-field" class="sr-only">Email Address</label>
-                      <input type="email"
-                             name="email"
-                             id="email-field"
-                             class="form-control input-lg"
-                             placeholder="Email Address"
-                             required
-                             autofocus>
-                  </div>
-
-                  <div class="form-group">
-                      <label for="password-field" class="sr-only">Password</label>
-                      <input type="password"
-                             name="password"
-                             id="password-field"
-                             class="form-control input-lg"
-                             placeholder="Password"
-                             required>
-                  </div>
-
-                  <button class="btn btn-lg btn-primary btn-block" 
-                          id="submit-login-btn" disabled>
-                    <span class="glyphicon glyphicon-send fa-fw"></span>  Sign In
-                  </button>
-
-
-              </form>
-            </section>
+                  </section>
+                </div>
+              </div>
             </div>
-            </div>
-          </div>
-        <h5>Don't have an account? Click <a href="/register">here</a> to sign up</h5>
-      </div>
+          <h5>Don't have an account? Click <a href="/register">here</a> to sign up</h5>
+        </div>
+      </section>
 
+    <div>
 
-    </section>
+    <script src="/static/js/homepage.js"></script>
 
-  <div>
- <script src="/static/js/homepage.js"></script>
-</body>
-
+  </body>
+</div>
 {% endblock %}
