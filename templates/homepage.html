@@ -92,12 +92,45 @@
     <header class="about-container row about-header">
 
 
-        <div id="home-d3-div" class="col-xs-12">
-          V<span>i</span>sual<span>i</span>ze</div> 
+        <section id="home-d3-div" class="hidden-xs hidden-sm col-md-6 col-lg-6">
+          V<span>i</span>sual<span>i</span>ze</section> 
         <script src="/static/js/homeD3.js"></script>
 
+      <section id="contact-us-div" class="contact-message col-xs-12 col-sm-12 col-md-6 col-lg-6">
+        Contact Us
 
+        <form class="feedback-form" action="/contact" method="POST" autocomplete="off">
+
+            <div class="form-group">
+                <label for="email-field" class="sr-only">Email Address</label>
+                <input type="email"
+                       name="email"
+                       class="form-control input-lg"
+                       placeholder="Email Address"
+                       required
+                       autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="feedback-field"></label>
+                <textarea rows="10" 
+                          cols="100"
+                          name="feedback"
+                          class="form-control input-lg"
+                          placeholder="We'd love to hear from you!"
+                          autofocus></textarea>
+            </div>
+
+            <button class="btn btn-lg btn-primary btn-block" 
+                    type="submit"
+                    id="submit-feedback-btn">
+              <span class="glyphicon glyphicon-send fa-fw"></span>  Submit
+            </button>
+
+        </form>
+      </section>
     </header>
+
 
 
   </body>

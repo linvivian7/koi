@@ -51,9 +51,9 @@ $(document).ready(function() {
         var shownOutgoing = $("#outgoing").val();
 
         try {
-            var outgoing_id = document.querySelector("#all-outgoing-programs option[value='"+shownOutgoing+"']").dataset.value;
+            var outgoingId = document.querySelector("#all-outgoing-programs option[value='"+shownOutgoing+"']").dataset.value;
             var formValues = {
-                "outgoing": outgoing_id,
+                "outgoing": outgoingId,
             };
 
             $.get("/ratio-info", formValues, function(results) {

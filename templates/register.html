@@ -2,16 +2,12 @@
 
 {% block title %}
   <title>
-  Welcome to Koi
+  Register at Koi
   </title>
 {% endblock%}}
 
 {% block body %}
-<div class="container">
-  <body class="header">
-
-    <div class="intro-container row">
-
+  <body class="intro-header">
       <section class="register-section col-xs-5 col-xs-offset-2">
         <h1>Koi</h1>
 
@@ -44,7 +40,7 @@
 
             <div class="form-group">
                 <label for="email-field" class="sr-only">Email Address</label>
-                <input type="email"
+                <input type="<strong>email</strong>"
                        name="email"
                        id="email-field"
                        class="form-control input-lg"
@@ -73,10 +69,7 @@
 
       </section>
 
-    <div>
-
     <script src="/static/js/register.js"></script>
 
   </body>
-</div>
 {% endblock %}

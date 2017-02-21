@@ -32,7 +32,7 @@ def homepage():
 
 
 # For processing form only (AJAX)
-@app.route("/login", methods=['POST'])
+@app.route('/login', methods=['POST'])
 def show_login():
     """Show login form."""
 
@@ -69,7 +69,7 @@ def process_logout():
     return redirect("/")
 
 
-@app.route("/register", methods=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register_user():
 
     if request.method == 'POST':
@@ -85,7 +85,7 @@ def register_user():
                 return redirect('/')
 
             else:
-                match_obj = re.search(r"(\w+)@(\w+\.\w+)", email)
+                match_obj = re.search(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email)
 
                 if match_obj:
                     user = User(email=email, password=pw_hash, fname=fname, lname=lname)
@@ -134,11 +134,19 @@ def user_dashboard():
         user_id = session["user"]
         user = User.query.options(db.joinedload('balances')).get(user_id)
 
-        balances = user.balances
-
+        # For update-balance form
         programs = Program.query.all()
 
-        return render_template("dashboard.html", balances=balances, programs=programs)
+        # For program-balance table
+        balances = user.balances
+
+        # FOr transfer-balance form
+        outgoing = db.session.query(Ratio)\
+                     .distinct(Ratio.outgoing_program)\
+                     .join(Balance, Balance.program_id == Ratio.outgoing_program)\
+                     .filter(Balance.user_id == user_id).all()
+
+        return render_template("dashboard.html", balances=balances, programs=programs, outgoing=outgoing)
     else:
         flash("Please log in before navigating to the dashboard")
         return redirect('/')
@@ -155,7 +163,7 @@ def transaction_history():
 
 
 ### D3-related ###
-@app.route("/dynamic-d3.json")
+@app.route('/dynamic-d3.json')
 def all_d3_info():
     """ """
 
@@ -197,7 +205,7 @@ def all_d3_info():
     return jsonify(dynamic_d3)
 
 
-@app.route("/custom-d3.json")
+@app.route('/custom-d3.json')
 def d3_info():
     """ """
     if "user" in session:
@@ -255,7 +263,7 @@ def d3_info():
 ### Balance-related ###
 
 
-@app.route("/update-balance", methods=["POST"])
+@app.route('/update-balance', methods=['POST'])
 def update_balance():
     """Update user balance."""
 
@@ -291,7 +299,7 @@ def update_balance():
     return redirect("/login")
 
 
-@app.route("/remove-balance", methods=["POST"])
+@app.route('/remove-balance', methods=['POST'])
 def remove_balance():
     """Delete user balance."""
 
@@ -312,7 +320,7 @@ def remove_balance():
     return redirect("/login")
 
 
-@app.route("/transfer-balance", methods=["POST"])
+@app.route('/transfer-balance', methods=['POST'])
 def transfer_balance():
     """transfer user balance from one program to another."""
 
@@ -376,7 +384,7 @@ def transfer_balance():
     return redirect("/login")
 
 
-@app.route("/ratio-info")
+@app.route('/ratio-info')
 def return_ratio():
     """Return ratio."""
 
@@ -411,6 +419,44 @@ def return_ratio():
     flash("Please sign in first")
     return redirect("/login")
 
+
+### Optimization ###
+
+@app.route('/optimize', methods=['GET', 'POST'])
+def optimize_transfer():
+    """ Process optimization of points transfer to achieve user goal. """
+
+    if "user" in session:
+        user_id = session["user"]
+
+        if request.method == 'POST':
+            pass
+        else:
+            if request.args.get("goal_program"):
+                goal_program = request.args.get("goal_program")
+                balance = Balance.query.filter((Balance.program_id == goal_program) & (Balance.user_id == user_id)).first()
+
+                display_program = {}
+
+                if balance:
+                    display_program["balance"] = balance.current_balance
+                    display_program["program_name"] = balance.program.program_name
+                else:
+                    display_program["balance"] = 0
+                    display_program["program_name"] = Program.query.get(goal_program).program_name
+
+                
+
+                return jsonify(display_program)
+
+            else:
+                programs = Program.query.all()
+
+                return render_template('optimize.html', programs=programs)
+
+    else:
+        flash("Please log in first")
+        return redirect('/')
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the

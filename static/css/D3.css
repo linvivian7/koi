@@ -30,7 +30,7 @@ d3-tip {
   display: inline-block;
   position: relative;
   width: 80%;
-  padding-bottom: 40%; /* aspect ratio */
+  padding-bottom: 25%; /* aspect ratio */
   vertical-align: top;
   overflow: hidden;
   margin-top: 5%;
@@ -49,7 +49,6 @@ d3-tip {
 #home-d3-div {
   display: inline-block;
   position: relative;
-  width: 100%;
   padding-bottom: 40%; /* aspect ratio */
   vertical-align: top;
   overflow: hidden;
@@ -61,6 +60,22 @@ d3-tip {
 
 #home_d3 {
   margin-left: 20%;
-  margin-top: 8%;
+  margin-top: 15%;
   border: 1px solid #000000;
 }
+
+#contact-us-div {
+  text-align: center;
+  margin-top: 8%;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 70px;
+  color: black;
+  margin-left: 5%;
+}
+
+.contact-message {
+  font-family: 'Lato', sans-serif;
+  color: ghostwhite;
+  max-width: 480px;
+}
+

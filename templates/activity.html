@@ -9,91 +9,90 @@
 {% block body %}
    <div id="wrapper">
 
-        <!-- Sidebar -->
-        <div id="sidebar-wrapper">
-            <ul class="sidebar-nav">
-                <li class="sidebar-brand"><a href="/">Koi</a></li>
-                <li><a href="/dashboard">Main<span></span></a></li>
-                <li><a href="/activity">Activity<span></span></a></li>
-                <li><a href="/optimize">Optimize<span></span></a></li>
-                <li><a href="/logout">Log Out<span></span></a></li>
-            </ul>
-        </div>
-        <!-- /#sidebar-wrapper -->
+    <!-- Sidebar -->
+    <div id="sidebar-wrapper">
+      <ul class="sidebar-nav">
+        <li class="sidebar-brand"><a href="/">Koi</a></li>
+        <li><a href="/dashboard">Main<span></span></a></li>
+        <li><a href="/activity">Activity<span></span></a></li>
+        <li><a href="/optimize">Optimize<span></span></a></li>
+        <li><a href="/logout">Log Out<span></span></a></li>
+      </ul>
+    </div>
+    <!-- /#sidebar-wrapper -->
 
-        <!-- Page Content -->
-        <div id="page-content-wrapper">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-12">
+            <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
 
-<table class="table table-hover table-striped display" id="transaction-history"cellspacing="0">
-
+              <table class="table table-hover table-striped display" id="transaction-history" cellspacing="0">
                 <thead>
-                    <tr>
-                        <th class="nitems"></th>
-                        <th>Type</th>
-                        <th>Program</th>
-                        <th>Beginning</th>
-                        <th>Change</th>
-                        <th>Ending</th>
-                        <th>Timestamp</th>
-                    </tr>
+                  <tr>
+                      <th class="nitems"></th>
+                      <th>Type</th>
+                      <th>Program</th>
+                      <th>Beginning</th>
+                      <th>Change</th>
+                      <th>Ending</th>
+                      <th>Timestamp</th>
+                  </tr>
                 </thead>
 
                 <tfoot>
-                    <tr>
-                        <th></th>
-                        <th>Type</th>
-                        <th>Program</th>
-                        <th>Beginning</th>
-                        <th>Change</th>
-                        <th>Ending</th>
-                        <th>Timestamp</th>
-                    </tr>
+                  <tr>
+                      <th></th>
+                      <th>Type</th>
+                      <th>Program</th>
+                      <th>Beginning</th>
+                      <th>Change</th>
+                      <th>Ending</th>
+                      <th>Timestamp</th>
+                  </tr>
                 </tfoot>
 
                 {% if activities %}
-                    {% for activity in activities | sort(attribute="created_at", reverse=True) %}
-                        <tr id="{{ activity.program_id }}">
-                            <td class="index">{{ loop.index }}</td>
-                            <td class="action">{{ activity.action.action_type }}</td>                     
-                            <td class="program_name">{{ activity.program.program_name }}</td>
-                            <td class="beginning">
-                            {% if activity.beginning_balance == 0 %}
-                                - 
-                            {% else %}
-                                {{ "{:,}".format(activity.beginning_balance) }}
-                            </td>
-                            {% endif %}  
+                  {% for activity in activities | sort(attribute="created_at", reverse=True) %}
+                      <tr id="{{ activity.program_id }}">
+                          <td class="index">{{ loop.index }}</td>
+                          <td class="action">{{ activity.action.action_type }}</td>                     
+                          <td class="program_name">{{ activity.program.program_name }}</td>
+                          <td class="beginning">
+                          {% if activity.beginning_balance == 0 %}
+                              - 
+                          {% else %}
+                              {{ "{:,}".format(activity.beginning_balance) }}
+                          </td>
+                          {% endif %}  
 
 
-                            <td class="change">
-                            {% if (activity.ending_balance - activity.beginning_balance) < 0 %}
-                                ({{ "{:,}".format((activity.beginning_balance - activity.ending_balance)) }})</td>
-                            {% else %}
-                                {{ "{:,}".format(activity.ending_balance - activity.beginning_balance) }}</td>
-                            {% endif %}
+                          <td class="change">
+                          {% if (activity.ending_balance - activity.beginning_balance) < 0 %}
+                              ({{ "{:,}".format((activity.beginning_balance - activity.ending_balance)) }})</td>
+                          {% else %}
+                              {{ "{:,}".format(activity.ending_balance - activity.beginning_balance) }}</td>
+                          {% endif %}
 
-                            <td class="ending">
-                            {% if activity.ending_balance == 0 %}
-                                - 
-                            {% else %}
-                                {{ "{:,}".format(activity.ending_balance) }}
-                            </td>
-                            {% endif %}  
-                            <td class="timestamp">{{ moment(activity.created_at).format('M/D/YYYY, h:mm a') }}</td>
-                        </tr>
-                    {% endfor %}
+                          <td class="ending">
+                          {% if activity.ending_balance == 0 %}
+                              - 
+                          {% else %}
+                              {{ "{:,}".format(activity.ending_balance) }}
+                          </td>
+                          {% endif %}  
+                          <td class="timestamp">{{ moment(activity.created_at).format('M/D/YYYY, h:mm a') }}</td>
+                      </tr>
+                  {% endfor %}
                 {% endif %}
               </table>
-                  <script src="/static/js/dashboard_activity.js"></script>
-                </div>
 
-            </div>
+          <script src="/static/js/dashboard_activity.js"></script>
+          </div>
         </div>
-        <!-- /#page-content-wrapper -->
+      </div>
+    <!-- /#page-content-wrapper -->
 
     </div>
     <!-- /#wrapper -->
