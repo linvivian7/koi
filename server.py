@@ -95,7 +95,7 @@ def register_user():
                     flash("You're registered!")
                     session["user"] = user.user_id
 
-                    return redirect("/")
+                    return redirect("/dashboard")
 
                 else:
                     flash("Please enter a valid email!")

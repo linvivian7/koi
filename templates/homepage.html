@@ -7,10 +7,9 @@
 {% endblock%}}
 
 {% block body %}
-<div class="container">
-  <body class="header">
+  <body>
 
-    <div class="intro-container row">
+    <header class="intro-container row intro-header">
 
       <section class="intro-message col-xs-5 col-xs-offset-2">
         <h1>Koi</h1>
@@ -19,6 +18,17 @@
             Koi maps out how the programs relate to each other,
             so you don't have to.</h4>
 
+
+        {% if "user" in session %}
+
+        <!-- Modal button for login form -->
+        <button class="btn btn-md btn-primary"
+                id="dashboard-btn" 
+                >My Dashboard
+        </button>
+
+        {% else %}
+
         <!-- Modal button for login form -->
         <button class="btn btn-md btn-primary login-btn" 
                 data-toggle="modal" 
@@ -26,6 +36,7 @@
                 id="login-btn">Get Started
         </button>
 
+        {% endif %}
 
         <!-- Modal -->
         <div id="login-modal" class="modal fade" role="dialog">
@@ -73,10 +84,21 @@
         </div>
       </section>
 
-    <div>
+    </header>
 
     <script src="/static/js/homepage.js"></script>
 
+    <!-- Start of About page -->
+    <header class="about-container row about-header">
+
+
+        <div id="home-d3-div" class="col-xs-12">
+          V<span>i</span>sual<span>i</span>ze</div> 
+        <script src="/static/js/homeD3.js"></script>
+
+
+    </header>
+
+
   </body>
-</div>
 {% endblock %}

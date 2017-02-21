@@ -1,18 +1,14 @@
 $(document).ready(function(){
 
-    var url = "/dynamic-d3.json";
+    var url = "/custom-d3.json";
 
     var dispatcher = d3.dispatch('jsonLoad');
 
     $("a").on('click', function() {
-        if (window.location.href === "http://localhost:5000/dashboard") {
+        if (this.href !== "http://localhost:5000/dashboard#menu-toggle") {
            $("#user_d3").remove();
         }
     });
-
-   $('a[href="#visual"]').on("click", (function(){
-       renderD3(url);
-   }));
 
     $(window).on('load',function(){
         if ((window.location.href === "http://localhost:5000/dashboard") ||

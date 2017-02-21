@@ -7,36 +7,36 @@
 {% endblock%}}
 
 {% block body %}
-  <div class="dashboard-wrapper">
-    <div class="row">
-      <div class="navbar navbar-inverse navbar-fixed-left">
-        
-        <a class="navbar-brand" href="/dashboard">Koi</a>
+   <div id="wrapper">
 
-      <ul class="nav navbar-nav">
-        <li><a href="/dashboard">Main<span></span></a></li>
-        <li><a href="/activity">Activity<span></span></a></li>
-        <li><a href="/optimize">Optimize<span></span></a></li>
-        <li><a href="/logout">Log Out<span></span></a></li>
-      </ul>
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand"><a href="/">Koi</a></li>
+                <li><a href="/dashboard">Main<span></span></a></li>
+                <li><a href="/activity">Activity<span></span></a></li>
+                <li><a href="/optimize">Optimize<span></span></a></li>
+                <li><a href="/logout">Log Out<span></span></a></li>
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
 
-      </div>
-    </div>
-  </div>
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-12">
 
+                        <h1>Main Dashboard</h1>
+                        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
 
-  <div> 
-    <div class="row">
-        <section class="col-xs-9 col-xs-offset-2 d3-section">
-          <div id="d3-div"></div> 
-          <script src="/static/js/userD3.js"></script>
-        
-        </section>
-    </div>
+                        <div id="d3-div"></div> 
+                        <script src="/static/js/userD3.js"></script>
+                  
+                </div>
+                <div class="row">
 
-    <div class="row">
-
-      <section class="col-xs-2 col-xs-offset-2">
+      <section class="col-xs-4">
 
         <form id="update-balance-form" method="POST" autocomplete="off">
 
@@ -97,5 +97,18 @@
   </div>
 <script src="/static/js/dashboard_update.js"></script>
 
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+     <!-- Menu Toggle Script -->
+    <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+    </script>
 
 {% endblock%}}

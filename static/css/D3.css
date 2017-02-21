@@ -43,3 +43,24 @@ d3-tip {
   top: 10px;
   left: 0;
 }
+
+/*home*/
+
+#home-d3-div {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 40%; /* aspect ratio */
+  vertical-align: top;
+  overflow: hidden;
+  margin-top: 8%;
+  text-align: center;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 70px;
+}
+
+#home_d3 {
+  margin-left: 20%;
+  margin-top: 8%;
+  border: 1px solid #000000;
+}

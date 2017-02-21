@@ -1,11 +1,17 @@
 /* landing page */
 
+
+.row {
+    margin-right: auto;
+    margin-left: auto;
+}
+
 html {
   overflow-y: scroll;
   overflow-x: hidden;
 }
 
-.header {
+.intro-header {
   display: table;
   position: relative;
   width: 100%;
@@ -17,31 +23,46 @@ html {
   -o-background-size: cover;
 }
 
-.intro-container {
-  margin-top: 12em;
+.about-header {
+  display: table;
+  position: relative;
+  width: 100%;
+  height: 80%;
+  background-color: #FFFFFF;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+  -o-background-size: cover;
 }
+
+.about-header span {
+  color: teal;
+}
+
+
 
 .intro-message {
   font-family: 'Lato', sans-serif;
   margin-top: 5em;
   color: ghostwhite;
   max-width: 380px;
-  margin: auto;
+  margin: 15% auto auto 10%;
   border-radius: 25px;
   border: 1px solid #FFFFFF;
   padding: 2em; 
 }
 
-.intro-message > h1 {
+.intro-message > h1, 
+.register-section > h1 {
   margin: 0;
   font-size: 5em;
 }
 
-.intro-message > h4 {
+.intro-message > h4, .register-section > h4 {
   margin: 15px 0 0 0;
 }
 
-#login-btn {
+#login-btn, #dashboard-btn {
   float: right;
   margin: 0.5em 0 0 2em;
   border: 1px solid #FFFFFF;
@@ -49,7 +70,7 @@ html {
   font-weight: bold;
 }
 
-#login-btn:hover {
+#login-btn:hover, #dashboard-btn:hover {
   background-color: #12133d;
   margin: 0.5em 0 0 2em;
   border: 1px solid transparent;
@@ -157,11 +178,18 @@ html {
 /*register page*/
 
 .register-section {
-  margin-top: 20%;
+  font-family: 'Lato', sans-serif;
+  margin-top: 5em;
+  color: ghostwhite;
+  max-width: 500px;
+  margin: auto;
   border-radius: 25px;
   border: 1px solid #FFFFFF;
   padding: 2em; 
-  background-color: rgba(18, 19, 61,0.2);
+}
+
+#fname-field {
+  margin-top: -30px;
 }
 
 .register-section h5 {
@@ -185,11 +213,16 @@ html {
 h5 a {
   font-family: 'Lato', sans-serif;
   font-weight: bolder;
+  color: #FFFFFF;
+  font-size: 14px;
+  text-decoration: underline;
 }
 
 
 label.error {
-    color: white;
+  color: white;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
 }
 
 
@@ -197,14 +230,6 @@ label.error {
 
 /*main dashboard */
 
-body {
-  background-color: #EDEDED;
-}
-
-.navbar-inverse .navbar-brand {
-  color: ghostwhite;
-  margin: 1em .5em 1em .8em;
-}
 
 a.navbar-brand {
   font-size: 3em;
@@ -330,3 +355,129 @@ datalist {
   width: 130px;
 }
 
+
+/* side nav */
+
+/*!
+ * Start Bootstrap - Simple Sidebar HTML Template (http://startbootstrap.com)
+ * Code licensed under the Apache License v2.0.
+ * For details, see http://www.apache.org/licenses/LICENSE-2.0.
+ */
+
+/* Toggle Styles */
+
+#wrapper {
+    padding-left: 0;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+#wrapper.toggled {
+    padding-left: 180px;
+}
+
+#sidebar-wrapper {
+    z-index: 1000;
+    position: fixed;
+    left: 180px;
+    width: 0;
+    height: 100%;
+    margin-left: -180px;
+    overflow-y: auto;
+    background: #000;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    width: 180px;
+}
+
+#page-content-wrapper {
+    width: 100%;
+    position: absolute;
+    padding: 15px;
+}
+
+#wrapper.toggled #page-content-wrapper {
+    position: absolute;
+    margin-right: -180px;
+}
+
+/* Sidebar Styles */
+
+.sidebar-nav {
+    position: absolute;
+    top: 0;
+    width: 180px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sidebar-nav li {
+    text-indent: 20px;
+    line-height: 40px;
+}
+
+.sidebar-nav li a {
+    display: block;
+    text-decoration: none;
+    color: #999999;
+    margin: 10px;
+}
+
+.sidebar-nav li a:hover {
+    text-decoration: none;
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+}
+
+.sidebar-nav li a:active,
+.sidebar-nav li a:focus {
+    text-decoration: none;
+}
+
+.sidebar-nav > .sidebar-brand {
+    font-size: 3em;
+    font-family: 'Lato', sans-serif;
+    height: 65px;
+    line-height: 60px;
+}
+
+.sidebar-nav > .sidebar-brand a {
+    color: ghostwhite;
+}
+
+
+@media(min-width:768px) {
+    #wrapper {
+        padding-left: 180px;
+    }
+
+    #wrapper.toggled {
+        padding-left: 0;
+    }
+
+    #sidebar-wrapper {
+        width: 200px;
+    }
+
+    #wrapper.toggled #sidebar-wrapper {
+        width: 0;
+    }
+
+    #page-content-wrapper {
+        padding: 20px;
+        position: relative;
+    }
+
+    #wrapper.toggled #page-content-wrapper {
+        position: relative;
+        margin-right: 0;
+    }
+}

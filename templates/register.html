@@ -1,15 +1,24 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  <title>Register</title>
+  <title>
+  Welcome to Koi
+  </title>
 {% endblock%}}
 
 {% block body %}
 <div class="container">
   <body class="header">
-    <div class="signup-container">
-      <section class="register-section col-xs-6 col-xs-offset-3">
-        <form id="signup-form" action="/register" method="POST" autocomplete="off">
+
+    <div class="intro-container row">
+
+      <section class="register-section col-xs-5 col-xs-offset-2">
+        <h1>Koi</h1>
+
+        <h5>Already have an account?
+                Log in from our &nbsp;<a href="/">homepage</a>. </h5>
+
+        <h4><form id="signup-form" action="/register" method="POST" autocomplete="off">
 
             <div class="form-group">
               <label for="fname-field" class="sr-only">First Name</label>
@@ -59,14 +68,15 @@
                     type="submit" disabled>
               <span class="glyphicon glyphicon-send fa-fw"></span> Sign Up
             </button>
+            
+        </form></h4>
 
-            <h5>Already have an account?
-                Log in from our &nbsp;<a href="/">homepage</a>. </h5>
-
-        </form>
       </section>
-    </div>
+
+    <div>
+
     <script src="/static/js/register.js"></script>
+
   </body>
 </div>
 {% endblock %}

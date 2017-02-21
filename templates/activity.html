@@ -7,27 +7,28 @@
 {% endblock%}}
 
 {% block body %}
-  <div class="dashboard-wrapper">
-    <div class="row">
-      <div class="navbar navbar-inverse navbar-fixed-left">
-        
-        <a class="navbar-brand" href="/dashboard">Koi</a>
+   <div id="wrapper">
 
-      <ul class="nav navbar-nav">
-        <li><a href="/dashboard">Main<span></span></a></li>
-        <li><a href="/activity">Activity<span></span></a></li>
-        <li><a href="/optimize">Optimize<span></span></a></li>
-        <li><a href="/logout">Log Out<span></span></a></li>
-      </ul>
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand"><a href="/">Koi</a></li>
+                <li><a href="/dashboard">Main<span></span></a></li>
+                <li><a href="/activity">Activity<span></span></a></li>
+                <li><a href="/optimize">Optimize<span></span></a></li>
+                <li><a href="/logout">Log Out<span></span></a></li>
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
 
-      </div>
-    </div>
-  </div>
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
 
-  <div> 
-      <div class="row"  id="activity-section">
-          <section class="col-xs-9 col-xs-offset-2">
-              <table class="table table-hover table-striped display" id="transaction-history"cellspacing="0">
+<table class="table table-hover table-striped display" id="transaction-history"cellspacing="0">
 
                 <thead>
                     <tr>
@@ -87,9 +88,21 @@
                     {% endfor %}
                 {% endif %}
               </table>
-          </section>
-      </div>
-    </div>
+                  <script src="/static/js/dashboard_activity.js"></script>
+                </div>
 
-  <script src="/static/js/dashboard_activity.js"></script>
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+     <!-- Menu Toggle Script -->
+    <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+    </script>
+
 {% endblock%}}

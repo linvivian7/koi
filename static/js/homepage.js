@@ -96,4 +96,8 @@ $(document).ready(function() {
 
     $("#login-btn").on('click', validateForm);
 
+    $("#dashboard-btn").on('click', function () {
+        $(location).attr('href', '/dashboard');
+    });
+
 });
