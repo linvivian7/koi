@@ -30,7 +30,7 @@
 
               <form id="optimization-form">
                 <h5 id="first-statement"> I would like to have <input type="number" name="balance" id="goal-amount" min="1" max="1000000000" maxlength="10" placeholder="Goal Points" required></input> points with 
-                <input type="text" id="goal-program" list="all-programs" placeholder="Select program" required>.<h5>
+                <input type="text" id="goal-program" list="all-programs" placeholder="Select program" required>.</h5>
 
                 <datalist id="all-programs">
                   {% for program in programs | sort(attribute="program_name") %}
@@ -38,8 +38,8 @@
                   {% endfor %}
                 </datalist>
 
-
-
+                <input type="reset" id="reset-optimize-btn" value="Reset">
+                <input type="submit" id="submit-optimize" value="Submit" disabled>
 
               </form>                      
           <script src="/static/js/dashboard_optimize.js"></script>

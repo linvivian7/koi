@@ -27,6 +27,15 @@
                 <div class="row">
                     <div class="col-xs-12">
 
+                      
+                          <!-- Show flashed messages -->
+                          {% with messages = get_flashed_messages() %}
+                              {% for message in messages %}
+                                  <div class="alert alert-warning">{{ message }}</div>
+                              {% endfor %}
+                          {% endwith %}
+
+
                         <h1>Main Dashboard</h1>
                         <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
 

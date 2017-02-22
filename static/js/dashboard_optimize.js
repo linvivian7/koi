@@ -42,11 +42,21 @@ $(document).ready(function() {
     //     }
     //     $('#transfer-form')[0].reset();
     // }
-
+    $('#optimization-form').on('reset', function(evt) {
+        $("#second-statement").remove();
+        $("#third-statement").remove();
+        $("input[type='checkbox']").remove();
+        $("label").remove();
+        $("br").remove();
+        $('#submit-optimize').attr('disabled', 'disabled');
+    });
 
     // Show ratio when program fields are filled out
     $("#goal-program").on("change", function() {
 
+        $("#second-statement").remove();
+        $("#third-statement").remove();
+        $('#submit-optimize').attr('disabled', 'disabled');
         var shownGoalProgram = $("#goal-program").val();
 
         try {
@@ -57,13 +67,36 @@ $(document).ready(function() {
 
             $.get("/optimize", formValues, function(results) {
                 if (results) {
-                    $("#first-statement").after("<h5> I currently have "+results.balance+" points with "+results.program_name+".</h5>");
+                    $("#first-statement").after("<h5 id='second-statement'> I currently have "+results.display_program.balance.toLocaleString()+" points with "+results.display_program.program_name+".</h5>");
+
+                    if (results.outgoing) {
+                        $("#reset-optimize-btn").before("<h5 id='third-statement'> Select one or more from program(s) listed below to have as point source(s).</h5>");
+                        $("#submit-optimize").removeAttr('disabled');
+                        for (var program in results.outgoing) {
+                            $("#reset-optimize-btn").before("<input type='checkbox' id='"+
+                                                            program+
+                                                            "' value='"+
+                                                            program+
+                                                            "'> <label for='"+
+                                                            program+
+                                                            "''>"+
+                                                            results.outgoing[program]["program_name"]+
+                                                            " (current balance: "+
+                                                            results.outgoing[program]["balance"].toLocaleString()+
+                                                            ")"+
+                                                            "</label><br>");
+                        }
+                    } else {
+                        $("#second-statement").after("<h5 id='third-statement'>You currently have no transferable points to "+shownGoalProgram+".</h5>");
+                    }
+
                 }
             });
                 
         } catch(err){}
 
     });
+
 
     //   $("#receiving").on("change", function() {
 

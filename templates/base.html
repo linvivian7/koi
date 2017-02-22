@@ -35,13 +35,6 @@
   {% endblock %}
 
 
-  <!-- Show flashed messages -->
-  {% with messages = get_flashed_messages() %}
-      {% for message in messages %}
-          <div class="alert alert-warning">{{ message }}</div>
-      {% endfor %}
-  {% endwith %}
-
   <!-- This is where the main content goes. -->
   {% block body %}
       BODY OF PAGE GOES HERE VIA INHERITANCE

@@ -36,11 +36,10 @@ d3-tip {
   margin-top: 5%;
 }
 
-.svg-content-responsive {
+#user_d3.svg-content-responsive {
   display: inline-block;
   position: absolute;
   width: 800;
-  top: 10px;
   left: 0;
 }
 
@@ -77,5 +76,13 @@ d3-tip {
   font-family: 'Lato', sans-serif;
   color: ghostwhite;
   max-width: 480px;
+}
+
+#home_d3.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  width: 500;
+  top: 10px;
+  left: 0;
 }
 

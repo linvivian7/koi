@@ -102,8 +102,8 @@ def register_user():
                     return redirect('/')
 
         else:
-            flash("Please log out prior to making a new account")
-            return render_template("dashboard.html")
+            flash("Please log out prior to registration")
+            return redirect('/dashboard')
 
     else:
         return render_template("register.html")
@@ -436,18 +436,40 @@ def optimize_transfer():
                 goal_program = request.args.get("goal_program")
                 balance = Balance.query.filter((Balance.program_id == goal_program) & (Balance.user_id == user_id)).first()
 
-                display_program = {}
+                optimize = {}
+                optimize["display_program"] = {}
+                optimize["outgoing"] = {}
 
                 if balance:
-                    display_program["balance"] = balance.current_balance
-                    display_program["program_name"] = balance.program.program_name
+                    optimize["display_program"]["balance"] = balance.current_balance
+                    optimize["display_program"]["program_name"] = balance.program.program_name
                 else:
-                    display_program["balance"] = 0
-                    display_program["program_name"] = Program.query.get(goal_program).program_name
+                    optimize["display_program"]["balance"] = 0
+                    optimize["display_program"]["program_name"] = Program.query.get(goal_program).program_name
 
-                
+                avail_sources = db.session.query(Ratio)\
+                                          .distinct(Ratio.outgoing_program)\
+                                          .join(Balance, Balance.program_id == Ratio.outgoing_program)\
+                                          .filter((Balance.user_id == user_id) & (Ratio.receiving_program == goal_program)).all()
 
-                return jsonify(display_program)
+                if avail_sources:
+                    # Refactor later please
+                    for program in avail_sources:
+                        identifier = "program" + str(program.outgoing_program)
+                        optimize["outgoing"][identifier] = {}
+                        optimize["outgoing"][identifier]["program_id"] = program.outgoing_program
+                        optimize["outgoing"][identifier]["program_name"] = program.outgoing.program_name
+                        optimize["outgoing"][identifier]["numerator"] = program.numerator
+                        optimize["outgoing"][identifier]["denominator"] = program.denominator
+                        optimize["outgoing"][identifier]["balance"] = Balance.query.filter((Balance.program_id == program.outgoing_program) & (Balance.user_id == user_id)).first().current_balance
+
+                    print "*" * 40
+                    print optimize
+                    print "*" * 40
+                else:
+                    optimize["outgoing"] = None
+
+                return jsonify(optimize)
 
             else:
                 programs = Program.query.all()
