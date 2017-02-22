@@ -1,3 +1,7 @@
+from __future__ import print_function
+from ortools.graph import pywrapgraph
+from helper import get_lcm_for
+
 import os
 import re
 
@@ -10,6 +14,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from model import connect_to_db, db, User, Ratio, Balance, Program
 from model import Transfer, Action, Feedback, UserFeedback, TransactionHistory
+
 
 app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET']
@@ -430,13 +435,104 @@ def optimize_transfer():
         user_id = session["user"]
 
         if request.method == 'POST':
-            goal_program = request.form.get("goal_program")
-            goal_amount = request.form.get("goal_amount")
+            goal_program = int(request.form.get("goal_program"))
+            goal_amount = int(request.form.get("goal_amount"))
             sources = [int(source) for source in request.form.get("sources").split("program") if source]
 
-            print "*" * 40
-            print goal_program, goal_amount, sources
-            print "*" * 40
+            sources = [Ratio.query.filter((Ratio.outgoing_program == source) & (Ratio.receiving_program == goal_program)).one() for source in sources]
+
+            # Start of maxflow_mincost
+
+            user_programs = {}
+            i = 0
+            optimization = {}
+            optimization["start_nodes"] = []
+            optimization["end_nodes"] = []
+            optimization["capacities"] = []
+            optimization["unit_costs"] = []
+            optimization["supplies"] = []
+
+            # Assign index to goal (sink) node
+            user_programs[goal_program] = i
+            optimization["supplies"].append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == goal_program)).one().current_balance - goal_amount)
+            i += 1
+
+            denominators = []
+
+            receiving = db.session.query(Ratio)\
+                                  .distinct(Ratio.receiving_program)\
+                                  .join(Balance, Balance.program_id == Ratio.receiving_program)\
+                                  .filter(Balance.user_id == user_id).all()
+
+            # Refactor please
+
+            for program in receiving:
+                if program.receiving_program not in user_programs:
+                    user_programs[program.receiving_program] = i
+
+                    # Define an array of supplies at each node.
+                    optimization["supplies"].append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.receiving_program)).one().current_balance)
+                    i += 1
+
+            for program in sources:
+                if program.outgoing_program not in user_programs:
+                    user_programs[program.outgoing_program] = i
+
+                    # Define an array of supplies at each node.
+                    optimization["supplies"].append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.outgoing_program)).one().current_balance)
+
+                    i += 1
+
+                for program_to in receiving:
+                    ratio = Ratio.query.filter((Ratio.outgoing_program == program.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
+                    if ratio:
+                        denominators.append(ratio.denominator)
+
+            lcm = get_lcm_for(denominators)
+
+            for program in sources:
+
+                for program_to in receiving:
+                    ratio = Ratio.query.filter((Ratio.outgoing_program == program.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
+                    if ratio:
+                        # Define four parallel arrays: start_nodes, end_nodes, capacities, and unit costs
+                        optimization["start_nodes"].append(user_programs[ratio.outgoing_program])
+                        optimization["end_nodes"].append(user_programs[ratio.receiving_program])
+                        optimization["capacities"].append(1000000000)
+                        optimization["unit_costs"].append((ratio.numerator * lcm) / ratio.denominator)
+
+            print("*" * 40)
+            print(optimization, user_programs, denominators, lcm)
+            print("*" * 40)
+
+            # Instantiate a SimpleMinCostFlow solver.
+            min_cost_flow = pywrapgraph.SimpleMinCostFlow()
+
+            # Add each arc.
+            for i in range(0, len(start_nodes)):
+                min_cost_flow.AddArcWithCapacityAndUnitCost(start_nodes[i], end_nodes[i],
+                                                            capacities[i], unit_costs[i])
+
+            # Add node supplies.
+
+            for i in range(0, len(supplies)):
+                min_cost_flow.SetNodeSupply(i, supplies[i])
+
+            # Find the minimum cost flow between node 0 and node 4.
+            if min_cost_flow.SolveMaxFlowWithMinCost() == min_cost_flow.OPTIMAL:
+                print('Minimum cost:', min_cost_flow.OptimalCost())
+                print('')
+                print(' Edge    Flow / Capacity  Cost')
+                for i in range(min_cost_flow.NumArcs()):
+                    cost = min_cost_flow.Flow(i) * min_cost_flow.UnitCost(i)
+                    print('%1s -> %1s   %3s  / %3s       %3s' % (
+                          min_cost_flow.Tail(i),
+                          min_cost_flow.Head(i),
+                          min_cost_flow.Flow(i),
+                          min_cost_flow.Capacity(i),
+                          cost))
+            else:
+                print('There was an issue with the min cost flow input.')
 
             return "temp string"
 
