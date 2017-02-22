@@ -437,6 +437,18 @@ def optimize_transfer():
         if request.method == 'POST':
             goal_program = int(request.form.get("goal_program"))
             goal_amount = int(request.form.get("goal_amount"))
+
+            goal = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == goal_program)).first()
+
+            if goal:
+                if goal_amount < goal.current_balance:
+                    return "You already have enough points"
+                else:
+                    goal_amount = goal_amount - goal.current_balance
+            else:
+                action_id = Action.query.filter(Action.action_type == 'New').one().action_id
+                goal = Balance(user_id=user_id, program_id=goal_program, current_balance=0, action_id=action_id)
+
             sources = [int(source) for source in request.form.get("sources").split("program") if source]
 
             # sources = Ratio.query.filter(Ratio.outgoing_program == source).all()
@@ -484,7 +496,8 @@ def optimize_transfer():
                     user_programs.append(program.receiving_program)
 
                     # Define an array of supplies at each node.
-                    supplies.append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.receiving_program)).one().current_balance)
+                    supplies.append(goal_amount/3)
+                    # supplies.append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.receiving_program)).one().current_balance)
 
             print("*" * 40)
             print(receiving)
@@ -494,12 +507,14 @@ def optimize_transfer():
                     user_programs.append(program.outgoing_program)
 
                     # Define an array of supplies at each node.
-                    supplies.append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.outgoing_program)).one().current_balance)
+                    supplies.append(goal_amount/3)
+                    # supplies.append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.outgoing_program)).one().current_balance)
 
+                #flip numerator and denominator to make unit costs higher for lower exchange ratios
                 for program_to in receiving:
                     ratio = Ratio.query.filter((Ratio.outgoing_program == program.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
                     if ratio:
-                        denominators.append(ratio.denominator)
+                        denominators.append(ratio.numerator)
 
             lcm = get_lcm_for(denominators)
 
@@ -511,7 +526,7 @@ def optimize_transfer():
                         start_nodes.append(user_programs.index(ratio.outgoing_program))
                         end_nodes.append(user_programs.index(ratio.receiving_program))
                         capacities.append(1000000000)
-                        unit_costs.append((ratio.numerator * lcm) / ratio.denominator)
+                        unit_costs.append((ratio.denominator * lcm) / ratio.numerator)
 
             print("*" * 40)
             print(user_programs)
@@ -534,7 +549,7 @@ def optimize_transfer():
             for i in range(0, len(supplies)):
                 min_cost_flow.SetNodeSupply(i, supplies[i])
 
-            # optimization = {}
+            optimization = {}
 
             # Find the minimum cost flow between nodes.
             if min_cost_flow.SolveMaxFlowWithMinCost() == min_cost_flow.OPTIMAL:
@@ -546,17 +561,42 @@ def optimize_transfer():
                     ratio = Ratio.query.filter((Ratio.outgoing_program == user_programs[min_cost_flow.Tail(i)]) & (Ratio.receiving_program == user_programs[min_cost_flow.Head(i)])).one()
                     numerator = ratio.numerator
                     denominator = ratio.denominator
-                    actual_outflow = min_cost_flow.Flow(i) * (numerator / denominator)
+                    actual_outflow = min_cost_flow.Flow(i) * (float(numerator) / float(denominator))
 
-                    cost = min_cost_flow.Flow(i) * min_cost_flow.UnitCost(i)
                     print('%1s -> %1s   %9s  (%12s)    %1s / %1s  %12s' % (
                           min_cost_flow.Tail(i),
                           min_cost_flow.Head(i),
                           min_cost_flow.Flow(i),
-                          cost / lcm,
+                          min_cost_flow.UnitCost(i),
                           numerator,
                           denominator,
                           actual_outflow))
+
+                    optimization[str(min_cost_flow.Tail(i))+"to"+str(min_cost_flow.Head(i))] = {"start": user_programs[min_cost_flow.Tail(i)],
+                                                                                                "end": user_programs[min_cost_flow.Head(i)],
+                                                                                                "flow": min_cost_flow.Flow(i),
+                                                                                                "cost": min_cost_flow.UnitCost(i),
+                                                                                                "numerator": numerator,
+                                                                                                "denominator": denominator}
+
+                optimized_list = sorted(optimization.items(), key=lambda x: (x[1]['flow'], x[1]['cost']), reverse=True)
+
+                for i in optimized_list:
+                    outgoing = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == i[1]["start"])).one()
+                    ratio = float(i[1]["numerator"]) / float(i[1]["denominator"])
+
+                    if i[1]["end"] == goal_program:
+                        transfer_amount = goal_amount / ratio
+
+                        if transfer_amount < outgoing.current_balance:
+                            outgoing.current_balance = outgoing.current_balance - transfer_amount
+                            goal.current_balance = goal.current_balance + (transfer_amount * ratio)
+                            # db.session.commit()
+                            return "Transfer "+str(transfer_amount)+" from "+str(outgoing.program_id)+" to "+str(goal.program_id)
+
+                        if transfer_amount > outgoing.current_balance:
+                            outgoing.current_balance = 0
+                            goal.current_balance = goal.current_balance + (transfer_amount * ratio)
 
             else:
                 return "There was an issue with the min cost flow input."
