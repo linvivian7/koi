@@ -448,6 +448,7 @@ def optimize_transfer():
             else:
                 action_id = Action.query.filter(Action.action_type == 'New').one().action_id
                 goal = Balance(user_id=user_id, program_id=goal_program, current_balance=0, action_id=action_id)
+                db.session.add(goal)
 
             sources = [int(source) for source in request.form.get("sources").split("program") if source]
 

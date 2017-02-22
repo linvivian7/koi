@@ -57,15 +57,16 @@ $(document).ready(function() {
     $('#optimization-form').on('reset', function(evt) {
         $("#second-statement").remove();
         $("#third-statement").remove();
-        $("input[type='checkbox']").remove();
-        $("label").remove();
+        $("#optimization-form li").remove();
         $("br").remove();
         $('#run-optimize').attr('disabled', 'disabled');
     });
 
     // Show ratio when program fields are filled out
     $("#goal-program").on("change", function() {
-
+        
+        $("#optimization-form li").remove();
+        $("br").remove();
         $("#second-statement").remove();
         $("#third-statement").remove();
         $('#run-optimize').attr('disabled', 'disabled');
