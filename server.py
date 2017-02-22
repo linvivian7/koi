@@ -439,23 +439,22 @@ def optimize_transfer():
             goal_amount = int(request.form.get("goal_amount"))
             sources = [int(source) for source in request.form.get("sources").split("program") if source]
 
-            sources = [Ratio.query.filter((Ratio.outgoing_program == source) & (Ratio.receiving_program == goal_program)).one() for source in sources]
+            # sources = Ratio.query.filter(Ratio.outgoing_program == source).all()
+
+            sources = db.session.query(Ratio)\
+                                .distinct(Ratio.outgoing_program)\
+                                .join(Balance, Balance.program_id == Ratio.outgoing_program)\
+                                .filter(Balance.user_id == user_id).all()
 
             # Start of maxflow_mincost
 
-            user_programs = {}
-            i = 0
-            optimization = {}
-            optimization["start_nodes"] = []
-            optimization["end_nodes"] = []
-            optimization["capacities"] = []
-            optimization["unit_costs"] = []
-            optimization["supplies"] = []
+            user_programs = []
 
-            # Assign index to goal (sink) node
-            user_programs[goal_program] = i
-            optimization["supplies"].append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == goal_program)).one().current_balance - goal_amount)
-            i += 1
+            start_nodes = []
+            end_nodes = []
+            capacities = []
+            unit_costs = []
+            supplies = []
 
             denominators = []
 
@@ -465,23 +464,37 @@ def optimize_transfer():
                                   .filter(Balance.user_id == user_id).all()
 
             # Refactor please
+            for program in sources:
+                for program_to in receiving:
+                    ratio = Ratio.query.filter((Ratio.outgoing_program == program.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
+                    if ratio:
+                        denominators.append(ratio.denominator)
+
+            lcm = get_lcm_for(denominators)
+
+            # Assign index to goal (sink) node
+            user_programs.append(goal_program)
+            supplies.append(-1 * goal_amount)
+
+            print("*" * 40)
+            print(sources)
 
             for program in receiving:
                 if program.receiving_program not in user_programs:
-                    user_programs[program.receiving_program] = i
+                    user_programs.append(program.receiving_program)
 
                     # Define an array of supplies at each node.
-                    optimization["supplies"].append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.receiving_program)).one().current_balance)
-                    i += 1
+                    supplies.append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.receiving_program)).one().current_balance)
+
+            print("*" * 40)
+            print(receiving)
 
             for program in sources:
                 if program.outgoing_program not in user_programs:
-                    user_programs[program.outgoing_program] = i
+                    user_programs.append(program.outgoing_program)
 
                     # Define an array of supplies at each node.
-                    optimization["supplies"].append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.outgoing_program)).one().current_balance)
-
-                    i += 1
+                    supplies.append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.outgoing_program)).one().current_balance)
 
                 for program_to in receiving:
                     ratio = Ratio.query.filter((Ratio.outgoing_program == program.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
@@ -491,18 +504,22 @@ def optimize_transfer():
             lcm = get_lcm_for(denominators)
 
             for program in sources:
-
                 for program_to in receiving:
                     ratio = Ratio.query.filter((Ratio.outgoing_program == program.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
                     if ratio:
                         # Define four parallel arrays: start_nodes, end_nodes, capacities, and unit costs
-                        optimization["start_nodes"].append(user_programs[ratio.outgoing_program])
-                        optimization["end_nodes"].append(user_programs[ratio.receiving_program])
-                        optimization["capacities"].append(1000000000)
-                        optimization["unit_costs"].append((ratio.numerator * lcm) / ratio.denominator)
+                        start_nodes.append(user_programs.index(ratio.outgoing_program))
+                        end_nodes.append(user_programs.index(ratio.receiving_program))
+                        capacities.append(1000000000)
+                        unit_costs.append((ratio.numerator * lcm) / ratio.denominator)
 
             print("*" * 40)
-            print(optimization, user_programs, denominators, lcm)
+            print(user_programs)
+            print(start_nodes)
+            print(end_nodes)
+            print(capacities)
+            print(unit_costs)
+            print(supplies)
             print("*" * 40)
 
             # Instantiate a SimpleMinCostFlow solver.
@@ -514,25 +531,35 @@ def optimize_transfer():
                                                             capacities[i], unit_costs[i])
 
             # Add node supplies.
-
             for i in range(0, len(supplies)):
                 min_cost_flow.SetNodeSupply(i, supplies[i])
 
-            # Find the minimum cost flow between node 0 and node 4.
+            # optimization = {}
+
+            # Find the minimum cost flow between nodes.
             if min_cost_flow.SolveMaxFlowWithMinCost() == min_cost_flow.OPTIMAL:
                 print('Minimum cost:', min_cost_flow.OptimalCost())
                 print('')
-                print(' Edge    Flow / Capacity  Cost')
+                print(' Edge    Flow           (Cost)       Num/Den         Actual')
+
                 for i in range(min_cost_flow.NumArcs()):
+                    ratio = Ratio.query.filter((Ratio.outgoing_program == user_programs[min_cost_flow.Tail(i)]) & (Ratio.receiving_program == user_programs[min_cost_flow.Head(i)])).one()
+                    numerator = ratio.numerator
+                    denominator = ratio.denominator
+                    actual_outflow = min_cost_flow.Flow(i) * (numerator / denominator)
+
                     cost = min_cost_flow.Flow(i) * min_cost_flow.UnitCost(i)
-                    print('%1s -> %1s   %3s  / %3s       %3s' % (
+                    print('%1s -> %1s   %9s  (%12s)    %1s / %1s  %12s' % (
                           min_cost_flow.Tail(i),
                           min_cost_flow.Head(i),
                           min_cost_flow.Flow(i),
-                          min_cost_flow.Capacity(i),
-                          cost))
+                          cost / lcm,
+                          numerator,
+                          denominator,
+                          actual_outflow))
+
             else:
-                print('There was an issue with the min cost flow input.')
+                return "There was an issue with the min cost flow input."
 
             return "temp string"
 
@@ -555,7 +582,7 @@ def optimize_transfer():
                 avail_sources = db.session.query(Ratio)\
                                           .distinct(Ratio.outgoing_program)\
                                           .join(Balance, Balance.program_id == Ratio.outgoing_program)\
-                                          .filter((Balance.user_id == user_id) & (Ratio.receiving_program == goal_program)).all()
+                                          .filter(Balance.user_id == user_id).all()
 
                 if avail_sources:
                     # Refactor later please
