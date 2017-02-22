@@ -79,27 +79,25 @@ $(document).ready(function() {
 
             $.get("/optimize", formValues, function(results) {
                 if (results) {
-                    $("#first-statement").after("<h5 id='second-statement'> I currently have "+results.display_program.balance.toLocaleString()+" points with "+results.display_program.program_name+".</h5>");
+                    $("#first-statement").after("<h5 id='second-statement'> You currently have "+results.display_program.balance.toLocaleString()+" points with "+results.display_program.program_name+".</h5>");
 
                     if (results.outgoing) {
-                        $("#reset-optimize-btn").before("<h5 id='third-statement'> Select one or more from program(s) listed below to have as point source(s).</h5>");
+                        $("#reset-optimize-btn").before("<h5 id='third-statement'> The program(s) listed below are your point source(s).</h5>");
                         $("#run-optimize").removeAttr('disabled');
                         for (var program in results.outgoing) {
-                            $("#reset-optimize-btn").before("<input type='checkbox' id='"+
+                            $("#reset-optimize-btn").before("<li id='"+
                                                             program+
                                                             "' value='"+
                                                             program+
-                                                            "'> <label for='"+
-                                                            program+
-                                                            "''>"+
+                                                            "'>"+
                                                             results.outgoing[program]["program_name"]+
                                                             " (current balance: "+
                                                             results.outgoing[program]["balance"].toLocaleString()+
                                                             ")"+
-                                                            "</label><br>");
+                                                            "</li><br>");
                         }
                     } else {
-                        $("#second-statement").after("<h5 id='third-statement'>You currently have no transferable points to "+shownGoalProgram+".</h5>");
+                        $("#second-statement").after("<h5 id='third-statement'>You currently have no transferable points.</h5>");
                     }
 
                 }
