@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
-    // function updateBalanceTransfer(results) {
+    function showOptimization(results) {
+        console.log(results);
 
     //     if ((results === "Not enough outstanding points for this transfer") || (results === "Please enter a transferable amount. See ratio above")) {
     //         alert(results);
@@ -18,37 +19,48 @@ $(document).ready(function() {
     //             }
     //         }
     //     }
-    // }
+    }
 
-    // function transferBalance(evt) {
-    //     evt.preventDefault();
+    function optimizeTransfer(evt) {
+        evt.preventDefault();
 
-    //     var shownOutgoing = $("#outgoing").val();
-    //     var shownReceiving = $("#receiving").val();
+        var shownGoalProgram = $("#goal-program").val();
+        var checkbox_value = "";
 
-    //     try {
-    //         var outgoingId = document.querySelector("#all-outgoing-programs option[value='"+shownOutgoing+"']").dataset.value;
-    //         var receivingId = document.querySelector("#all-receiving-programs option[value='"+shownReceiving+"']").dataset.value;
-    //         var formValues = {
-    //             "outgoing": outgoingId,
-    //             "receiving": receivingId,
-    //             "amount": $("#transfer-amount").val()
-    //           };
+        $(":checkbox").each(function () {
+            var ischecked = $(this).is(":checked");
 
-    //         $.post("/transfer-balance", formValues, updateBalanceTransfer);
-    //     }
-    //     catch(err) {
-    //       alert("Please enter a valid loyalty program");
-    //     }
-    //     $('#transfer-form')[0].reset();
-    // }
+            if (ischecked) {
+                checkbox_value += $(this).val();
+            }
+        });
+
+        console.log(checkbox_value);
+
+        try {
+            var goalProgram = document.querySelector("#all-programs option[value='"+shownGoalProgram+"']").dataset.value;
+            var formValues = {
+                "goal_program": goalProgram,
+                "goal_amount": $("#goal-amount").val(),
+                "sources": checkbox_value
+              };
+
+            $.post("/optimize", formValues, showOptimization);
+        }
+        catch(err) {
+          alert("Please enter a valid loyalty program");
+        }
+
+        $('#run-optimize').attr('disabled', 'disabled');
+    }
+
     $('#optimization-form').on('reset', function(evt) {
         $("#second-statement").remove();
         $("#third-statement").remove();
         $("input[type='checkbox']").remove();
         $("label").remove();
         $("br").remove();
-        $('#submit-optimize').attr('disabled', 'disabled');
+        $('#run-optimize').attr('disabled', 'disabled');
     });
 
     // Show ratio when program fields are filled out
@@ -56,7 +68,7 @@ $(document).ready(function() {
 
         $("#second-statement").remove();
         $("#third-statement").remove();
-        $('#submit-optimize').attr('disabled', 'disabled');
+        $('#run-optimize').attr('disabled', 'disabled');
         var shownGoalProgram = $("#goal-program").val();
 
         try {
@@ -71,7 +83,7 @@ $(document).ready(function() {
 
                     if (results.outgoing) {
                         $("#reset-optimize-btn").before("<h5 id='third-statement'> Select one or more from program(s) listed below to have as point source(s).</h5>");
-                        $("#submit-optimize").removeAttr('disabled');
+                        $("#run-optimize").removeAttr('disabled');
                         for (var program in results.outgoing) {
                             $("#reset-optimize-btn").before("<input type='checkbox' id='"+
                                                             program+
@@ -122,6 +134,6 @@ $(document).ready(function() {
         // }
       // });
 
-    // $("#transfer-form").on('submit', transferBalance);
+    $("#optimization-form").on('submit', optimizeTransfer);
 
 } );

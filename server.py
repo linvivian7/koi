@@ -430,7 +430,16 @@ def optimize_transfer():
         user_id = session["user"]
 
         if request.method == 'POST':
-            pass
+            goal_program = request.form.get("goal_program")
+            goal_amount = request.form.get("goal_amount")
+            sources = [int(source) for source in request.form.get("sources").split("program") if source]
+
+            print "*" * 40
+            print goal_program, goal_amount, sources
+            print "*" * 40
+
+            return "temp string"
+
         else:
             if request.args.get("goal_program"):
                 goal_program = request.args.get("goal_program")
@@ -463,9 +472,6 @@ def optimize_transfer():
                         optimize["outgoing"][identifier]["denominator"] = program.denominator
                         optimize["outgoing"][identifier]["balance"] = Balance.query.filter((Balance.program_id == program.outgoing_program) & (Balance.user_id == user_id)).first().current_balance
 
-                    print "*" * 40
-                    print optimize
-                    print "*" * 40
                 else:
                     optimize["outgoing"] = None
 
