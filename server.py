@@ -1,6 +1,8 @@
-from __future__ import print_function
-from ortools.graph import pywrapgraph
-from helper import get_lcm_for
+# from __future__ import print_function
+# from ortools.graph import pywrapgraph
+from helper import bellman_ford
+from math import log, floor, ceiling
+import numpy as np
 
 import os
 import re
@@ -355,7 +357,7 @@ def transfer_balance():
         transfer = Transfer(user_id=user_id, outgoing_program=outgoing, receiving_program=receiving, outgoing_amount=amount)
         db.session.add(transfer)
 
-        # Update to receiving program in balances table (must be before outgoing)
+        # Update to receiving program in balances table
         existing_balance_to.current_balance = existing_balance_to.current_balance + amount * (numerator / denominator)
         existing_balance_to.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
 
@@ -441,7 +443,7 @@ def optimize_transfer():
             goal = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == goal_program)).first()
 
             if goal:
-                if goal_amount < goal.current_balance:
+                if goal_amount <= goal.current_balance:
                     return "You already have enough points"
                 else:
                     goal_amount = goal_amount - goal.current_balance
@@ -450,159 +452,212 @@ def optimize_transfer():
                 goal = Balance(user_id=user_id, program_id=goal_program, current_balance=0, action_id=action_id)
                 db.session.add(goal)
 
-            sources = [int(source) for source in request.form.get("sources").split("program") if source]
-
-            # sources = Ratio.query.filter(Ratio.outgoing_program == source).all()
-
-            sources = db.session.query(Ratio)\
-                                .distinct(Ratio.outgoing_program)\
-                                .join(Balance, Balance.program_id == Ratio.outgoing_program)\
-                                .filter(Balance.user_id == user_id).all()
-
-            # Start of maxflow_mincost
-
-            user_programs = []
-
-            start_nodes = []
-            end_nodes = []
-            capacities = []
-            unit_costs = []
-            supplies = []
-
-            denominators = []
+            # Start Bellman-Ford-Moore
+            optimization = {}
 
             receiving = db.session.query(Ratio)\
                                   .distinct(Ratio.receiving_program)\
                                   .join(Balance, Balance.program_id == Ratio.receiving_program)\
                                   .filter(Balance.user_id == user_id).all()
 
-            # Refactor please
-            for program in sources:
-                for program_to in receiving:
-                    ratio = Ratio.query.filter((Ratio.outgoing_program == program.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
-                    if ratio:
-                        denominators.append(ratio.denominator)
-
-            lcm = get_lcm_for(denominators)
-
-            # Assign index to goal (sink) node
-            user_programs.append(goal_program)
-            supplies.append(-1 * goal_amount)
-
-            print("*" * 40)
-            print(sources)
-
             for program in receiving:
-                if program.receiving_program not in user_programs:
-                    user_programs.append(program.receiving_program)
+                optimization[program.receiving_program] = {}
 
-                    # Define an array of supplies at each node.
-                    supplies.append(goal_amount/3)
-                    # supplies.append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.receiving_program)).one().current_balance)
+                outgoing_ratio = db.session.query(Ratio)\
+                                           .join(Balance, Balance.program_id == Ratio.receiving_program)\
+                                           .filter((Balance.user_id == user_id) & (Ratio.receiving_program == program.receiving_program))\
+                                           .all()
 
-            print("*" * 40)
-            print(receiving)
+                for ratio in outgoing_ratio:
+                    if not optimization.get(ratio.outgoing_program):
+                        optimization[ratio.outgoing_program] = {}
+                    optimization[program.receiving_program][ratio.outgoing_program] = -log(float(ratio.numerator)/float(ratio.denominator))
 
-            for program in sources:
-                if program.outgoing_program not in user_programs:
-                    user_programs.append(program.outgoing_program)
+            cost, predecessor = bellman_ford(optimization, goal_program)
 
-                    # Define an array of supplies at each node.
-                    supplies.append(goal_amount/3)
-                    # supplies.append(Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == program.outgoing_program)).one().current_balance)
+            min_cost = sorted(cost.items(), key=lambda (node, cost): cost)
 
-                #flip numerator and denominator to make unit costs higher for lower exchange ratios
-                for program_to in receiving:
-                    ratio = Ratio.query.filter((Ratio.outgoing_program == program.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
-                    if ratio:
-                        denominators.append(ratio.numerator)
+            suggestion = {}
+            suggestion["start"] = []
+            suggestion["end"] = []
+            suggestion["amount"] = []
+            suggestion["message"] = []
 
-            lcm = get_lcm_for(denominators)
+            for flow in min_cost:
+                # Assigned for clarity
+                cost = flow[1]
 
-            for program in sources:
-                for program_to in receiving:
-                    ratio = Ratio.query.filter((Ratio.outgoing_program == program.outgoing_program) & (Ratio.receiving_program == program_to.receiving_program)).first()
-                    if ratio:
-                        # Define four parallel arrays: start_nodes, end_nodes, capacities, and unit costs
-                        start_nodes.append(user_programs.index(ratio.outgoing_program))
-                        end_nodes.append(user_programs.index(ratio.receiving_program))
-                        capacities.append(1000000000)
-                        unit_costs.append((ratio.denominator * lcm) / ratio.numerator)
+                if cost != float('inf'):
 
-            print("*" * 40)
-            print(user_programs)
-            print(start_nodes)
-            print(end_nodes)
-            print(capacities)
-            print(unit_costs)
-            print(supplies)
-            print("*" * 40)
+                    # Assigned for clarity
+                    current_id = flow[0]
 
-            # Instantiate a SimpleMinCostFlow solver.
-            min_cost_flow = pywrapgraph.SimpleMinCostFlow()
+                    if current_id == goal_program:
+                        continue
 
-            # Add each arc.
-            for i in range(0, len(start_nodes)):
-                min_cost_flow.AddArcWithCapacityAndUnitCost(start_nodes[i], end_nodes[i],
-                                                            capacities[i], unit_costs[i])
+                    # create path for each possible flow
+                    ancestor = 0
+                    path = {}
+                    ratio = {}
+                    prior_node = predecessor[current_id]
 
-            # Add node supplies.
-            for i in range(0, len(supplies)):
-                min_cost_flow.SetNodeSupply(i, supplies[i])
+                    path[current_id] = []
+                    path[current_id].append(current_id)
+                    path[current_id].append(prior_node)
 
-            optimization = {}
+                    while ancestor != goal_program:
+                        ancestor = predecessor[prior_node]
+                        path[current_id].append(ancestor)
+                        prior_node = ancestor
 
-            # Find the minimum cost flow between nodes.
-            if min_cost_flow.SolveMaxFlowWithMinCost() == min_cost_flow.OPTIMAL:
-                print('Minimum cost:', min_cost_flow.OptimalCost())
-                print('')
-                print(' Edge    Flow           (Cost)       Num/Den         Actual')
+                    path[current_id].reverse()
+                    ratio[current_id] = []
 
-                for i in range(min_cost_flow.NumArcs()):
-                    ratio = Ratio.query.filter((Ratio.outgoing_program == user_programs[min_cost_flow.Tail(i)]) & (Ratio.receiving_program == user_programs[min_cost_flow.Head(i)])).one()
-                    numerator = ratio.numerator
-                    denominator = ratio.denominator
-                    actual_outflow = min_cost_flow.Flow(i) * (float(numerator) / float(denominator))
+                    path_traveled = {}
+                    path_traveled[current_id] = []
+                    path_traveled[current_id].append(current_id)
+                    path_traveled[current_id].append(prior_node)
 
-                    print('%1s -> %1s   %9s  (%12s)    %1s / %1s  %12s' % (
-                          min_cost_flow.Tail(i),
-                          min_cost_flow.Head(i),
-                          min_cost_flow.Flow(i),
-                          min_cost_flow.UnitCost(i),
-                          numerator,
-                          denominator,
-                          actual_outflow))
+                    while len(path[current_id]) > 1:
+                        receiving_node = path[current_id][0]
+                        outgoing_node = path[current_id][1]
 
-                    optimization[str(min_cost_flow.Tail(i))+"to"+str(min_cost_flow.Head(i))] = {"start": user_programs[min_cost_flow.Tail(i)],
-                                                                                                "end": user_programs[min_cost_flow.Head(i)],
-                                                                                                "flow": min_cost_flow.Flow(i),
-                                                                                                "cost": min_cost_flow.UnitCost(i),
-                                                                                                "numerator": numerator,
-                                                                                                "denominator": denominator}
+                        ratio_object = Ratio.query.filter((Ratio.outgoing_program == outgoing_node) & (Ratio.receiving_program == receiving_node)).one()
+                        ratio = float(ratio_object.numerator) / float(ratio_object.denominator)
 
-                optimized_list = sorted(optimization.items(), key=lambda x: (x[1]['flow'], x[1]['cost']), reverse=True)
+                        ratio[current_id].append(ratio)
+                        cumulative_ratio = np.prod(ratio[current_id])
 
-                for i in optimized_list:
-                    outgoing = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == i[1]["start"])).one()
-                    ratio = float(i[1]["numerator"]) / float(i[1]["denominator"])
+                        req_amount = int(ceiling(goal_amount / cumulative_ratio))
+                        outgoing_node_balance = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == outgoing_node)).first()
 
-                    if i[1]["end"] == goal_program:
-                        transfer_amount = goal_amount / ratio
+                        # possible for route to go through
+                        if req_amount <= outgoing_node_balance.current_balance:
 
-                        if transfer_amount < outgoing.current_balance:
-                            outgoing.current_balance = outgoing.current_balance - transfer_amount
-                            goal.current_balance = goal.current_balance + (transfer_amount * ratio)
-                            # db.session.commit()
-                            return "Transfer "+str(transfer_amount)+" from "+str(outgoing.program_id)+" to "+str(goal.program_id)
+                            while len(path_traveled[current_id]) > 2:
+                                in_node = Balance.path_traveled[current_id][0]
+                                in_node_obj = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == in_node)).first()
 
-                        if transfer_amount > outgoing.current_balance:
-                            outgoing.current_balance = 0
-                            goal.current_balance = goal.current_balance + (transfer_amount * ratio)
+                                out_node = Balance.path_traveled[current_id][1]
+                                out_node_obj = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == out_node)).first()
 
-            else:
-                return "There was an issue with the min cost flow input."
+                                node_ratio = Ratio.query.filter((Ratio.outgoing_program == out_node) & (Ratio.receiving_program == in_node)).one()
+                                flow_cost = float(node_ratio.numerator) / float(node_ratio.denominator)
 
-            return "temp string"
+                                balance_ceiling = floor(out_node_obj.current_balance * flow_cost) / flow_cost
+
+                                # transfer_amount = (out_node_obj.current_balance.  int(ceiling(goal_amount / cumulative_ratio))
+
+                                transfer = Transfer(user_id=user_id, outgoing_program=out_node, receiving_program=in_node, outgoing_amount=transfer_amount)
+
+                                out_node_obj.current_balance = out_node_obj.current_balance - transfer_amount
+                                out_node_obj.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+
+                                in_node_obj.current_balance = in_node_obj.current_balance + transfer_amount * flow_cost
+                                in_node_obj.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+
+                                db.session.commit()
+
+                                goal_amount = goal_amount - transfer_amount
+                                path_traveled[current_id].pop(0)
+
+                        # continue, try next route
+                        else:
+                            continue
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        transfer_amount = min(req_amount, outgoing_balance.current_balance)
+                        transfer = Transfer(user_id=user_id, outgoing_program=outgoing_node, receiving_program=receiving_node, outgoing_amount=transfer_amount)
+
+                        if req_amount <= outgoing_balance.current_balance:
+
+
+
+                            transfer = Transfer(user_id=user_id, outgoing_program=outgoing_node, receiving_program=receiving_node, outgoing_amount=transfer_amount)
+                            transfer = Transfer(user_id=user_id, outgoing_program=outgoing_node, receiving_program=receiving_node, outgoing_amount=transfer_amount)
+                            db.session.add(transfer)
+
+                            outgoing_balance.current_balance = outgoing_balance.current_balance - transfer_amount
+                            outgoing_balance.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+
+                            receiving_balance.current_balance = prior_node_balance.current_balance + transfer_amount * flow_cost
+                            receiving_balance.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+
+                            break
+
+                        goal_amount = goal_amount - transfer_amount
+                        path[current_id].pop(0)
+
+                    if goal_amount > 0:
+                        suggestion["message"].append("You have enought points to achieve your goal")
+
+                    else:
+                        suggestion["message"].append("You do not have enought points to achieve your goal")
+
+                    return jsonify(suggestion)
+
+
+
+
+                    if prior_node != goal_program:
+                        ancestor = 0
+
+                        prior_node_copy = prior_node
+                        suggestion["path"][current_id] = []
+                        suggestion["path"][current_id].append(current_id)
+                        suggestion["path"][current_id].append(prior_node)
+
+                        while ancestor != goal_program:
+                            ancestor = predecessor[prior_node_copy]
+
+                            suggestion["path"][current_id].append(ancestor)
+                            prior_node_copy = ancestor
+
+                    elif prior_node == goal_program:
+                        max_transferred = int(floor(outgoing_balance.current_balance * flow_cost))
+
+                        transfer_amount = min(goal_amount, max_transferred)
+
+                        if transfer_amount == 0:
+                            suggestion["message"].append("There are no points transferrable from program id: "+str(current_id))
+                            continue
+
+                        transfer = Transfer(user_id=user_id, outgoing_program=current_id, receiving_program=prior_node, outgoing_amount=transfer_amount)
+                        db.session.add(transfer)
+
+                        outgoing_balance.current_balance = outgoing_balance.current_balance - transfer_amount
+                        outgoing_balance.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+
+                        prior_node_balance.current_balance = prior_node_balance.current_balance + transfer_amount * flow_cost
+                        prior_node_balance.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+
+                        # db.session.commit() if user confirms; set variable at request.form.get
+                        db.session.commit()
+
+                        suggestion["start"].append(current_id)
+                        suggestion["end"].append(goal_program)
+                        suggestion["amount"].append(goal_amount)
+
+                        if goal <= max_transferred:
+                            suggestion["message"].append("transfer successful")
+                            return jsonify(suggestion)
+                        else:
+                            suggestion["message"].append("insufficent funds between the two programs")
+                            continue
+
+            return jsonify(suggestion)
 
         else:
             if request.args.get("goal_program"):
