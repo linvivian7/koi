@@ -332,12 +332,16 @@ def add_transfer(user_id, outgoing_id, receiving_id, transfer_amount):
     transfer = Transfer(user_id=user_id, outgoing_program=outgoing_id, receiving_program=receiving_id, outgoing_amount=transfer_amount)
     db.session.add(transfer)
 
+    return transfer
+
 
 def add_balance(user_id, program_id, current_balance, action_id):
     """ Convenient add_balance wrapper """
 
     balance = Balance(user_id=user_id, program_id=program_id, current_balance=current_balance, action_id=action_id)
     db.session.add(balance)
+
+    return balance
 
 
 def add_user(email, password, fname, lname):

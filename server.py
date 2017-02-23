@@ -6,6 +6,7 @@ import re
 from math import log
 from helper import bellman_ford
 from helper import calc_balance_ceiling
+from helper import calc_required_amount
 from helper import is_route_possible
 
 # Flask-related
@@ -510,55 +511,36 @@ def optimize_transfer():
 
                 # possible for route to go through
                 if is_route_possible(ratio[current_id], goal_amount, balance_capacity):
-                    k = 0
+                    k = len(path[current_id]) - 1
 
-                    while k < len(path[current_id]) - 1:
-                        pdb.set_trace()
-                        in_node = path[current_id][k]
-                        in_node_obj = user.get_balance(in_node)
+                    while k > 0:
+                        in_node_id = path[current_id][k]
+                        in_node = user.get_balance(in_node_id)
 
-                        out_node = path[current_id][k + 1]
-                        out_node_obj = user.get_balance(out_node)
+                        out_node_id = path[current_id][k - 1]
+                        out_node = user.get_balance(out_node_id)
 
-                        node_ratio = ratio_instance(out_node, in_node)
-                        flow_cost = node_ratio.ratio_to()
+                        # Start by transferring from last source
+                        if k == len(path[current_id]) - 1:
+                            sum_prev_balances = 0
+                            for node in path[current_id][:-1]:
+                                node_balance = user.get_balance(node).current_balance
+                                sum_prev_balances += node_balance
 
-                        balance_ceiling = calc_balance_ceiling(out_node_obj.current_balance, flow_cost)
+                            transfer_amount = calc_required_amount(goal_amount, ratio[current_id]) - sum_prev_balances
 
-                        transfer_amount = min(goal_amount / flow_cost, int(balance_ceiling / flow_cost))
+                        else:
+                            transfer_amount = user.get_balance(out_node).current_balance
 
-                        add_transfer(user_id, out_node, in_node, transfer_amount)
-                        out_node_obj.transferred_from(transfer_amount)
-                        in_node_obj.transferred_to(transfer_amount, flow_cost)
+                        add_transfer(user_id, out_node_id, in_node_id, transfer_amount)
+
+                        # Update to outgoing & receiving program in balances table
+                        out_node.transferred_from(transfer_amount)
+                        in_node.transferred_to(transfer_amount, ratio.ratio_to())
 
                         db.session.commit()
 
-                        if in_node != goal_program:
-                            node_ratio = ratio_instance(in_node, predecessor[in_node])
-                            pred_obj = user.get_balance(predecessor[in_node])
-
-                            flow_cost = node_ratio.ratio_to()
-                            balance_ceiling = calc_balance_ceiling(in_node_obj.current_balance, flow_cost)
-
-                            transfer_amount = int(balance_ceiling / flow_cost)
-
-                            add_transfer(user_id, in_node, predecessor[in_node], transfer_amount)
-                            in_node_obj.transferred_from(transfer_amount)
-                            pred_obj.transferred_to(transfer_amount, flow_cost)
-
-                            db.session.commit()
-
-                        goal_amount = goal_amount - transfer_amount
-
-                        if goal_amount == 0:
-                            suggestion["message"].append("You've achieved your goal!!'")
-                            return jsonify(suggestion)
-
-                        if in_node == goal_program:
-                            suggestion["message"].append("How did I get here'")
-                            return jsonify(suggestion)
-
-                        k += 1
+                        k -= 1
 
                 # continue, try next route
                 else:

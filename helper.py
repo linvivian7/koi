@@ -89,41 +89,13 @@ def calc_balance_ceiling(balance, ratio):
 def is_route_possible(ratio_list, goal_amount, balance_capacity):
     """ Given the ratio_list, calculate cumulative amount needed, return True or False if path is viable """
 
-    ratio = calc_cumulative_ratio(ratio_list)
-    req_amount = calc_required_amount(goal_amount, ratio)
+    req_amount = calc_required_amount(goal_amount, ratio_list)
 
     return req_amount <= balance_capacity
 
 
-def calc_required_amount(goal_amount, ratio):
+def calc_required_amount(goal_amount, ratio_list):
     """ """
+    ratio = np.prod(ratio_list)
 
     return int(ceil(goal_amount / ratio))
-
-
-def calc_cumulative_ratio(ratio_list):
-    """ """
-
-    return np.prod(ratio_list)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
