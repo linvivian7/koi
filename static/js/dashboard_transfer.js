@@ -56,7 +56,7 @@ $(document).ready(function() {
                 "outgoing": outgoingId,
             };
 
-            $.get("/ratio-info", formValues, function(results) {
+            $.get("/ratio.json", formValues, function(results) {
                 if (results) {
 
                     var programIds = results["program_id"],
@@ -72,7 +72,7 @@ $(document).ready(function() {
 
         });
 
-      $("#receiving").on("change", function() {
+    $("#receiving").on("change", function() {
 
         var shownOutgoing = $("#outgoing").val();
         var shownReceiving = $("#receiving").val();
@@ -85,7 +85,7 @@ $(document).ready(function() {
             "receiving": receivingId,
               };
 
-          var request = $.get("/ratio-info", formValues, function(results) {
+          var request = $.get("/ratio.json", formValues, function(results) {
             if (results) {
                   $("#ratio").html("Ratio: " + results);
                   $("#ratio").show();

@@ -100,6 +100,51 @@ class User(db.Model):
                                                   self.email,
                                                   )
 
+    def user_outgoing(self):
+        """Return all distinct programs that are outgoing in ratios table."""
+
+        outgoing = db.session.query(Ratio)\
+                             .distinct(Ratio.outgoing_program)\
+                             .join(Balance, Balance.program_id == Ratio.outgoing_program)\
+                             .filter(Balance.user_id == self.user_id).all()
+
+        return outgoing
+
+    def user_receiving(self):
+        """Return all distinct programs that are receiving in ratios table."""
+
+        receiving = db.session.query(Ratio)\
+                              .distinct(Ratio.receiving_program)\
+                              .join(Balance, Balance.program_id == Ratio.receiving_program)\
+                              .filter(Balance.user_id == self.user_id).all()
+
+        return receiving
+
+    def user_receiving_for(self, outgoing_id):
+        """Given an outgoing program, return all distinct programs that are receiving in ratios table."""
+
+        receiving = Ratio.query.filter(Ratio.outgoing_program == outgoing_id)\
+                               .distinct(Ratio.receiving_program)\
+                               .join(Balance, Balance.program_id == Ratio.receiving_program)\
+                               .filter(Balance.user_id == self.user_id).all()
+        return receiving
+
+    def user_outgoing_for(self, receiving_id):
+        """Given a receiving program, return all programs that are outgoing in ratios table."""
+
+        outgoing = db.session.query(Ratio)\
+                             .join(Balance, Balance.program_id == Ratio.receiving_program)\
+                             .filter((Balance.user_id == self.user_id) & (Ratio.receiving_program == receiving_id))\
+                             .all()
+        return outgoing
+
+    def get_balance(self, program_id):
+        """Given a program id, return the balance instance"""
+
+        balance = Balance.query.filter((Balance.user_id == self.user_id) & (Balance.program_id == program_id)).first()
+
+        return balance
+
 
 class Ratio(db.Model):
     """Transfer ratios between two programs."""
@@ -119,15 +164,22 @@ class Ratio(db.Model):
     receiving = db.relationship("Program", primaryjoin="Ratio.receiving_program==Program.program_id")
 
     def __repr__(self):
-            """Provide helpful representation when printed."""
+        """Provide helpful representation when printed."""
 
-            return "<ratio of [program {}] {} to [program {}] {} = {} / {}>".format(self.outgoing_program,
-                                                                                    self.outgoing.program_name,
-                                                                                    self.receiving_program,
-                                                                                    self.receiving.program_name,
-                                                                                    self.numerator,
-                                                                                    self.denominator,
-                                                                                    )
+        return "<ratio of [program {}] {} to [program {}] {} = {} / {}>".format(self.outgoing_program,
+                                                                                self.outgoing.program_name,
+                                                                                self.receiving_program,
+                                                                                self.receiving.program_name,
+                                                                                self.numerator,
+                                                                                self.denominator,
+                                                                                )
+
+    def ratio_to(self):
+        """Provide numerical ratio of numerator / denominator"""
+
+        ratio = float(self.numerator) / float(self.denominator)
+
+        return ratio
 
 
 class Balance(db.Model):
@@ -155,6 +207,20 @@ class Balance(db.Model):
                                                                        self.current_balance,
                                                                        self.updated_at,
                                                                        )
+
+    def transferred_to(self, amount, ratio):
+        """Update balance to receiving program balance after transfer."""
+
+        self.current_balance = self.current_balance + amount * ratio
+        self.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+        db.session.commit()
+
+    def transferred_from(self, amount):
+        """Update balance to outgoing program balance after transfer."""
+
+        self.current_balance = self.current_balance - amount
+        self.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+        db.session.commit()
 
 
 class TransactionHistory(db.Model):
@@ -255,6 +321,15 @@ class UserFeedback(db.Model):
 
 ##############################################################################
 # Helper functions
+
+def ratio_instance(outgoing_id, receiving_id):
+    """Given the outgoing and receiving program ids, return Ratio Instance"""
+
+    return Ratio.query.filter((Ratio.outgoing_program == outgoing_id) & (Ratio.receiving_program == receiving_id)).first()
+
+
+##############################################################################
+# Sub-Helper functions
 
 def init_app():
     # So that we can use Flask-SQLAlchemy, we'll make a Flask app.
