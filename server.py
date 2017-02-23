@@ -1,13 +1,12 @@
-import pdb
+# import pdb
 import os
 import re
 
 # For calculation
-import numpy as np
 from math import log
 from helper import bellman_ford
 from helper import calc_balance_ceiling
-from helper import calc_required_amount
+from helper import DoublyLinkedList
 from helper import is_route_possible
 
 # Flask-related
@@ -50,7 +49,7 @@ app.jinja_env.undefined = StrictUndefined
 ###### Homepage-related routes ######
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def homepage():
     """Return homepage."""
 
@@ -91,11 +90,14 @@ def process_logout():
     return redirect("/")
 
 
-@app.route('/register', methods=['GET', 'POST'])
-def register_user():
+@app.route('/register')
+def register_page():
 
-    if request.method == 'GET':
-        return render_template("register.html")
+    return render_template("register.html")
+
+
+@app.route('/registration', methods=['POST'])
+def register_user():
 
     if "user" in session:
         flash("Please log out prior to registration")
@@ -108,7 +110,7 @@ def register_user():
 
     if User.query.filter_by(email=email).first():
         flash("This email has already been registered")
-        return redirect('/')
+        return redirect('/register')
 
     else:
         match_obj = re.search(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email)
@@ -117,14 +119,13 @@ def register_user():
             user = add_user(email, pw_hash, fname, lname)
             db.session.commit()
 
-            flash("You're registered!")
             session["user"] = user.user_id
 
             return redirect("/dashboard")
 
         else:
             flash("Please enter a valid email!")
-            return redirect('/')
+            return redirect('/register')
 
 
 # For processing form only (AJAX)
@@ -457,10 +458,6 @@ def optimize_transfer():
 
     min_cost = sorted(cost.items(), key=lambda (node, cost): cost)
 
-    # print "*" * 50
-    # print min_cost, predecessor
-    # print "*" * 50
-
     suggestion = {
         "start": [],
         "end": [],
@@ -473,70 +470,77 @@ def optimize_transfer():
         cost = flow[1]
 
         if cost != float('inf'):
+            # current is an integer for program id
+            current = flow[0]
 
-            # Assigned for clarity
-            current_id = flow[0]
+            # Create path for each possible flow
+            path = {}
+            path[current] = DoublyLinkedList()
+            path[current].append(current)
 
-            if current_id == goal_program:
+            # current node is a Node instance
+            current_node = path[current].head
+
+            if current_node.data == goal_program:
                 continue
 
-            # create path for each possible flow
-            path = {}
-            prior_node = predecessor[current_id]
+            path[current].append(predecessor[current_node.data])
 
-            path[current_id] = []
-            path[current_id].append(current_id)
-            path[current_id].append(prior_node)
+            if current_node.next:
+                while current_node.next.data != goal_program:
+                    ancestor = predecessor[current_node.next.data]
+                    path[current].append(ancestor)
+                    current_node = current_node.next
 
-            while prior_node != goal_program:
-                ancestor = predecessor[prior_node]
-                path[current_id].append(ancestor)
-                prior_node = ancestor
-
-            path[current_id].reverse()
+            path[current].print_list()
+            path[current].reverse()
+            path[current].print_list()
 
             ratio = {
-                current_id: []
+                current: []
             }
 
-            i = 0
+            current_node = path[current].head
 
-            while i < len(path[current_id]) - 1:
-
-                receiving_node = path[current_id][i]
-                outgoing_node = path[current_id][i+1]
+            while current_node != path[current].tail:
+                outgoing_node = current_node.next.data
+                receiving_node = current_node.data
 
                 flow_ratio = ratio_instance(outgoing_node, receiving_node).ratio_to()
-                ratio[current_id].append(flow_ratio)
+                ratio[current].append(flow_ratio)
                 balance_capacity = user.get_balance(outgoing_node).current_balance
 
-                # possible for route to go through
-                if is_route_possible(ratio[current_id], goal_amount, balance_capacity):
-                    k = len(path[current_id]) - 1
+                # If enough funds at this route
+                if is_route_possible(ratio[current], goal_amount, balance_capacity):
+                    inner_node = path[current].tail
 
-                    while k > 0:
-                        in_node_id = path[current_id][k - 1]
-                        in_node = user.get_balance(in_node_id)
-
-                        out_node_id = path[current_id][k]
+                    while inner_node != path[current].head:
+                        out_node_id = inner_node.data  # Outgoing program
                         out_node = user.get_balance(out_node_id)
 
+                        in_node_id = inner_node.prev.data  # Receiving program
+                        in_node = user.get_balance(in_node_id)
+
                         # Start by transferring from last source
-                        if k == len(path[current_id]) - 1:
-                            sum_prev_ratio_times_bal = 0
+                        if inner_node == path[current].tail:
+                            product_ratio_balance = []
 
-                            for node in path[current_id][-2::-1]:
+                            node = inner_node.prev
 
-                                if node != goal_program:
-                                    edge_ratio = ratio_instance(node, path[current_id][path[current_id].index(node)-1]).ratio_to()
-
+                            while node:
                                 if node == goal_program:
-                                    edge_ratio = 0
+                                    edge_ratio = 0  # Goal amount already deducted up-front, no need to count current balance at goal program again
 
-                                node_balance = calc_balance_ceiling(user.get_balance(node).current_balance, edge_ratio)
-                                sum_prev_ratio_times_bal += (edge_ratio * node_balance)
+                                else:
+                                    if node.prev:
+                                        edge_ratio = ratio_instance(node.data, node.prev.data).ratio_to()
+                                        node_balance = calc_balance_ceiling(user.get_balance(node.data).current_balance, edge_ratio)
+                                        product_ratio_balance.append(edge_ratio * node_balance)
 
-                            transfer_amount = (goal_amount - sum_prev_ratio_times_bal) / ratio_instance(out_node_id, in_node_id).ratio_to()
+                                node = node.prev
+
+                            sum(product_ratio_balance)
+                            transfer_amount = (goal_amount - sum(product_ratio_balance)) / ratio_instance(out_node_id, in_node_id).ratio_to()
 
                         else:
                             edge_ratio = ratio_instance(out_node_id, in_node_id).ratio_to()
@@ -554,11 +558,11 @@ def optimize_transfer():
                             suggestion["message"].append("You've achieved your goal balance")
                             return jsonify(suggestion)
 
-                        k -= 1
+                        inner_node = inner_node.prev
 
-                # continue, try next route
+                # If not enough funds at this route, try next
                 else:
-                    i += 1
+                    current_node = current_node.next
                     continue
 
     return jsonify(suggestion)

@@ -3,10 +3,76 @@
 from functools import reduce
 from math import floor
 from math import ceil
-from model import ratio_instance
 import numpy as np
 
 
+class Node(object):
+    """ Node in a doubly linked list """
+
+    def __init__(self, data, prev, next):
+        self.data = data
+        self.prev = prev
+        self.next = next
+
+
+class DoublyLinkedList(object):
+
+    head = None
+    tail = None
+
+    def append(self, data):
+        new_node = Node(data, None, None)
+        if self.head is None:
+            self.head = self.tail = new_node
+        else:
+            new_node.prev = self.tail
+            new_node.next = None
+            self.tail.next = new_node
+            self.tail = new_node
+
+    def remove(self, value):
+        """ Remove node with given value """
+
+        current = self.head
+
+        while current:
+            if current.data == value:
+                if current.prev:
+                    current.prev.next = current.next
+                    current.next.prev = current.prev
+                else:
+                    self.head = current.next
+                    current.next.prev = None
+
+            current = current.next
+
+    def reverse(self):
+        """ Reversing a DLL in place """
+
+        temp = self.tail
+        current = self.tail
+
+        while current.prev:
+            self.append(current.prev.data)
+            current = current.prev
+
+        self.head = temp
+        self.head.prev = None
+
+    def print_list(self):
+        print "Doubly linked list:"
+        current = self.head
+        while current:
+            if current == self.head:
+                print current.prev
+            print current.data
+            if current == self.tail:
+                print current.next
+
+            current = current.next
+
+
+##########################################
 def lcm(a, b):
     if a > b:
         greater = a
