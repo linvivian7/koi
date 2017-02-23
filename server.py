@@ -565,6 +565,27 @@ def optimize_transfer():
 
                                 db.session.commit()
 
+                                if in_node != goal_program:
+                                    node_ratio = Ratio.query.filter((Ratio.outgoing_program == in_node) & (Ratio.receiving_program == predecessor[in_node])).one()
+                                    pred_obj = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == predecessor[in_node])).first()
+
+                                    flow_cost = float(node_ratio.numerator) / float(node_ratio.denominator)
+
+                                    balance_ceiling = floor(in_node_obj.current_balance * flow_cost) / flow_cost
+
+                                    transfer_amount = int(balance_ceiling / flow_cost)
+
+                                    transfer = Transfer(user_id=user_id, outgoing_program=in_node, receiving_program=predecessor[in_node], outgoing_amount=transfer_amount)
+                                    db.session.add(transfer)
+
+                                    in_node_obj.current_balance = in_node_obj.current_balance - transfer_amount
+                                    out_node_obj.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+
+                                    pred_obj.current_balance = pred_obj.current_balance + transfer_amount * flow_cost
+                                    pred_obj.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
+
+                                    db.session.commit()
+
                                 print "*" * 50
                                 print in_node, out_node
                                 print balance_ceiling
