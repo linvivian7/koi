@@ -516,19 +516,16 @@ def optimize_transfer():
 
                     path[current_id].reverse()
                     ratio[current_id] = []
-
-                    # pdb.set_trace()
-
                     path_traveled = {}
-                    path_traveled[current_id] = path[current_id]
-                    print "*" * 50
-                    print path_traveled
-                    # path_traveled[current_id].append(prior_node)
-                    # path_traveled[current_id].append(current_id)
+                    i = 0
 
-                    while len(path[current_id]) > 1:
-                        receiving_node = path[current_id][0]
-                        outgoing_node = path[current_id][1]
+                    while i < len(path[current_id]) - 1:
+                        # pdb.set_trace()
+
+                        path_traveled[current_id] = path[current_id]
+
+                        receiving_node = path[current_id][i]
+                        outgoing_node = path[current_id][i+1]
 
                         ratio_object = Ratio.query.filter((Ratio.outgoing_program == outgoing_node) & (Ratio.receiving_program == receiving_node)).one()
                         flow_ratio = float(ratio_object.numerator) / float(ratio_object.denominator)
@@ -541,13 +538,13 @@ def optimize_transfer():
 
                         # possible for route to go through
                         if req_amount <= outgoing_node_balance.current_balance:
+                            j = 0
 
-                            while len(path_traveled[current_id]) > 1:
-                                # pdb.set_trace()
-                                in_node = path_traveled[current_id][0]
+                            while j < len(path_traveled[current_id]) - 1:
+                                in_node = path_traveled[current_id][j]
                                 in_node_obj = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == in_node)).first()
 
-                                out_node = path_traveled[current_id][1]
+                                out_node = path_traveled[current_id][j+1]
                                 out_node_obj = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == out_node)).first()
 
                                 node_ratio = Ratio.query.filter((Ratio.outgoing_program == out_node) & (Ratio.receiving_program == in_node)).one()
@@ -555,7 +552,7 @@ def optimize_transfer():
 
                                 balance_ceiling = floor(out_node_obj.current_balance * flow_cost) / flow_cost
 
-                                transfer_amount = min(goal_amount, int(balance_ceiling * flow_cost))
+                                transfer_amount = min(goal_amount / flow_cost, int(balance_ceiling / flow_cost))
 
                                 transfer = Transfer(user_id=user_id, outgoing_program=out_node, receiving_program=in_node, outgoing_amount=transfer_amount)
                                 db.session.add(transfer)
@@ -568,12 +565,20 @@ def optimize_transfer():
 
                                 db.session.commit()
 
+                                print "*" * 50
+                                print in_node, out_node
+                                print balance_ceiling
+                                print transfer_amount
+                                print "*" * 50
+
                                 goal_amount = goal_amount - transfer_amount
-                                path_traveled[current_id].pop(0)
+                                j += 1
+
+                            break
 
                         # continue, try next route
                         else:
-                            path[current_id].pop(0)
+                            i += 1
                             continue
 
             if goal_amount > 0:
@@ -581,11 +586,6 @@ def optimize_transfer():
 
             else:
                 suggestion["message"].append("You've achieved your goal!!'")
-            print "*" * 50
-            print path
-            print path_traveled
-            print goal_amount
-            print "*" * 50
 
             return jsonify(suggestion)
 
