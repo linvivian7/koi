@@ -213,14 +213,12 @@ class Balance(db.Model):
 
         self.current_balance = self.current_balance + amount * ratio
         self.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
-        db.session.commit()
 
     def transferred_from(self, amount):
         """Update balance to outgoing program balance after transfer."""
 
         self.current_balance = self.current_balance - amount
         self.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
-        db.session.commit()
 
 
 class TransactionHistory(db.Model):
@@ -326,6 +324,29 @@ def ratio_instance(outgoing_id, receiving_id):
     """Given the outgoing and receiving program ids, return Ratio Instance"""
 
     return Ratio.query.filter((Ratio.outgoing_program == outgoing_id) & (Ratio.receiving_program == receiving_id)).first()
+
+
+def add_transfer(user_id, outgoing_id, receiving_id, transfer_amount):
+    """ Convenient transfer wrapper """
+
+    transfer = Transfer(user_id=user_id, outgoing_program=outgoing_id, receiving_program=receiving_id, outgoing_amount=transfer_amount)
+    db.session.add(transfer)
+
+
+def add_balance(user_id, program_id, current_balance, action_id):
+    """ Convenient add_balance wrapper """
+
+    balance = Balance(user_id=user_id, program_id=program_id, current_balance=current_balance, action_id=action_id)
+    db.session.add(balance)
+
+
+def add_user(email, password, fname, lname):
+    """ Convenient registration wrapper """
+
+    user = User(email=email, password=password, fname=fname, lname=lname)
+    db.session.add(user)
+
+    return user
 
 
 ##############################################################################

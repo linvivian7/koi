@@ -1,13 +1,12 @@
-import numpy as np
 import pdb
 import os
 import re
 
 # For calculation
-from math import ceil
 from math import log
 from helper import bellman_ford
 from helper import calc_balance_ceiling
+from helper import is_route_possible
 
 # Flask-related
 from jinja2 import StrictUndefined
@@ -23,16 +22,17 @@ from flask import session
 
 # SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
-from model import connect_to_db
 from model import Action
-from model import Balance
+from model import add_balance
+from model import add_transfer
+from model import add_user
+from model import connect_to_db
 from model import db
 from model import Feedback
 from model import Program
 from model import ratio_instance
 from model import Ratio
 from model import TransactionHistory
-from model import Transfer
 from model import User
 
 
@@ -112,8 +112,7 @@ def register_user():
         match_obj = re.search(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email)
 
         if match_obj:
-            user = User(email=email, password=pw_hash, fname=fname, lname=lname)
-            db.session.add(user)
+            user = add_user(email, pw_hash, fname, lname)
             db.session.commit()
 
             flash("You're registered!")
@@ -294,8 +293,7 @@ def update_balance():
         balance.action_id = update_id
 
     else:
-        balance = Balance(user_id=user_id, program_id=program, current_balance=new_balance, action_id=update_id)
-        db.session.add(balance)
+        add_balance(user_id, program, new_balance, update_id)
 
     db.session.commit()
 
@@ -355,13 +353,13 @@ def transfer_balance():
     if amount % ratio.denominator != 0:
         return "Please enter a transferable amount. See ratio above"
 
-    transfer = Transfer(user_id=user_id, outgoing_program=outgoing_id, receiving_program=receiving_id, outgoing_amount=amount)
-    db.session.add(transfer)
-    db.session.commit()
+    add_transfer(user_id, outgoing_id, receiving_id, amount)
 
     # Update to receiving & outgoing program in balances table
     balance_from.transferred_from(amount)
     balance_to.transferred_to(amount, ratio.ratio_to())
+
+    db.session.commit()
 
     # For updating program balance table via jQuery
 
@@ -435,8 +433,8 @@ def optimize_transfer():
             goal_amount = goal_amount - goal.current_balance
     else:
         action_id = Action.query.filter(Action.action_type == 'New').one().action_id
-        goal = Balance(user_id=user_id, program_id=goal_program, current_balance=0, action_id=action_id)
-        db.session.add(goal)
+        add_balance(user_id, goal_program, 0, action_id)
+        db.session.commit()
 
     # Start Bellman-Ford-Moore
     optimization = {}
@@ -482,7 +480,6 @@ def optimize_transfer():
 
             # create path for each possible flow
             path = {}
-            ratio = {}
             prior_node = predecessor[current_id]
 
             path[current_id] = []
@@ -495,37 +492,32 @@ def optimize_transfer():
                 prior_node = ancestor
 
             path[current_id].reverse()
-            ratio[current_id] = []
-            path_traveled = {}
+
+            ratio = {
+                current_id: []
+            }
+
             i = 0
 
             while i < len(path[current_id]) - 1:
-                # pdb.set_trace()
-
-                path_traveled[current_id] = path[current_id]
 
                 receiving_node = path[current_id][i]
                 outgoing_node = path[current_id][i+1]
 
-                ratio_object = ratio_instance(outgoing_node, receiving_node)
-                flow_ratio = float(ratio_object.numerator) / float(ratio_object.denominator)
-
+                flow_ratio = ratio_instance(outgoing_node, receiving_node).ratio_to()
                 ratio[current_id].append(flow_ratio)
-                cumulative_ratio = np.prod(ratio[current_id])
-
-                req_amount = int(ceil(goal_amount / cumulative_ratio))
-                outgoing_node_balance = user.get_balance(outgoing_node)
+                balance_capacity = user.get_balance(outgoing_node).current_balance
 
                 # possible for route to go through
-                if req_amount <= outgoing_node_balance.current_balance:
-                    j = 0
+                if is_route_possible(ratio[current_id], goal_amount, balance_capacity):
+                    k = 0
 
-                    while j < len(path_traveled[current_id]) - 1:
+                    while k < len(path[current_id]) - 1:
                         pdb.set_trace()
-                        in_node = path_traveled[current_id][j]
+                        in_node = path[current_id][k]
                         in_node_obj = user.get_balance(in_node)
 
-                        out_node = path_traveled[current_id][j+1]
+                        out_node = path[current_id][k + 1]
                         out_node_obj = user.get_balance(out_node)
 
                         node_ratio = ratio_instance(out_node, in_node)
@@ -535,12 +527,11 @@ def optimize_transfer():
 
                         transfer_amount = min(goal_amount / flow_cost, int(balance_ceiling / flow_cost))
 
-                        transfer = Transfer(user_id=user_id, outgoing_program=out_node, receiving_program=in_node, outgoing_amount=transfer_amount)
-                        db.session.add(transfer)
-                        db.session.commit()
-
+                        add_transfer(user_id, out_node, in_node, transfer_amount)
                         out_node_obj.transferred_from(transfer_amount)
                         in_node_obj.transferred_to(transfer_amount, flow_cost)
+
+                        db.session.commit()
 
                         if in_node != goal_program:
                             node_ratio = ratio_instance(in_node, predecessor[in_node])
@@ -551,17 +542,23 @@ def optimize_transfer():
 
                             transfer_amount = int(balance_ceiling / flow_cost)
 
-                            transfer = Transfer(user_id=user_id, outgoing_program=in_node, receiving_program=predecessor[in_node], outgoing_amount=transfer_amount)
-                            db.session.add(transfer)
-                            db.session.commit()
-
+                            add_transfer(user_id, in_node, predecessor[in_node], transfer_amount)
                             in_node_obj.transferred_from(transfer_amount)
                             pred_obj.transferred_to(transfer_amount, flow_cost)
 
-                        goal_amount = goal_amount - transfer_amount
-                        j += 1
+                            db.session.commit()
 
-                    break
+                        goal_amount = goal_amount - transfer_amount
+
+                        if goal_amount == 0:
+                            suggestion["message"].append("You've achieved your goal!!'")
+                            return jsonify(suggestion)
+
+                        if in_node == goal_program:
+                            suggestion["message"].append("How did I get here'")
+                            return jsonify(suggestion)
+
+                        k += 1
 
                 # continue, try next route
                 else:
@@ -570,9 +567,6 @@ def optimize_transfer():
 
     if goal_amount > 0:
         suggestion["message"].append("You don't have enough to achieve your goal balance")
-
-    else:
-        suggestion["message"].append("You've achieved your goal!!'")
 
     return jsonify(suggestion)
 

@@ -2,6 +2,9 @@
 
 from functools import reduce
 from math import floor
+from math import ceil
+from model import ratio_instance
+import numpy as np
 
 
 def lcm(a, b):
@@ -79,3 +82,48 @@ def calc_balance_ceiling(balance, ratio):
     balance_ceiling = floor(balance * ratio) / ratio
 
     return balance_ceiling
+
+
+######################################
+
+def is_route_possible(ratio_list, goal_amount, balance_capacity):
+    """ Given the ratio_list, calculate cumulative amount needed, return True or False if path is viable """
+
+    ratio = calc_cumulative_ratio(ratio_list)
+    req_amount = calc_required_amount(goal_amount, ratio)
+
+    return req_amount <= balance_capacity
+
+
+def calc_required_amount(goal_amount, ratio):
+    """ """
+
+    return int(ceil(goal_amount / ratio))
+
+
+def calc_cumulative_ratio(ratio_list):
+    """ """
+
+    return np.prod(ratio_list)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
