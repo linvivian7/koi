@@ -3,6 +3,7 @@ import os
 import re
 
 # For calculation
+import numpy as np
 from math import log
 from helper import bellman_ford
 from helper import calc_balance_ceiling
@@ -514,31 +515,44 @@ def optimize_transfer():
                     k = len(path[current_id]) - 1
 
                     while k > 0:
-                        in_node_id = path[current_id][k]
+                        in_node_id = path[current_id][k - 1]
                         in_node = user.get_balance(in_node_id)
 
-                        out_node_id = path[current_id][k - 1]
+                        out_node_id = path[current_id][k]
                         out_node = user.get_balance(out_node_id)
 
                         # Start by transferring from last source
                         if k == len(path[current_id]) - 1:
-                            sum_prev_balances = 0
-                            for node in path[current_id][:-1]:
-                                node_balance = user.get_balance(node).current_balance
-                                sum_prev_balances += node_balance
+                            sum_prev_ratio_times_bal = 0
 
-                            transfer_amount = calc_required_amount(goal_amount, ratio[current_id]) - sum_prev_balances
+                            for node in path[current_id][-2::-1]:
+
+                                if node != goal_program:
+                                    edge_ratio = ratio_instance(node, path[current_id][path[current_id].index(node)-1]).ratio_to()
+
+                                if node == goal_program:
+                                    edge_ratio = 0
+
+                                node_balance = calc_balance_ceiling(user.get_balance(node).current_balance, edge_ratio)
+                                sum_prev_ratio_times_bal += (edge_ratio * node_balance)
+
+                            transfer_amount = (goal_amount - sum_prev_ratio_times_bal) / ratio_instance(out_node_id, in_node_id).ratio_to()
 
                         else:
-                            transfer_amount = user.get_balance(out_node).current_balance
+                            edge_ratio = ratio_instance(out_node_id, in_node_id).ratio_to()
+                            transfer_amount = calc_balance_ceiling(user.get_balance(out_node_id).current_balance, edge_ratio)
 
+                        transfer_ratio = ratio_instance(out_node_id, in_node_id).ratio_to()
                         add_transfer(user_id, out_node_id, in_node_id, transfer_amount)
 
                         # Update to outgoing & receiving program in balances table
                         out_node.transferred_from(transfer_amount)
-                        in_node.transferred_to(transfer_amount, ratio.ratio_to())
-
+                        in_node.transferred_to(transfer_amount, transfer_ratio)
                         db.session.commit()
+
+                        if in_node_id == goal_program:
+                            suggestion["message"].append("You've achieved your goal balance")
+                            return jsonify(suggestion)
 
                         k -= 1
 
@@ -546,9 +560,6 @@ def optimize_transfer():
                 else:
                     i += 1
                     continue
-
-    if goal_amount > 0:
-        suggestion["message"].append("You don't have enough to achieve your goal balance")
 
     return jsonify(suggestion)
 

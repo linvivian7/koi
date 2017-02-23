@@ -79,7 +79,11 @@ def bellman_ford(graph, source):
 def calc_balance_ceiling(balance, ratio):
     """ Return balance ceiling (maximum divisible by ratio) given balance and ratio """
 
-    balance_ceiling = floor(balance * ratio) / ratio
+    if ratio == 0:
+        balance_ceiling = balance
+
+    else:
+        balance_ceiling = floor(balance * ratio) / ratio
 
     return balance_ceiling
 
