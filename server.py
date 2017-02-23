@@ -1,8 +1,9 @@
 # from __future__ import print_function
 # from ortools.graph import pywrapgraph
 from helper import bellman_ford
-from math import log, floor, ceiling
+from math import log, floor, ceil
 import numpy as np
+import pdb
 
 import os
 import re
@@ -477,6 +478,10 @@ def optimize_transfer():
 
             min_cost = sorted(cost.items(), key=lambda (node, cost): cost)
 
+            # print "*" * 50
+            # print min_cost, predecessor
+            # print "*" * 50
+
             suggestion = {}
             suggestion["start"] = []
             suggestion["end"] = []
@@ -496,7 +501,6 @@ def optimize_transfer():
                         continue
 
                     # create path for each possible flow
-                    ancestor = 0
                     path = {}
                     ratio = {}
                     prior_node = predecessor[current_id]
@@ -505,7 +509,7 @@ def optimize_transfer():
                     path[current_id].append(current_id)
                     path[current_id].append(prior_node)
 
-                    while ancestor != goal_program:
+                    while prior_node != goal_program:
                         ancestor = predecessor[prior_node]
                         path[current_id].append(ancestor)
                         prior_node = ancestor
@@ -513,32 +517,37 @@ def optimize_transfer():
                     path[current_id].reverse()
                     ratio[current_id] = []
 
+                    # pdb.set_trace()
+
                     path_traveled = {}
-                    path_traveled[current_id] = []
-                    path_traveled[current_id].append(current_id)
-                    path_traveled[current_id].append(prior_node)
+                    path_traveled[current_id] = path[current_id]
+                    print "*" * 50
+                    print path_traveled
+                    # path_traveled[current_id].append(prior_node)
+                    # path_traveled[current_id].append(current_id)
 
                     while len(path[current_id]) > 1:
                         receiving_node = path[current_id][0]
                         outgoing_node = path[current_id][1]
 
                         ratio_object = Ratio.query.filter((Ratio.outgoing_program == outgoing_node) & (Ratio.receiving_program == receiving_node)).one()
-                        ratio = float(ratio_object.numerator) / float(ratio_object.denominator)
+                        flow_ratio = float(ratio_object.numerator) / float(ratio_object.denominator)
 
-                        ratio[current_id].append(ratio)
+                        ratio[current_id].append(flow_ratio)
                         cumulative_ratio = np.prod(ratio[current_id])
 
-                        req_amount = int(ceiling(goal_amount / cumulative_ratio))
+                        req_amount = int(ceil(goal_amount / cumulative_ratio))
                         outgoing_node_balance = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == outgoing_node)).first()
 
                         # possible for route to go through
                         if req_amount <= outgoing_node_balance.current_balance:
 
-                            while len(path_traveled[current_id]) > 2:
-                                in_node = Balance.path_traveled[current_id][0]
+                            while len(path_traveled[current_id]) > 1:
+                                # pdb.set_trace()
+                                in_node = path_traveled[current_id][0]
                                 in_node_obj = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == in_node)).first()
 
-                                out_node = Balance.path_traveled[current_id][1]
+                                out_node = path_traveled[current_id][1]
                                 out_node_obj = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == out_node)).first()
 
                                 node_ratio = Ratio.query.filter((Ratio.outgoing_program == out_node) & (Ratio.receiving_program == in_node)).one()
@@ -546,9 +555,10 @@ def optimize_transfer():
 
                                 balance_ceiling = floor(out_node_obj.current_balance * flow_cost) / flow_cost
 
-                                # transfer_amount = (out_node_obj.current_balance.  int(ceiling(goal_amount / cumulative_ratio))
+                                transfer_amount = min(goal_amount, int(balance_ceiling * flow_cost))
 
                                 transfer = Transfer(user_id=user_id, outgoing_program=out_node, receiving_program=in_node, outgoing_amount=transfer_amount)
+                                db.session.add(transfer)
 
                                 out_node_obj.current_balance = out_node_obj.current_balance - transfer_amount
                                 out_node_obj.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
@@ -563,99 +573,19 @@ def optimize_transfer():
 
                         # continue, try next route
                         else:
+                            path[current_id].pop(0)
                             continue
 
+            if goal_amount > 0:
+                suggestion["message"].append("You don't have enough to achieve your goal balance")
 
-
-
-
-
-
-
-
-
-
-
-
-
-                        transfer_amount = min(req_amount, outgoing_balance.current_balance)
-                        transfer = Transfer(user_id=user_id, outgoing_program=outgoing_node, receiving_program=receiving_node, outgoing_amount=transfer_amount)
-
-                        if req_amount <= outgoing_balance.current_balance:
-
-
-
-                            transfer = Transfer(user_id=user_id, outgoing_program=outgoing_node, receiving_program=receiving_node, outgoing_amount=transfer_amount)
-                            transfer = Transfer(user_id=user_id, outgoing_program=outgoing_node, receiving_program=receiving_node, outgoing_amount=transfer_amount)
-                            db.session.add(transfer)
-
-                            outgoing_balance.current_balance = outgoing_balance.current_balance - transfer_amount
-                            outgoing_balance.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
-
-                            receiving_balance.current_balance = prior_node_balance.current_balance + transfer_amount * flow_cost
-                            receiving_balance.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
-
-                            break
-
-                        goal_amount = goal_amount - transfer_amount
-                        path[current_id].pop(0)
-
-                    if goal_amount > 0:
-                        suggestion["message"].append("You have enought points to achieve your goal")
-
-                    else:
-                        suggestion["message"].append("You do not have enought points to achieve your goal")
-
-                    return jsonify(suggestion)
-
-
-
-
-                    if prior_node != goal_program:
-                        ancestor = 0
-
-                        prior_node_copy = prior_node
-                        suggestion["path"][current_id] = []
-                        suggestion["path"][current_id].append(current_id)
-                        suggestion["path"][current_id].append(prior_node)
-
-                        while ancestor != goal_program:
-                            ancestor = predecessor[prior_node_copy]
-
-                            suggestion["path"][current_id].append(ancestor)
-                            prior_node_copy = ancestor
-
-                    elif prior_node == goal_program:
-                        max_transferred = int(floor(outgoing_balance.current_balance * flow_cost))
-
-                        transfer_amount = min(goal_amount, max_transferred)
-
-                        if transfer_amount == 0:
-                            suggestion["message"].append("There are no points transferrable from program id: "+str(current_id))
-                            continue
-
-                        transfer = Transfer(user_id=user_id, outgoing_program=current_id, receiving_program=prior_node, outgoing_amount=transfer_amount)
-                        db.session.add(transfer)
-
-                        outgoing_balance.current_balance = outgoing_balance.current_balance - transfer_amount
-                        outgoing_balance.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
-
-                        prior_node_balance.current_balance = prior_node_balance.current_balance + transfer_amount * flow_cost
-                        prior_node_balance.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
-
-                        # db.session.commit() if user confirms; set variable at request.form.get
-                        db.session.commit()
-
-                        suggestion["start"].append(current_id)
-                        suggestion["end"].append(goal_program)
-                        suggestion["amount"].append(goal_amount)
-
-                        if goal <= max_transferred:
-                            suggestion["message"].append("transfer successful")
-                            return jsonify(suggestion)
-                        else:
-                            suggestion["message"].append("insufficent funds between the two programs")
-                            continue
+            else:
+                suggestion["message"].append("You've achieved your goal!!'")
+            print "*" * 50
+            print path
+            print path_traveled
+            print goal_amount
+            print "*" * 50
 
             return jsonify(suggestion)
 
