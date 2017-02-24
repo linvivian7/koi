@@ -30,8 +30,10 @@ from model import db
 from model import Feedback
 from model import mapping
 from model import Program
+from model import Ratio
 from model import ratio_instance
 from model import TransactionHistory
+from model import Transfer
 from model import User
 
 
@@ -169,6 +171,37 @@ def transaction_history():
     transactions = TransactionHistory.query.filter_by(user_id=session["user"]).all()
 
     return render_template("activity.html", activities=transactions)
+
+
+@app.route('/transfers')
+def transfer_history():
+    if "user" not in session:
+        flash("Please log in before navigating to the dashboard")
+        return redirect('/')
+
+    transfers = Transfer.query.filter_by(user_id=1)\
+                              .join(Ratio, Ratio.outgoing_program == Transfer.outgoing_program)\
+                              .all()
+
+    transfer_history = {}
+
+    for transfer in transfers:
+        ratio = ratio_instance(transfer.outgoing_program, transfer.receiving_program)
+
+        receiving_amount = int(transfer.outgoing_amount * ratio.ratio_to())
+
+        transfer_history[transfer.transfer_id] = {
+            "transfer_id": transfer.transfer_id,
+            "outgoing": transfer.outgoing.program_name,
+            "outgoing_amount": transfer.outgoing_amount,
+            "receiving": transfer.receiving.program_name,
+            "receiving_amount": receiving_amount,
+            "timestamp": transfer.transferred_at,
+        }
+
+    transfer_history = sorted(transfer_history.items(), key=lambda (key, value): key)
+
+    return render_template("transfers.html", transfers=transfer_history)
 
 
 ### D3-related ###

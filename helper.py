@@ -207,12 +207,6 @@ def balance_capacity(user, current):
 
     ratio = ratio_instance(current.next.data, current.data).ratio_to()
     balance = user.get_balance(current.next.data).current_balance
-    # print "*" * 50
-    # print "c", current
-    # print "n", current.next
-    # print ratio
-    # print balance
-    # print "*" * 50
 
     current = current.next
 

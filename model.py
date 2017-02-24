@@ -299,7 +299,7 @@ class Transfer(db.Model):
                                                                                     self.user_id,
                                                                                     self.outgoing_program,
                                                                                     self.receiving_program,
-                                                                                    self.amount,
+                                                                                    self.outgoing_amount,
                                                                                     self.transferred_at,
                                                                                     )
 
