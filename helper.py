@@ -10,7 +10,7 @@ from model import db
 from model import Program
 from model import ratio_instance
 from model import User
-
+from model import Balance
 import numpy as np
 
 
@@ -84,6 +84,13 @@ def optimize(user_id, source, goal_amount, commit=False):
 
                 flow_ratio = ratio_instance(outgoing_node, receiving_node).ratio_to()
                 ratio[current].append(flow_ratio)
+                a = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == outgoing_node)).first()
+                print "*" * 40
+                path[current].print_list()
+                print outgoing_node, a
+                print receiving_node
+                print "*" * 40
+
                 balance_capacity = user.get_balance(outgoing_node).current_balance
 
                 # If enough funds at this route
