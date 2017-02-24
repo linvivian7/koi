@@ -3,11 +3,7 @@ import os
 import re
 
 # For calculation
-from math import log
-from helper import bellman_ford
-from helper import calc_balance_ceiling
-from helper import DoublyLinkedList
-from helper import is_route_possible
+from helper import optimize
 
 # Flask-related
 from jinja2 import StrictUndefined
@@ -30,9 +26,9 @@ from model import add_user
 from model import connect_to_db
 from model import db
 from model import Feedback
+from model import mapping
 from model import Program
 from model import ratio_instance
-from model import Ratio
 from model import TransactionHistory
 from model import User
 
@@ -46,8 +42,8 @@ moment = Moment(app)
 
 app.jinja_env.undefined = StrictUndefined
 
-###### Homepage-related routes ######
 
+###### Homepage-related routes ######
 
 @app.route('/')
 def homepage():
@@ -153,29 +149,24 @@ def user_dashboard():
         flash("Please log in before navigating to the dashboard")
         return redirect('/')
 
-    user_id = session["user"]
-    user = User.query.options(db.joinedload('balances')).get(user_id)
+    user = User.query.options(db.joinedload('balances')).get(session["user"])
 
-    # For update-balance form
-    programs = Program.query.all()
-
-    # For program-balance table
-    balances = user.balances
-
-    # For transfer-balance form
-    outgoing = user.user_outgoing()
+    programs = Program.query.all()  # For update-balance form
+    balances = user.balances  # For program-balance table
+    outgoing = user.user_outgoing()  # For transfer-balance form
 
     return render_template("dashboard.html", balances=balances, programs=programs, outgoing=outgoing)
 
 
 @app.route('/activity')
 def transaction_history():
-    if "user" in session:
-        user_id = session["user"]
+    if "user" not in session:
+        flash("Please log in before navigating to the dashboard")
+        return redirect('/')
 
-        transactions = TransactionHistory.query.filter_by(user_id=user_id).all()
+    transactions = TransactionHistory.query.filter_by(user_id=session["user"]).all()
 
-        return render_template("activity.html", activities=transactions)
+    return render_template("activity.html", activities=transactions)
 
 
 ### D3-related ###
@@ -183,43 +174,7 @@ def transaction_history():
 def all_d3_info():
     """ """
 
-    all_programs = {}
-    i = 0
-
-    dynamic_d3 = {
-        "nodes": [],
-        "links": []
-    }
-
-    outgoing = db.session.query(Ratio).distinct(Ratio.outgoing_program).all()
-
-    for program in outgoing:
-        if program.outgoing_program not in all_programs:
-            all_programs[program.outgoing_program] = i
-            i += 1
-            dynamic_d3["nodes"].append({"name": program.outgoing.program_name,
-                                       "group": program.outgoing.type_id,
-                                       "img": program.outgoing.vendor.img})
-
-    receiving = db.session.query(Ratio).distinct(Ratio.receiving_program).all()
-
-    for program in receiving:
-        if program.receiving_program not in all_programs:
-            all_programs[program.receiving_program] = i
-            i += 1
-            dynamic_d3["nodes"].append({"name": program.receiving.program_name,
-                                       "group": program.receiving.type_id,
-                                       "img": program.receiving.vendor.img})
-
-    ratios = db.session.query(Ratio).join(Program, Program.program_id == Ratio.outgoing_program).all()
-
-    for ratio in ratios:
-
-        dynamic_d3["links"].append({"source": all_programs[ratio.outgoing_program],
-                                   "target": all_programs[ratio.receiving_program],
-                                   "value": 1})
-
-    return jsonify(dynamic_d3)
+    return jsonify(mapping())
 
 
 @app.route('/custom-d3.json')
@@ -229,51 +184,10 @@ def d3_info():
         flash("Please sign in first")
         return redirect("/login")
 
-    user_id = session["user"]
-    user = User.query.get(user_id)
-
-    # User-specific data
-    outgoing = user.user_outgoing()
-    receiving = user.user_receiving()
-
-    user_programs = {}
-    custom_d3 = {
-        "nodes": [],
-        "links": []
-    }
-
-    # Refactor with eager-load
-
-    i = 0
-    for program in receiving:
-        if program.receiving_program not in user_programs:
-            user_programs[program.receiving_program] = i
-            i += 1
-            custom_d3["nodes"].append({"name": program.receiving.program_name,
-                                       "group": program.receiving.type_id,
-                                       "img": program.receiving.vendor.img})
-
-    # O(n^2) refactor if possible
-    for program_from in outgoing:
-        if program_from.outgoing_program not in user_programs:
-            user_programs[program_from.outgoing_program] = i
-            i += 1
-            custom_d3["nodes"].append({"name": program_from.outgoing.program_name,
-                                       "group": program_from.outgoing.type_id,
-                                       "img": program_from.outgoing.vendor.img})
-
-        for program_to in receiving:
-            ratio = ratio_instance(program_from.outgoing_program, program_to.receiving_program)
-            if ratio:
-                custom_d3["links"].append({"source": user_programs[ratio.outgoing_program],
-                                           "target": user_programs[ratio.receiving_program],
-                                           "value": 1})
-    return jsonify(custom_d3)
+    return jsonify(mapping(session["user"]))
 
 
 ### Balance-related ###
-
-
 @app.route('/update-balance', methods=['POST'])
 def update_balance():
     """Update user balance."""
@@ -296,7 +210,7 @@ def update_balance():
         balance.action_id = update_id
 
     else:
-        add_balance(user_id, program, new_balance, update_id)
+        add_balance(user_id, program, new_balance)
 
     db.session.commit()
 
@@ -315,8 +229,7 @@ def remove_balance():
     """Delete user balance."""
 
     if "user" in session:
-        user_id = session["user"]
-        user = User.query.get(user_id)
+        user = User.query.get(session["user"])
         program = request.form.get("program_id")
         balance = user.get_balance(program)
 
@@ -338,7 +251,7 @@ def transfer_balance():
         return redirect("/login")
 
     user_id = session["user"]
-    user = User.query.get(user_id)
+    user = User.query.get(session["user"])
 
     outgoing_id = int(request.form.get("outgoing"))
     receiving_id = int(request.form.get("receiving"))
@@ -391,8 +304,7 @@ def return_ratio():
         flash("Please sign in first")
         return redirect("/login")
 
-    user_id = session["user"]
-    user = User.query.get(user_id)
+    user = User.query.get(session["user"])
     outgoing = request.args.get("outgoing")
     receiving = request.args.get("receiving")
 
@@ -422,148 +334,11 @@ def optimize_transfer():
     """ Process optimization of points transfer to achieve user goal. """
 
     user_id = session["user"]
-    user = User.query.get(user_id)
 
     goal_program = int(request.form.get("goal_program"))
     goal_amount = int(request.form.get("goal_amount"))
 
-    goal = user.get_balance(goal_program)
-
-    if goal:
-        if goal_amount <= goal.current_balance:
-            return "You already have enough points"
-        else:
-            goal_amount = goal_amount - goal.current_balance
-    else:
-        action_id = Action.query.filter(Action.action_type == 'New').one().action_id
-        add_balance(user_id, goal_program, 0, action_id)
-        db.session.commit()
-
-    # Start Bellman-Ford-Moore
-    optimization = {}
-
-    receiving = user.user_receiving()
-
-    for program in receiving:
-        optimization[program.receiving_program] = {}
-
-        outgoing_ratio = user.user_outgoing_for(program.receiving_program)
-
-        for ratio in outgoing_ratio:
-            if not optimization.get(ratio.outgoing_program):
-                optimization[ratio.outgoing_program] = {}
-            optimization[program.receiving_program][ratio.outgoing_program] = -log(ratio.ratio_to())
-
-    cost, predecessor = bellman_ford(optimization, goal_program)
-
-    min_cost = sorted(cost.items(), key=lambda (node, cost): cost)
-
-    suggestion = {
-        "start": [],
-        "end": [],
-        "amount": [],
-        "message": []
-    }
-
-    for flow in min_cost:
-        # Assigned for clarity
-        cost = flow[1]
-
-        if cost != float('inf'):
-            # current is an integer for program id
-            current = flow[0]
-
-            # Create path for each possible flow
-            path = {}
-            path[current] = DoublyLinkedList()
-            path[current].append(current)
-
-            # current node is a Node instance
-            current_node = path[current].head
-
-            if current_node.data == goal_program:
-                continue
-
-            path[current].append(predecessor[current_node.data])
-
-            if current_node.next:
-                while current_node.next.data != goal_program:
-                    ancestor = predecessor[current_node.next.data]
-                    path[current].append(ancestor)
-                    current_node = current_node.next
-
-            path[current].print_list()
-            path[current].reverse()
-            path[current].print_list()
-
-            ratio = {
-                current: []
-            }
-
-            current_node = path[current].head
-
-            while current_node != path[current].tail:
-                outgoing_node = current_node.next.data
-                receiving_node = current_node.data
-
-                flow_ratio = ratio_instance(outgoing_node, receiving_node).ratio_to()
-                ratio[current].append(flow_ratio)
-                balance_capacity = user.get_balance(outgoing_node).current_balance
-
-                # If enough funds at this route
-                if is_route_possible(ratio[current], goal_amount, balance_capacity):
-                    inner_node = path[current].tail
-
-                    while inner_node != path[current].head:
-                        out_node_id = inner_node.data  # Outgoing program
-                        out_node = user.get_balance(out_node_id)
-
-                        in_node_id = inner_node.prev.data  # Receiving program
-                        in_node = user.get_balance(in_node_id)
-
-                        # Start by transferring from last source
-                        if inner_node == path[current].tail:
-                            product_ratio_balance = []
-
-                            node = inner_node.prev
-
-                            while node:
-                                if node == goal_program:
-                                    edge_ratio = 0  # Goal amount already deducted up-front, no need to count current balance at goal program again
-
-                                else:
-                                    if node.prev:
-                                        edge_ratio = ratio_instance(node.data, node.prev.data).ratio_to()
-                                        node_balance = calc_balance_ceiling(user.get_balance(node.data).current_balance, edge_ratio)
-                                        product_ratio_balance.append(edge_ratio * node_balance)
-
-                                node = node.prev
-
-                            sum(product_ratio_balance)
-                            transfer_amount = (goal_amount - sum(product_ratio_balance)) / ratio_instance(out_node_id, in_node_id).ratio_to()
-
-                        else:
-                            edge_ratio = ratio_instance(out_node_id, in_node_id).ratio_to()
-                            transfer_amount = calc_balance_ceiling(user.get_balance(out_node_id).current_balance, edge_ratio)
-
-                        transfer_ratio = ratio_instance(out_node_id, in_node_id).ratio_to()
-                        add_transfer(user_id, out_node_id, in_node_id, transfer_amount)
-
-                        # Update to outgoing & receiving program in balances table
-                        out_node.transferred_from(transfer_amount)
-                        in_node.transferred_to(transfer_amount, transfer_ratio)
-                        db.session.commit()
-
-                        if in_node_id == goal_program:
-                            suggestion["message"].append("You've achieved your goal balance")
-                            return jsonify(suggestion)
-
-                        inner_node = inner_node.prev
-
-                # If not enough funds at this route, try next
-                else:
-                    current_node = current_node.next
-                    continue
+    suggestion = optimize(user_id, goal_program, goal_amount)
 
     return jsonify(suggestion)
 
@@ -576,38 +351,16 @@ def optimization_dashboard():
         flash("Please log in first")
         return redirect('/')
 
-    user_id = session["user"]
-    user = User.query.get(user_id)
-    goal_program = request.args.get("goal_program")
+    user = User.query.get(session["user"])
+    goal = request.args.get("goal_program")
 
-    if not goal_program:
+    if not goal:
         programs = Program.query.all()
         return render_template('optimize.html', programs=programs)
 
-    balance = user.get_balance(goal_program)
+    outgoing = user.user_outgoing_collection(goal)
 
-    optimize = {
-        "display_program": {},
-        "outgoing": {}
-    }
-
-    if balance:
-        optimize["display_program"]["balance"] = balance.current_balance
-        optimize["display_program"]["program_name"] = balance.program.program_name
-    else:
-        optimize["display_program"]["balance"] = 0
-        optimize["display_program"]["program_name"] = Program.query.get(goal_program).program_name
-
-    avail_sources = user.user_outgoing()
-
-    if avail_sources:
-        for program in avail_sources:
-            optimize["outgoing"][program.outgoing_program] = {
-                "program_name": program.outgoing.program_name,
-                "balance": user.get_balance(program.outgoing_program).current_balance
-            }
-
-    return jsonify(optimize)
+    return jsonify(outgoing)
 
 
 if __name__ == "__main__":

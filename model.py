@@ -110,6 +110,32 @@ class User(db.Model):
 
         return outgoing
 
+    def user_outgoing_collection(self, program_id):
+        """Return all distinct programs that are outgoing in ratios table in collection of instances."""
+
+        balance = self.get_balance(program_id)
+        optimize = {
+            "display_program": {},
+            "outgoing": {}
+        }
+
+        if balance:
+            optimize["display_program"]["balance"] = balance.current_balance
+            optimize["display_program"]["program_name"] = balance.program.program_name
+        else:
+            optimize["display_program"]["balance"] = 0
+            optimize["display_program"]["program_name"] = Program.query.get(program_id).program_name
+
+        outgoing = self.user_outgoing()
+
+        if self.user_outgoing():
+            for program in outgoing:
+                optimize["outgoing"][program.outgoing_program] = {"program_name": program.outgoing.program_name,
+                                                                  "balance": self.get_balance(program.outgoing_program).current_balance
+                                                                  }
+
+        return outgoing
+
     def user_receiving(self):
         """Return all distinct programs that are receiving in ratios table."""
 
@@ -335,9 +361,10 @@ def add_transfer(user_id, outgoing_id, receiving_id, transfer_amount):
     return transfer
 
 
-def add_balance(user_id, program_id, current_balance, action_id):
+def add_balance(user_id, program_id, current_balance):
     """ Convenient add_balance wrapper """
 
+    action_id = Action.query.filter(Action.action_type == 'New').one().action_id
     balance = Balance(user_id=user_id, program_id=program_id, current_balance=current_balance, action_id=action_id)
     db.session.add(balance)
 
@@ -351,6 +378,74 @@ def add_user(email, password, fname, lname):
     db.session.add(user)
 
     return user
+
+
+def mapping(user_id=None):
+
+    all_programs = {}
+    i = 0
+
+    mapping = {
+        "nodes": [],
+        "links": []
+    }
+
+    user = User.query.get(user_id)
+
+    if user_id:
+        outgoing = user.user_outgoing()
+        receiving = user.user_receiving()
+
+        for program in receiving:
+            if program.receiving_program not in all_programs:
+                all_programs[program.receiving_program] = i
+                i += 1
+                mapping["nodes"].append({"name": program.receiving.program_name,
+                                         "group": program.receiving.type_id,
+                                         "img": program.receiving.vendor.img})
+
+        for program_from in outgoing:
+            if program_from.outgoing_program not in all_programs:
+                all_programs[program_from.outgoing_program] = i
+                i += 1
+                mapping["nodes"].append({"name": program_from.outgoing.program_name,
+                                         "group": program_from.outgoing.type_id,
+                                         "img": program_from.outgoing.vendor.img})
+
+            for program_to in receiving:
+                ratio = ratio_instance(program_from.outgoing_program, program_to.receiving_program)
+                if ratio:
+                    mapping["links"].append({"source": all_programs[ratio.outgoing_program],
+                                             "target": all_programs[ratio.receiving_program],
+                                             "value": 1})
+
+    else:
+        outgoing = db.session.query(Ratio).distinct(Ratio.outgoing_program).all()
+        receiving = db.session.query(Ratio).distinct(Ratio.receiving_program).all()
+        ratios = db.session.query(Ratio).join(Program, Program.program_id == Ratio.outgoing_program).all()
+
+        for program in outgoing:
+            if program.outgoing_program not in all_programs:
+                all_programs[program.outgoing_program] = i
+                i += 1
+                mapping["nodes"].append({"name": program.outgoing.program_name,
+                                         "group": program.outgoing.type_id,
+                                         "img": program.outgoing.vendor.img})
+
+        for program in receiving:
+            if program.receiving_program not in all_programs:
+                all_programs[program.receiving_program] = i
+                i += 1
+                mapping["nodes"].append({"name": program.receiving.program_name,
+                                         "group": program.receiving.type_id,
+                                         "img": program.receiving.vendor.img})
+
+        for ratio in ratios:
+            mapping["links"].append({"source": all_programs[ratio.outgoing_program],
+                                     "target": all_programs[ratio.receiving_program],
+                                     "value": 1})
+
+    return mapping
 
 
 ##############################################################################
