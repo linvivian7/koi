@@ -1,15 +1,65 @@
 $(document).ready(function() {
 
     function showOptimization(results) {
-        console.log(results.path);
-        // debugger;
         $("#run-optimize").removeAttr('disabled');
+        $('#optimization-form').on('reset', removeElements);
 
         for (var transfer in results.path) {
             if (results.path.hasOwnProperty(transfer)) {
-                $("#optimization-results").append("<h5 class='to-remove'>"+results.path[transfer].outgoing+results.path[transfer].receiving+results.path[transfer].amount+results.path[transfer].denominator+"</h5>");
-            console.log(transfer + " -> " + results.path[transfer].outgoing);
+
+                var transferred = (results.path[transfer].amount * (results.path[transfer].numerator / results.path[transfer].denominator)).toLocaleString();
+
+                $("#optimization-results").append("<h5 class='to-remove'>"+
+                                                  transfer+
+                                                  "Transfer "+
+                                                  results.path[transfer].amount.toLocaleString()+
+                                                  " points from "+
+                                                  results.path[transfer].outgoing+
+                                                  " at "+
+                                                  results.path[transfer].denominator+
+                                                  " : "+
+                                                  results.path[transfer].numerator+
+                                                  " ratio to "+
+                                                  transferred+
+                                                  " points at "+
+                                                  results.path[transfer].receiving+
+                                                  ".</h5>");
           }
+        }
+        
+        $("#optimization-results").after("<h5 class='to-remove' id='results-message'>"+results.message+"</h5>");
+
+        if (results.path) {
+            $("#optimization-results").after("<h5 id='statement-6' class='to-remove'> Would you like to commit this transfer?</h5>"+
+            "<button type='button' class='btn btn-primary btn-sm' id='yes-btn' class='to-remove'>Yes</button><br class='to-remove'>");
+
+            $("#yes-btn").on('click', commitTransfer);
+        }
+
+    }
+
+    function showConfirmation(results) {
+        $('#optimization-form').on('reset', removeElements);
+
+        $("#results-message").after("<h5 class='to-remove' id='transfer-confirmation'>"+results.confirmation+"</h5>");
+    }
+
+
+    function commitTransfer() {
+        var shownGoalProgram = $("#goal-program").val();
+
+        try {
+            var goalProgram = document.querySelector("#all-programs option[value='"+shownGoalProgram+"']").dataset.value;
+            var formValues = {
+                "goal_program": goalProgram,
+                "goal_amount": $("#goal-amount").val(),
+                "commit": true,
+              };
+
+            $.post("/optimization.json", formValues, showConfirmation);
+        }
+        catch(err) {
+          alert("Please enter a valid loyalty program");
         }
     }
 

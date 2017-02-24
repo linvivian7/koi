@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    $(document).scrollTop(0);
 
     function validateForm() {
 

@@ -10,7 +10,6 @@ from model import db
 from model import Program
 from model import ratio_instance
 from model import User
-from model import Balance
 import numpy as np
 
 
@@ -37,10 +36,10 @@ def optimize(user_id, source, goal_amount, commit=False):
     min_cost = sorted(cost.items(), key=lambda (node, cost): cost)
 
     # counter for paths returned to DOM
-    i = 0
+    i = 1
     suggestion = {
         "path": {},
-        "message": []
+        "message": ""
     }
 
     for flow in min_cost:
@@ -72,29 +71,12 @@ def optimize(user_id, source, goal_amount, commit=False):
 
             path[current].reverse()
 
-            ratio = {
-                current: []
-            }
-
             current_node = path[current].head
 
             while current_node != path[current].tail:
-                outgoing_node = current_node.next.data
-                receiving_node = current_node.data
-
-                flow_ratio = ratio_instance(outgoing_node, receiving_node).ratio_to()
-                ratio[current].append(flow_ratio)
-                a = Balance.query.filter((Balance.user_id == user_id) & (Balance.program_id == outgoing_node)).first()
-                print "*" * 40
-                path[current].print_list()
-                print outgoing_node, a
-                print receiving_node
-                print "*" * 40
-
-                balance_capacity = user.get_balance(outgoing_node).current_balance
 
                 # If enough funds at this route
-                if is_route_possible(ratio[current], goal_amount, balance_capacity):
+                if is_route_possible(user, goal_amount, path[current].head):
                     inner_node = path[current].tail
 
                     while inner_node != path[current].head:
@@ -137,7 +119,7 @@ def optimize(user_id, source, goal_amount, commit=False):
                         in_node.transferred_to(transfer_amount, transfer_ratio)
 
                         # Update transfer info (outgoing, receiving, transfer_amount, numerator, denominator)
-                        key = "transfer" + str(i)
+                        key = "Step " + str(i) + ": "
 
                         suggestion["path"][key] = {}
 
@@ -151,9 +133,10 @@ def optimize(user_id, source, goal_amount, commit=False):
 
                         if commit:
                             db.session.commit()
+                            suggestion["confirmation"] = "Your transfers have been committed. Please go to 'Activity' Page to see the transactions."
 
                         if in_node_id == source:
-                            suggestion["message"].append("You've achieved your goal balance")
+                            suggestion["message"] = "You've achieved your goal balance!"
                             return suggestion
 
                         inner_node = inner_node.prev
@@ -163,29 +146,11 @@ def optimize(user_id, source, goal_amount, commit=False):
                     current_node = current_node.next
                     continue
 
-    return "Not enough funds"
+    suggestion["message"] = "You do not have enough points to achieve your goal."
+    return suggestion
 
 
 #####################################
-
-def calc_balance_ceiling(balance, ratio):
-    """ Return balance ceiling (maximum divisible by ratio) given balance and ratio """
-
-    if ratio == 0:
-        balance_ceiling = balance
-
-    else:
-        balance_ceiling = floor(balance * ratio) / ratio
-
-    return balance_ceiling
-
-
-def calc_required_amount(goal_amount, ratio_list):
-    """ """
-    ratio = np.prod(ratio_list)
-
-    return int(ceil(goal_amount / ratio))
-
 
 def get_graph_nodes(user_id):
     """ """
@@ -208,12 +173,56 @@ def get_graph_nodes(user_id):
     return optimization
 
 
-def is_route_possible(ratio_list, goal_amount, balance_capacity):
+def calc_balance_ceiling(balance, ratio):
+    """ Return balance ceiling (maximum divisible by ratio) given balance and ratio """
+
+    if ratio == 0:
+        balance_ceiling = balance
+
+    else:
+        balance_ceiling = floor(balance * ratio) / ratio
+
+    return balance_ceiling
+
+
+def calc_required_amount(goal_amount, current):
+    """ """
+    ratio = []
+
+    while current.next is not None:
+        outgoing = current.next.data
+        receiving = current.data
+
+        edge_ratio = ratio_instance(outgoing, receiving).ratio_to()
+        ratio.append(edge_ratio)
+        current = current.next
+
+    return int(ceil(goal_amount / np.prod(ratio)))
+
+
+def balance_capacity(user, current):
+
+    if current.next is None:
+            return 0
+
+    ratio = ratio_instance(current.next.data, current.data).ratio_to()
+    balance = user.get_balance(current.next.data).current_balance
+    # print "*" * 50
+    # print "c", current
+    # print "n", current.next
+    # print ratio
+    # print balance
+    # print "*" * 50
+
+    current = current.next
+
+    return floor((ratio * balance) + balance_capacity(user, current))
+
+
+def is_route_possible(user, goal_amount, node):
     """ Given the ratio_list, calculate cumulative amount needed, return True or False if path is viable """
 
-    req_amount = calc_required_amount(goal_amount, ratio_list)
-
-    return req_amount <= balance_capacity
+    return calc_required_amount(goal_amount, node) <= balance_capacity(user, node)
 
 
 ### For creating paths in optimization algorithm ###
@@ -224,6 +233,11 @@ class Node(object):
         self.data = data
         self.prev = prev
         self.next = next
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<node:{}>".format(self.data)
 
 
 class DoublyLinkedList(object):

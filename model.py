@@ -159,9 +159,10 @@ class User(db.Model):
         """Given a receiving program, return all programs that are outgoing in ratios table."""
 
         outgoing = db.session.query(Ratio)\
-                             .join(Balance, Balance.program_id == Ratio.receiving_program)\
+                             .join(Balance, Balance.program_id == Ratio.outgoing_program)\
                              .filter((Balance.user_id == self.user_id) & (Ratio.receiving_program == receiving_id))\
                              .all()
+
         return outgoing
 
     def get_balance(self, program_id):
@@ -390,9 +391,8 @@ def mapping(user_id=None):
         "links": []
     }
 
-    user = User.query.get(user_id)
-
     if user_id:
+        user = User.query.get(user_id)
         outgoing = user.user_outgoing()
         receiving = user.user_receiving()
 
