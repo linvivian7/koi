@@ -29,17 +29,21 @@
               <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
 
               <form id="optimization-form" action="POST">
-                <h5 id="first-statement"> I would like to have <input type="number" name="balance" id="goal-amount" min="1" max="1000000000" maxlength="10" placeholder="Goal Points" required></input> points with 
-                <input type="text" id="goal-program" list="all-programs" placeholder="Select program" required>.</h5>
+                <h4> Thank you for using Koi </h4>
 
+                <label for="goal-program"><h5 id="statement-1"> Which program would you like to optimize points for?</h5></label><br>
+
+                <input type="text" id="goal-program" list="all-programs" placeholder="Select program" required><br><br>
                 <datalist id="all-programs">
                   {% for program in programs | sort(attribute="program_name") %}
                     <option data-value="{{ program.program_id }}" value="{{ program.program_name }}">
                   {% endfor %}
                 </datalist>
 
-                <input type="reset" id="reset-optimize-btn" value="Reset">
-                <input type="submit" id="run-optimize" value="Run Optimization" disabled>
+                <button type="reset" class="btn btn-default" id="reset-optimize-btn">Reset</button>
+                <button type="submit" class="btn btn-info" id="run-optimize" disabled>Run Optimization</button>
+
+                <div id="optimization-results"></div>
 
               </form>                      
           <script src="/static/js/dashboard_optimize.js"></script>

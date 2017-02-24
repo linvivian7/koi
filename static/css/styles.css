@@ -291,7 +291,7 @@ a span {
 }
 
 datalist {
-  font-family: serif;
+  font-family: 'Lato', sans-serif;
 }
 
 #program-balance_wrapper {
@@ -476,3 +476,11 @@ datalist {
         margin-right: 0;
     }
 }
+
+/* optimization page */
+
+#optimization-form {
+  font-family: serif;
+  font-size: 13px;
+}
+

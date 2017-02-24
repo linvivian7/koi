@@ -134,7 +134,7 @@ class User(db.Model):
                                                                   "balance": self.get_balance(program.outgoing_program).current_balance
                                                                   }
 
-        return outgoing
+        return optimize
 
     def user_receiving(self):
         """Return all distinct programs that are receiving in ratios table."""

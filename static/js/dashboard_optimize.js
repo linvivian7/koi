@@ -1,7 +1,16 @@
 $(document).ready(function() {
 
     function showOptimization(results) {
-        console.log(results);
+        console.log(results.path);
+        // debugger;
+        $("#run-optimize").removeAttr('disabled');
+
+        for (var transfer in results.path) {
+            if (results.path.hasOwnProperty(transfer)) {
+                $("#optimization-results").append("<h5 class='to-remove'>"+results.path[transfer].outgoing+results.path[transfer].receiving+results.path[transfer].amount+results.path[transfer].denominator+"</h5>");
+            console.log(transfer + " -> " + results.path[transfer].outgoing);
+          }
+        }
     }
 
     function optimizeTransfer(evt) {
@@ -25,22 +34,18 @@ $(document).ready(function() {
         $('#run-optimize').attr('disabled', 'disabled');
     }
 
-    $('#optimization-form').on('reset', function(evt) {
-        $("#second-statement").remove();
-        $("#third-statement").remove();
+    function removeElements() {
         $("#optimization-form li").remove();
-        $("br").remove();
+        $(".to-remove").remove();
         $('#run-optimize').attr('disabled', 'disabled');
-    });
+    }
 
-    // Show ratio when program fields are filled out
+    $('#optimization-form').on('reset', removeElements);
+
     $("#goal-program").on("change", function() {
         
-        $("#optimization-form li").remove();
-        $("br").remove();
-        $("#second-statement").remove();
-        $("#third-statement").remove();
-        $('#run-optimize').attr('disabled', 'disabled');
+        removeElements();
+
         var shownGoalProgram = $("#goal-program").val();
 
         try {
@@ -51,15 +56,18 @@ $(document).ready(function() {
 
             $.get("/optimize", formValues, function(results) {
 
-                console.log(1);
-                console.log(results);
                 if (results) {
-                    $("#first-statement").after("<h5 id='second-statement'> You currently have "+results.display_program.balance.toLocaleString()+" points with "+results.display_program.program_name+".</h5>");
+
+                    $("#all-programs").after("<h5 id='statement-2' class='to-remove'> You currently have "+results.display_program.balance.toLocaleString()+" points with "+results.display_program.program_name+".</h5>");
 
                     if (results.outgoing) {
-                        $("#reset-optimize-btn").before("<h5 id='third-statement'> The program(s) listed below are your point source(s).</h5>");
                         $("#run-optimize").removeAttr('disabled');
                         
+                        $("#reset-optimize-btn").before("<label for='goal-amount'><h5 class='to-remove' id='statement-3'> Please enter your goal for this account</h5></label><br class='to-remove'>"+
+                                                        '<input type="number" name="balance" class="to-remove" id="goal-amount" min="1" max="1000000000" maxlength="10" placeholder="Goal Points" required></input><br class="to-remove">');
+
+                        $("#reset-optimize-btn").before("<h5 id='statement-4' class='to-remove'> The program(s) listed below are your point source(s).</h5><br class='to-remove'>");
+
                         for (var program in results.outgoing) {
                             $("#reset-optimize-btn").before("<li id='"+
                                                             program+
@@ -70,10 +78,13 @@ $(document).ready(function() {
                                                             " (current balance: "+
                                                             results.outgoing[program]["balance"].toLocaleString()+
                                                             ")"+
-                                                            "</li><br>");
+                                                            "</li><br class='to-remove'>");
                         }
+
+                        $('#optimization-form').on('reset', removeElements);
+                    
                     } else {
-                        $("#second-statement").after("<h5 id='third-statement'>You currently have no transferable points.</h5>");
+                        $("#second-statement").after("<h5 id='statement-2' class='to-remove'>You currently have no transferable points.</h5>");
                     }
                 }
             });

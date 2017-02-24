@@ -2,6 +2,8 @@
 import os
 import re
 
+from collections import OrderedDict
+
 # For calculation
 from helper import optimize
 
@@ -337,8 +339,9 @@ def optimize_transfer():
 
     goal_program = int(request.form.get("goal_program"))
     goal_amount = int(request.form.get("goal_amount"))
+    commit = request.form.get("commit")
 
-    suggestion = optimize(user_id, goal_program, goal_amount)
+    suggestion = optimize(user_id, goal_program, goal_amount, commit)
 
     return jsonify(suggestion)
 
@@ -358,7 +361,7 @@ def optimization_dashboard():
         programs = Program.query.all()
         return render_template('optimize.html', programs=programs)
 
-    outgoing = user.user_outgoing_collection(goal)
+    outgoing = OrderedDict(sorted(user.user_outgoing_collection(goal).items()))
 
     return jsonify(outgoing)
 

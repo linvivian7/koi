@@ -7,6 +7,7 @@ from math import log
 from model import add_balance
 from model import add_transfer
 from model import db
+from model import Program
 from model import ratio_instance
 from model import User
 
@@ -35,10 +36,10 @@ def optimize(user_id, source, goal_amount, commit=False):
     cost, predecessor = bellman_ford(graph, source)
     min_cost = sorted(cost.items(), key=lambda (node, cost): cost)
 
+    # counter for paths returned to DOM
+    i = 0
     suggestion = {
-        "start": [],
-        "end": [],
-        "amount": [],
+        "path": {},
         "message": []
     }
 
@@ -120,12 +121,26 @@ def optimize(user_id, source, goal_amount, commit=False):
                             edge_ratio = ratio_instance(out_node_id, in_node_id).ratio_to()
                             transfer_amount = calc_balance_ceiling(user.get_balance(out_node_id).current_balance, edge_ratio)
 
-                        transfer_ratio = ratio_instance(out_node_id, in_node_id).ratio_to()
+                        transfer = ratio_instance(out_node_id, in_node_id)
+                        transfer_ratio = transfer.ratio_to()
                         add_transfer(user_id, out_node_id, in_node_id, transfer_amount)
 
                         # Update to outgoing & receiving program in balances table
                         out_node.transferred_from(transfer_amount)
                         in_node.transferred_to(transfer_amount, transfer_ratio)
+
+                        # Update transfer info (outgoing, receiving, transfer_amount, numerator, denominator)
+                        key = "transfer" + str(i)
+
+                        suggestion["path"][key] = {}
+
+                        suggestion["path"][key]["outgoing"] = Program.query.get(out_node_id).program_name
+                        suggestion["path"][key]["receiving"] = Program.query.get(in_node_id).program_name
+                        suggestion["path"][key]["amount"] = transfer_amount
+                        suggestion["path"][key]["numerator"] = transfer.numerator
+                        suggestion["path"][key]["denominator"] = transfer.denominator
+
+                        i += 1
 
                         if commit:
                             db.session.commit()
