@@ -179,18 +179,27 @@ def transfer_history():
         flash("Please log in before navigating to the dashboard")
         return redirect('/')
 
-    transfers = Transfer.query.filter_by(user_id=1)\
+    return render_template("transfers.html")
+
+
+@app.route('/transfers.json')
+def transfer_json():
+
+    if "user" not in session:
+        flash("Please log in before navigating to the dashboard")
+        return redirect('/')
+
+    transfers = Transfer.query.filter_by(user_id=session["user"])\
                               .join(Ratio, Ratio.outgoing_program == Transfer.outgoing_program)\
                               .all()
 
     transfer_history = {}
-
     for transfer in transfers:
         ratio = ratio_instance(transfer.outgoing_program, transfer.receiving_program)
 
         receiving_amount = int(transfer.outgoing_amount * ratio.ratio_to())
 
-        transfer_history[transfer.transfer_id] = {
+        transfer_history["("+str(transfer.transfer_id)+")"] = {
             "transfer_id": transfer.transfer_id,
             "outgoing": transfer.outgoing.program_name,
             "outgoing_amount": transfer.outgoing_amount,
@@ -199,9 +208,7 @@ def transfer_history():
             "timestamp": transfer.transferred_at,
         }
 
-    transfer_history = sorted(transfer_history.items(), key=lambda (key, value): key)
-
-    return render_template("transfers.html", transfers=transfer_history)
+    return jsonify(transfer_history)
 
 
 ### D3-related ###

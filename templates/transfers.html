@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  <title>
+  Koi Dashboard
+  </title>
+{% endblock%}}
+
+{% block body %}
+   <div id="wrapper">
+
+    <!-- Sidebar -->
+    <div id="sidebar-wrapper">
+      <ul class="sidebar-nav">
+        <li class="sidebar-brand"><a href="/">Koi</a></li>
+        <li><a href="/dashboard">Main<span></span></a></li>
+        <li><a href="/activity">Activity<span></span></a></li>
+        <li><a href="/transfers">Transfer History<span></span></a></li>
+        <li><a href="/optimize">Optimize<span></span></a></li>
+        <li><a href="/logout">Log Out<span></span></a></li>
+      </ul>
+    </div>
+    <!-- /#sidebar-wrapper -->
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-12">
+            <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
+
+              <table id="transfer-history" style="display:none;" cellspacing="0" width="100%"></table>
+
+          <script src="/static/js/dashboard_transfers.js"></script>
+          </div>
+        </div>
+      </div>
+    <!-- /#page-content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+     <!-- Menu Toggle Script -->
+    <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+    </script>
+
+{% endblock%}}
