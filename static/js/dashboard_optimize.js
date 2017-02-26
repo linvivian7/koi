@@ -4,36 +4,40 @@ $(document).ready(function() {
         $("#run-optimize").removeAttr('disabled');
         $('#optimization-form').on('reset', removeElements);
 
-        for (var transfer in results.path) {
-            if (results.path.hasOwnProperty(transfer)) {
+        $("#optimization-results").after("<h5 class='to-remove results' id='results-message'>"+results.message+"</h5>");
 
-                var transferred = (results.path[transfer].amount * (results.path[transfer].numerator / results.path[transfer].denominator)).toLocaleString();
+        if ((results.message !== "You do not have enough points to achieve your goal.") && (results.message != "You've already achieved your goal.")) {
+            for (var transfer in results.path) {
+                if (results.path.hasOwnProperty(transfer)) {
 
-                $("#optimization-results").append("<h5 class='to-remove'>"+
-                                                  transfer+
-                                                  "Transfer "+
-                                                  results.path[transfer].amount.toLocaleString()+
-                                                  " points from "+
-                                                  results.path[transfer].outgoing+
-                                                  " at "+
-                                                  results.path[transfer].denominator+
-                                                  " : "+
-                                                  results.path[transfer].numerator+
-                                                  " ratio to "+
-                                                  transferred+
-                                                  " points at "+
-                                                  results.path[transfer].receiving+
-                                                  ".</h5>");
-          }
-        }
-        
-        $("#optimization-results").after("<h5 class='to-remove' id='results-message'>"+results.message+"</h5>");
+                    var transferred = (results.path[transfer].amount * (results.path[transfer].numerator / results.path[transfer].denominator)).toLocaleString();
 
-        if (results.path) {
-            $("#optimization-results").after("<h5 id='statement-6' class='to-remove'> Would you like to commit this transfer?</h5>"+
-            "<button type='button' class='btn btn-primary btn-sm' id='yes-btn' class='to-remove'>Yes</button><br class='to-remove'>");
+                    $("#optimization-results").append("<h5 class='to-remove results'>"+
+                                                      transfer+
+                                                      "Transfer "+
+                                                      results.path[transfer].amount.toLocaleString()+
+                                                      " points from "+
+                                                      results.path[transfer].outgoing+
+                                                      " at "+
+                                                      results.path[transfer].denominator+
+                                                      " : "+
+                                                      results.path[transfer].numerator+
+                                                      " ratio to "+
+                                                      transferred+
+                                                      " points at "+
+                                                      results.path[transfer].receiving+
+                                                      ".</h5>");
+              }
+            }
+            $("#optimization-results").after("<h5 id='statement-6' class='to-remove results'> Would you like to commit this transfer?</h5>"+
+            "<button type='button' class='btn btn-primary btn-sm to-remove results' id='yes-btn'>Yes</button><br class='to-remove results'>");
 
+            $('#optimization-form').on('reset', removeElements);
             $("#yes-btn").on('click', commitTransfer);
+
+            $("#optimization-form").on('submit', function () {
+                $(".results").remove();
+            });
         }
 
     }
@@ -65,6 +69,7 @@ $(document).ready(function() {
 
     function optimizeTransfer(evt) {
         evt.preventDefault();
+        $(".results").remove();
 
         var shownGoalProgram = $("#goal-program").val();
 

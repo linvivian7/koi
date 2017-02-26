@@ -1,6 +1,5 @@
 """ Helper function """
 
-from math import ceil
 from math import floor
 from math import log
 
@@ -10,7 +9,6 @@ from model import db
 from model import Program
 from model import ratio_instance
 from model import User
-import numpy as np
 
 
 #####################################
@@ -20,9 +18,17 @@ def optimize(user_id, source, goal_amount, commit=False):
     user = User.query.get(user_id)
     goal = user.get_balance(source)
 
+    # counter for paths returned to DOM
+    i = 1
+    suggestion = {
+        "path": {},
+        "message": ""
+    }
+
     if goal:
         if goal_amount <= goal.current_balance:
-            return "You already have enough points"
+            suggestion["message"] = "You've already achieved your goal."
+            return suggestion
         else:
             goal_amount = goal_amount - goal.current_balance
     else:
@@ -34,13 +40,6 @@ def optimize(user_id, source, goal_amount, commit=False):
     graph = get_graph_nodes(user_id)
     cost, predecessor = bellman_ford(graph, source)
     min_cost = sorted(cost.items(), key=lambda (node, cost): cost)
-
-    # counter for paths returned to DOM
-    i = 1
-    suggestion = {
-        "path": {},
-        "message": ""
-    }
 
     for flow in min_cost:
         # Assigned for clarity
@@ -185,21 +184,6 @@ def calc_balance_ceiling(balance, ratio):
     return balance_ceiling
 
 
-def calc_required_amount(goal_amount, current):
-    """ """
-    ratio = []
-
-    while current.next is not None:
-        outgoing = current.next.data
-        receiving = current.data
-
-        edge_ratio = ratio_instance(outgoing, receiving).ratio_to()
-        ratio.append(edge_ratio)
-        current = current.next
-
-    return int(ceil(goal_amount / np.prod(ratio)))
-
-
 def balance_capacity(user, current):
 
     if current.next is None:
@@ -214,9 +198,9 @@ def balance_capacity(user, current):
 
 
 def is_route_possible(user, goal_amount, node):
-    """ Given the ratio_list, calculate cumulative amount needed, return True or False if path is viable """
+    """ Return True or False if path is viable """
 
-    return calc_required_amount(goal_amount, node) <= balance_capacity(user, node)
+    return goal_amount <= balance_capacity(user, node)
 
 
 ### For creating paths in optimization algorithm ###

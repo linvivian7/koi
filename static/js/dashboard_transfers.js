@@ -11,25 +11,41 @@ $(document).ready(function() {
         table.dataTable({
             "data": userData, // array with the data objects
             "columns": [
-                { "data": "transfer_id", "title": "Id" },
+                { "data": "transfer_id", "title": "id" },
                 { "data": "outgoing", "title": "From" },
-                { "data": "outgoing_amount", "title": "Transferred Amount", "class": "center" },
-                { "data": "receiving", "title": "T0", "class": "center" },
+                { "data": "outgoing_amount", "title": "Transferred Amount", "class": "center", "type": "numeric-comma" },
+                { "data": "ratio", "title": "Ratio", "class": "center" },
+                { "data": "receiving", "title": "To", "class": "center" },
                 { "data": "receiving_amount", "title": "Received Amount", "class": "center" },
                 { "data": "timestamp", "title": "Timestamp", "class": "center",  "type":'datetime', "format":'dddd D MMMM YYYY',},
             ],
 
+            "language": {
+                "thousands": ",",
+            },
+
             "columnDefs": [{
-                "targets": 5,
+                "targets": 6,
                     "data": "timestamp",
                     "render": function (data, type, full, meta) {
-                    return moment(data).format('M/D/YYYY, h:mm a');
+                        return moment(data).format('M/D/YYYY, h:mm a');
+                }
+            },
+                {
+                 "targets": 2,
+                    "data": "outgoing_amount",
+                    "render": function (data, type, full, meta) {
+                        return data;
                 }
             }]
-
         });
 
         table.show();
 
+        new $.fn.dataTable.FixedHeader(table,{
+        });
+
+        new $.fn.dataTable.ColReorder(table,{
+        });
     });
 });

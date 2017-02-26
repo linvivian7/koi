@@ -191,8 +191,10 @@ def transfer_json():
 
     transfers = Transfer.query.filter_by(user_id=session["user"])\
                               .join(Ratio, Ratio.outgoing_program == Transfer.outgoing_program)\
+                              .order_by('transferred_at DESC')\
                               .all()
 
+    i = 1
     transfer_history = {}
     for transfer in transfers:
         ratio = ratio_instance(transfer.outgoing_program, transfer.receiving_program)
@@ -200,13 +202,16 @@ def transfer_json():
         receiving_amount = int(transfer.outgoing_amount * ratio.ratio_to())
 
         transfer_history["("+str(transfer.transfer_id)+")"] = {
-            "transfer_id": transfer.transfer_id,
+            "transfer_id": i,
             "outgoing": transfer.outgoing.program_name,
             "outgoing_amount": transfer.outgoing_amount,
             "receiving": transfer.receiving.program_name,
             "receiving_amount": receiving_amount,
             "timestamp": transfer.transferred_at,
+            "ratio": str(ratio.numerator) + " : " + str(ratio.denominator),
         }
+
+        i += 1
 
     return jsonify(transfer_history)
 
@@ -255,6 +260,8 @@ def update_balance():
         add_balance(user_id, program, new_balance)
 
     db.session.commit()
+
+    balance = user.get_balance(program)
 
     new_bal = {
         "program_id": program,
