@@ -36,16 +36,16 @@
               <form id="optimization-form" action="POST">
                 <h4> Thank you for using Koi </h4>
 
-                <label for="goal-program"><h5 id="statement-1"> Which program would you like to optimize points for?</h5></label><br>
+                <div class="form-group">
+                  <label for="goal-program"><h5 id="statement-1"> Which program would you like to optimize points for?</h5></label><br>
+                  <select class="form-control" name="goal-program" id="goal-program">
+                    {% for program in programs | sort(attribute="program_name") %}
+                      <option value="{{ program.program_id }}">{{ program.program_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
 
-                <input type="text" id="goal-program" list="all-programs" placeholder="Select program" required><br><br>
-                <datalist id="all-programs">
-                  {% for program in programs | sort(attribute="program_name") %}
-                    <option data-value="{{ program.program_id }}" value="{{ program.program_name }}">
-                  {% endfor %}
-                </datalist>
-
-                <button type="reset" class="btn btn-default" id="reset-optimize-btn">Reset</button>
+                <input type="reset" class="btn btn-info reset-btn" id="reset-optimize-btn" value="Reset">
                 <button type="submit" class="btn btn-info" id="run-optimize" disabled>Run Optimization</button>
 
                 <div id="optimization-results"></div>

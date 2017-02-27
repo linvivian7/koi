@@ -1,5 +1,23 @@
 $(document).ready(function() {
 
+    // Optimize Balance Form //
+
+    var goalProgram = -1;
+    var i = 0;
+
+    function changeGoal (e, li) {
+        console.log(1);
+        try {
+            goalProgram = li.val();
+        } catch(err) {}
+    }
+
+    $('#goal-program').editableSelect()
+                      .on('select.editable-select', changeGoal)
+                      .on('select.editable-select', listDetails);
+    $('#goal-program').editableSelect({ effects: 'slide' });
+    // End Update Balance Form //
+
     function showOptimization(results) {
         $("#run-optimize").removeAttr('disabled');
         $('#optimization-form').on('reset', removeElements);
@@ -50,10 +68,8 @@ $(document).ready(function() {
 
 
     function commitTransfer() {
-        var shownGoalProgram = $("#goal-program").val();
 
         try {
-            var goalProgram = document.querySelector("#all-programs option[value='"+shownGoalProgram+"']").dataset.value;
             var formValues = {
                 "goal_program": goalProgram,
                 "goal_amount": $("#goal-amount").val(),
@@ -71,10 +87,7 @@ $(document).ready(function() {
         evt.preventDefault();
         $(".results").remove();
 
-        var shownGoalProgram = $("#goal-program").val();
-
         try {
-            var goalProgram = document.querySelector("#all-programs option[value='"+shownGoalProgram+"']").dataset.value;
             var formValues = {
                 "goal_program": goalProgram,
                 "goal_amount": $("#goal-amount").val(),
@@ -90,41 +103,38 @@ $(document).ready(function() {
     }
 
     function removeElements() {
-        $("#optimization-form li").remove();
         $(".to-remove").remove();
         $('#run-optimize').attr('disabled', 'disabled');
     }
 
     $('#optimization-form').on('reset', removeElements);
 
-    $("#goal-program").on("change", function() {
-        
+    function listDetails() {
+        console.log(2);
         removeElements();
 
-        var shownGoalProgram = $("#goal-program").val();
-
         try {
-            var goalProgram = document.querySelector("#all-programs option[value='"+shownGoalProgram+"']").dataset.value;
             var formValues = {
                 "goal_program": goalProgram,
             };
 
             $.get("/optimize", formValues, function(results) {
-
                 if (results) {
 
-                    $("#all-programs").after("<h5 id='statement-2' class='to-remove'> You currently have "+results.display_program.balance.toLocaleString()+" points with "+results.display_program.program_name+".</h5>");
+                    $("#goal-program").after("<h5 id='statement-2' class='to-remove'> You currently have "+results.display_program.balance.toLocaleString()+" points with "+results.display_program.program_name+".</h5>");
 
                     if (results.outgoing) {
                         $("#run-optimize").removeAttr('disabled');
                         
-                        $("#reset-optimize-btn").before("<label for='goal-amount'><h5 class='to-remove' id='statement-3'> Please enter your goal for this account</h5></label><br class='to-remove'>"+
-                                                        '<input type="number" name="balance" class="to-remove" id="goal-amount" min="1" max="1000000000" maxlength="10" placeholder="Goal Points" required></input><br class="to-remove">');
+                        $("#reset-optimize-btn").before('<div class="form-group row"><label class="col-2 col-form-label to-remove" for="goal-amount">'+
+                                                        '<h5 class="to-remove" id="statement-3"> Please enter your goal for this account</h5></label><br class="to-remove">'+
+                                                        '<div class="col-10"><input class="form-control to-remove" type="number" name="amount" id="goal-amount" min="1" max="1000000000" maxlength="10" placeholder="Goal Points" required>'+
+                                                        '<br class="to-remove"></div>');
 
                         $("#reset-optimize-btn").before("<h5 id='statement-4' class='to-remove'> The program(s) listed below are your point source(s).</h5><br class='to-remove'>");
 
                         for (var program in results.outgoing) {
-                            $("#reset-optimize-btn").before("<li id='"+
+                            $("#reset-optimize-btn").before("<li class='to-remove' id='"+
                                                             program+
                                                             "' value='"+
                                                             program+
@@ -145,8 +155,7 @@ $(document).ready(function() {
             });
                 
         } catch(err){}
-
-    });
+    }
 
     $("#optimization-form").on('submit', optimizeTransfer);
 

@@ -234,52 +234,8 @@ $(document).ready(function(){
 
     //---End Insert for highlighting ---
 
-    //--Insert for search ---
-    var optArray = [];
-    for (var i = 0; i < json.nodes.length - 1; i++) {
-        optArray.push(json.nodes[i].name);
-    }
-
-    optArray = optArray.sort();
-
-    $(function () {
-        $("#search").autocomplete({
-            source: optArray
         });
-    });
-
-    function searchNode() {
-
-        //find the node
-
-        var selectedVal = document.getElementById('search').value;
-        var node = svg.selectAll(".node");
-
-        if (selectedVal == "none") {
-            node.style("stroke", "white").style("stroke-width", "1");
-        } else {
-            var selected = node.filter(function (d, i) {
-                return d.name != selectedVal;
-            });
-            selected.style("opacity", "0");
-            var link = svg.selectAll(".link");
-            link.style("opacity", "0");
-            d3.selectAll(".node, .link").transition()
-                .duration(5000)
-                .style("opacity", 1);
-
-
-        }
-    }
-    });
     // //--End insert for search ---
-
-    function resize() {
-      /* Update graph using new width and height (code below) */
-    }
-     
-    d3.select(window).on('resize', resize);
-
     }
 
 });

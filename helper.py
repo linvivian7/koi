@@ -329,7 +329,6 @@ def relax(node, neighbour, graph, d, p):
 def bellman_ford(graph, source):
     d, p = initialize(graph, source)
 
-    print len(graph)
     for i in range(len(graph)-1):  # run this until is converges
         for u in graph:
             for v in graph[u]:  # For each neighbour of u

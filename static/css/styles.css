@@ -488,3 +488,7 @@ datalist {
   font-size: 13px;
 }
 
+input.btn.btn-info.reset-btn {
+    background-color: transparent;
+    color: #5bc0de;
+}
