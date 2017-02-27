@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 # For calculation
 from helper import optimize
+from helper import generate_random_color
 
 # Flask-related
 from jinja2 import StrictUndefined
@@ -25,6 +26,7 @@ from model import Action
 from model import add_balance
 from model import add_transfer
 from model import add_user
+from model import Balance
 from model import connect_to_db
 from model import db
 from model import Feedback
@@ -45,6 +47,43 @@ bcrypt = Bcrypt(app)
 moment = Moment(app)
 
 app.jinja_env.undefined = StrictUndefined
+
+
+###### temp route ######
+
+@app.route('/temp')
+def temp():
+    return render_template("temp.html")
+
+
+@app.route('/balance-distribution.json')
+def melon_types_data():
+    """Return data about Melon Sales."""
+
+    user_id = session["user"]
+    user = User.query.get(1)
+    balances = Balance.query.filter_by(user_id=user_id).options(db.joinedload('program')).all()
+
+    data_dict = {
+        "labels": [],
+        "datasets": [
+            {
+                "data": [],
+                "backgroundColor": [
+                ],
+                "hoverBackgroundColor": [
+                ]
+            }]
+        }
+
+    for balance in balances:
+        color = "rgb" + str(generate_random_color())
+        data_dict["labels"].append(balance.program.program_name)
+        data_dict["datasets"][0]["data"].append(user.get_balance(balance.program_id).current_balance)
+        data_dict["datasets"][0]["backgroundColor"].append(color)
+        data_dict["datasets"][0]["hoverBackgroundColor"].append(color)
+
+    return jsonify(data_dict)
 
 
 ###### Homepage-related routes ######
@@ -204,9 +243,9 @@ def transfer_json():
         transfer_history["("+str(transfer.transfer_id)+")"] = {
             "transfer_id": i,
             "outgoing": transfer.outgoing.program_name,
-            "outgoing_amount": transfer.outgoing_amount,
+            "outgoing_amount": "{:,}".format(transfer.outgoing_amount),
             "receiving": transfer.receiving.program_name,
-            "receiving_amount": receiving_amount,
+            "receiving_amount": "{:,}".format(receiving_amount),
             "timestamp": transfer.transferred_at,
             "ratio": str(ratio.numerator) + " : " + str(ratio.denominator),
         }

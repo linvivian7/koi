@@ -1,5 +1,18 @@
 $(document).ready(function() {
 
+  // Update Balance Form //
+
+  var updateProgram = -1;
+
+  $('#program').editableSelect()
+               .on('select.editable-select', function (e, li) {
+                  updateProgram = li.val();
+        });
+
+  $('#program').editableSelect({ effects: 'slide' });
+  // End Update Balance Form //
+
+
     // Setup - add a text input to each footer cell
     $('#program-balance tfoot th').each( function () {
         var title = $(this).text();
@@ -15,14 +28,12 @@ $(document).ready(function() {
     // Apply the search
     table.columns().every( function () {
         var that = this;
- 
         $( 'input', this.footer() ).on( 'keyup change', function () {
             if ( that.search() !== this.value ) {
                 that
                     .search( this.value )
                     .draw();
             }
-
         } );
     } );
 
@@ -51,17 +62,16 @@ $(document).ready(function() {
     function updateBalance(evt) {
         evt.preventDefault();
 
-        var shownVal = $("#program").val();
-
         try {
-          var program_id = document.querySelector("#all-programs option[value='"+shownVal+"']").dataset.value;
           var formValues = {
-            "program": program_id,
+            "program": updateProgram,
             "balance": $("#current-balance").val()
           };
+
             $.post("/update-balance", formValues, appendNew);
         }
         catch(err) {
+          console.log(formValues);
           alert("Please enter a valid loyalty program");
         }
 
@@ -85,11 +95,5 @@ $(document).ready(function() {
     }
 
     $("#update-balance-form").on('submit',updateBalance);
-
     $("td.remove").on('click', removeBalance);
-
-    $(".refresh").on('click', function() {
-      window.location.reload();
-    });
-
 } );

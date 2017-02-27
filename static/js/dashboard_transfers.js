@@ -1,51 +1,79 @@
 $(document).ready(function() {
 
-    $.get( "/transfers.json", function(data) {
-        var table = $("#transfer-history");
-        var userData = [];
+    function loadTransfers() {
 
-        for(var i in data){
-            userData.push(data[i]);
-        }
+        $.get( "/transfers.json", function(data) {
+            var table = $("#transfer-history");
+            var userData = [];
 
-        table.dataTable({
-            "data": userData, // array with the data objects
-            "columns": [
-                { "data": "transfer_id", "title": "id" },
-                { "data": "outgoing", "title": "From" },
-                { "data": "outgoing_amount", "title": "Transferred Amount", "class": "center", "type": "numeric-comma" },
-                { "data": "ratio", "title": "Ratio", "class": "center" },
-                { "data": "receiving", "title": "To", "class": "center" },
-                { "data": "receiving_amount", "title": "Received Amount", "class": "center" },
-                { "data": "timestamp", "title": "Timestamp", "class": "center",  "type":'datetime', "format":'dddd D MMMM YYYY',},
-            ],
+            for(var i in data){
+                userData.push(data[i]);
+            }
 
-            "language": {
-                "thousands": ",",
-            },
+            table.dataTable({
+                "deferRender": true,
+                "select": true,
+                "data": userData, // array with the data objects
+                "columns": [
+                    { "data": "transfer_id", "title": "", "class": "dt-body-center"},
+                    { "data": "outgoing", "title": "From" },
+                    { "data": "outgoing_amount", "title": "Transferred Points", "class": "dt-body-right", "type": "formatted-num" },
+                    { "data": "ratio", "title": "Ratio", "class": "dt-body-center" },
+                    { "data": "receiving", "title": "To", "class": "center" },
+                    { "data": "receiving_amount", "title": "Received Points", "class": "dt-body-right", "type": "formatted-num" },
+                    { "data": "timestamp", "title": "Timestamp", "class": "dt-right",  "type":'datetime', "format":'dddd D MMMM YYYY',},
+                ],
 
-            "columnDefs": [{
-                "targets": 6,
-                    "data": "timestamp",
-                    "render": function (data, type, full, meta) {
-                        return moment(data).format('M/D/YYYY, h:mm a');
+                "language": {
+                    "thousands": ",",
+                },
+
+                "columnDefs": [{
+                    "targets": 6,
+                        "data": "timestamp",
+                        "render": function (data, type, full, meta) {
+                            return moment(data).format('M/D/YYYY, h:mm a');
+                    }
+                },
+                  { type: 'formatted-num', targets: 2 },
+                ],
+
+                initComplete: function () {
+                    this.api().columns([1, 2, 3, 4, 5, 6]).every( function () {
+                        var column = this;
+                        var select = $('<select><option value=""></option></select>')
+                            .appendTo( $(column.footer()).empty() )
+                            .on( 'change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex(
+                                    $(this).val()
+                                );
+         
+                                column
+                                    .search( val ? '^'+val+'$' : '', true, false )
+                                    .draw();
+                            } );
+         
+                        column.data().unique().sort().each( function ( d, j ) {
+                            if(column.search() === '^'+d+'$'){
+                                select.append( '<option value="'+d+'" selected="selected">'+d+'</option>' );
+                            } else {
+                                select.append( '<option value="'+d+'">'+d+'</option>' );
+                            }
+                        } );
+                    } );
                 }
-            },
-                {
-                 "targets": 2,
-                    "data": "outgoing_amount",
-                    "render": function (data, type, full, meta) {
-                        return data;
-                }
-            }]
-        });
+            });
 
-        table.show();
+            table.show();
 
-        new $.fn.dataTable.FixedHeader(table,{
-        });
+            new $.fn.dataTable.FixedHeader(table,{
+            });
 
-        new $.fn.dataTable.ColReorder(table,{
+            new $.fn.dataTable.ColReorder(table,{
+            });
+
         });
-    });
+    }
+
+    loadTransfers();
 });

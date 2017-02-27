@@ -27,9 +27,22 @@
       <div class="container-fluid">
         <div class="row">
           <div class="col-xs-12">
-            <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
+            <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><i class="fa fa-arrows-h" aria-hidden="true"></i></a>
 
-              <table id="transfer-history" style="display:none;" cellspacing="0" width="100%"></table>
+              <table class="table-hover table-striped" id="transfer-history" style="display:none;" cellspacing="0" width="100%">
+                <tfoot>
+                    <tr>
+                      <th></th>
+                      <th>From</th>
+                      <th>Transferred Points</th>
+                      <th>Ratio</th>
+                      <th>To</th>
+                      <th>Received Points</th>
+                      <th>Timestamp</th>
+                    </tr>
+                </tfoot>
+              </table>
+
 
           <script src="/static/js/dashboard_transfers.js"></script>
           </div>

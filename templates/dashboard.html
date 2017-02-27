@@ -28,6 +28,7 @@
                 <div class="row">
                     <div class="col-xs-12">
 
+                        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><i class="fa fa-arrows-h" aria-hidden="true"></i></a>
                       
                           <!-- Show flashed messages -->
                           {% with messages = get_flashed_messages() %}
@@ -36,12 +37,11 @@
                               {% endfor %}
                           {% endwith %}
 
-
-                        <h1>Main Dashboard</h1>
-                        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
-
-                        <div id="d3-div"></div> 
-                        <script src="/static/js/userD3.js"></script>
+                        <div class="balance-chart">
+                          <canvas id="donutChart"></canvas>
+                          <div id="donutLegend" class="chart-legend"></div>
+                        </div>
+                        <script src="/static/js/temp.js"></script>
                   
                 </div>
                 <div class="row">
@@ -50,17 +50,21 @@
 
         <form id="update-balance-form" method="POST" autocomplete="off">
 
-          <label for="program">Update </label>
-          <input type="text" id="program" list="all-programs" placeholder="Select program" required>
-
-            <datalist id="all-programs">
+          <div class="form-group">
+            <label for="program">Update </label>
+            <select class="form-control" name="program" id="program">
               {% for program in programs | sort(attribute="program_name") %}
-                <option data-value="{{ program.program_id }}" value="{{ program.program_name }}">
+                <option value="{{ program.program_id }}">{{ program.program_name }}</option>
               {% endfor %}
-            </datalist>
-          
-          <label for="current-balance">Balance: </label>
-          <input type="number" name="balance" id="current-balance" min="0" max="1000000000" maxlength="10" placeholder="Enter points" required></input>
+            </select>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-2 col-form-label" for="current-balance">Balance: </label>
+            <div class="col-10">
+              <input class="form-control" type="number" name="balance" id="current-balance" min="0" max="1000000000" maxlength="10" placeholder="Enter points" required>
+            </div>
+          </div>
 
           <input type="reset" class="reset-btn" value="Reset">
           <input type="submit" id="submit-balance" value="Submit">
@@ -69,26 +73,29 @@
 
         <form id="transfer-form" method="POST" autocomplete="off">
           
-          <label for="outgoing">Transfer </label>
-          <input type="text" id="outgoing" list="all-outgoing-programs" placeholder="Select program" required>
-
-
-          <datalist id="all-outgoing-programs">
+          <div class="form-group">
+            <label for="outgoing">Transfer </label>
+            <select class="form-control" name="outgoing" id="outgoing">
               {% for program in outgoing %}
-                  <option data-value="{{ program.outgoing_program }}" value="{{ program.outgoing.program_name }}">
+                <option value="{{ program.outgoing_program }}">{{ program.outgoing.program_name }}</option>
               {% endfor %}
-          </datalist>
-          
-          <label for="receiving">To </label>
-          <input type="text" id="receiving" list="all-receiving-programs" placeholder="Select program" required>
+            </select>
+          </div>
 
-          <datalist id="all-receiving-programs">
-          </datalist>
+          <div class="form-group">
+            <label for="receiving">To </label>
+            <select class="form-control" name="receiving" id="receiving"></select>
+          </div>
 
           <label id="ratio" hidden></label>
           <br>
-          <label for="transfer-amount">Amount: </label>
-          <input type="number" name="balance" id="transfer-amount" min="1" max="1000000000" maxlength="10" placeholder="Enter points" required></input>
+
+          <div class="form-group row">
+            <label class="col-2 col-form-label" for="transfer-amount">Amount: </label>
+            <div class="col-10">
+              <input class="form-control" type="number" name="amount" id="transfer-amount" min="0" max="1000000000" maxlength="10" placeholder="Enter points" required>
+            </div>
+          </div>
 
           <input type="reset" class="reset-btn" value="Reset">
           <input type="submit" id="submit-balance" value="Submit">

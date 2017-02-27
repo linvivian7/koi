@@ -5,13 +5,13 @@ $(document).ready(function(){
     var dispatcher = d3.dispatch('jsonLoad');
 
     $("a").on('click', function() {
-        if (this.href !== "http://localhost:5000/dashboard#menu-toggle") {
+        if (this.href !== "http://localhost:5000/optimize#menu-toggle") {
            $("#user_d3").remove();
         }
     });
 
     $(window).on('load',function(){
-        if ((window.location.href === "http://localhost:5000/dashboard") ||
+        if ((window.location.href === "http://localhost:5000/optimize") ||
             (window.location.href === "data:text/html,chromewebdata")) {
             renderD3(url);
         }

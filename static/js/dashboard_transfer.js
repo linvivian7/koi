@@ -1,5 +1,19 @@
 $(document).ready(function() {
 
+    // Transfer Balance Form //
+
+  var outgoingProgram = -1;
+  var receivingProgram = -1;
+
+  $('#outgoing').editableSelect()
+               .on('select.editable-select', function (e, li) {
+                  outgoingProgram = li.val();
+        });
+
+  $('#outgoing').editableSelect({ effects: 'slide' });
+
+  // End Transfer Balance Form //
+
     function updateBalanceTransfer(results) {
 
         if ((results === "Not enough outstanding points for this transfer") || (results === "Please enter a transferable amount. See ratio above")) {
@@ -23,15 +37,10 @@ $(document).ready(function() {
     function transferBalance(evt) {
         evt.preventDefault();
 
-        var shownOutgoing = $("#outgoing").val();
-        var shownReceiving = $("#receiving").val();
-
         try {
-            var outgoingId = document.querySelector("#all-outgoing-programs option[value='"+shownOutgoing+"']").dataset.value;
-            var receivingId = document.querySelector("#all-receiving-programs option[value='"+shownReceiving+"']").dataset.value;
             var formValues = {
-                "outgoing": outgoingId,
-                "receiving": receivingId,
+                "outgoing": outgoingProgram,
+                "receiving": receivingProgram,
                 "amount": $("#transfer-amount").val()
               };
 
@@ -45,15 +54,12 @@ $(document).ready(function() {
 
 
     // Show ratio when program fields are filled out
-    $("#outgoing").on("change", function() {
-
+    $("#outgoing").on("select.editable-select", function() {
         $("#all-receiving-programs").empty();
-        var shownOutgoing = $("#outgoing").val();
 
         try {
-            var outgoingId = document.querySelector("#all-outgoing-programs option[value='"+shownOutgoing+"']").dataset.value;
             var formValues = {
-                "outgoing": outgoingId,
+                "outgoing": outgoingProgram,
             };
 
             $.get("/ratio.json", formValues, function(results) {
@@ -63,38 +69,35 @@ $(document).ready(function() {
                         programNames = results["program_name"];
 
                     for (i = 0; i < programIds.length; i++) {
-                        $("#all-receiving-programs").append("<option data-value="+programIds[i]+" value='"+programNames[i]+"''>");
+                        $("#receiving").append("<option value="+programIds[i]+">"+programNames[i]+"</option>");
                     }
+
+                $('#receiving').editableSelect()
+                               .on('select.editable-select', function (e, li) {
+                                    try {
+                                      receivingProgram = li.val();
+                                      var formValues = {
+                                        "outgoing": outgoingProgram,
+                                        "receiving": receivingProgram,
+                                          };
+
+                                      var request = $.get("/ratio.json", formValues, function(results) {
+                                        if (results) {
+                                              $("#ratio").html("Ratio: " + results);
+                                              $("#ratio").show();
+                                            }
+                                          });
+                                    } catch (err) {
+                                        $("#ratio").hide();
+                                    }
+                });
+                 $('#receiving').editableSelect({ effects: 'slide' });
                 }
             });
                 
         } catch(err){}
 
         });
-
-    $("#receiving").on("change", function() {
-
-        var shownOutgoing = $("#outgoing").val();
-        var shownReceiving = $("#receiving").val();
-
-        try{
-          var outgoingId = document.querySelector("#all-outgoing-programs option[value='"+shownOutgoing+"']").dataset.value;
-          var receivingId = document.querySelector("#all-receiving-programs option[value='"+shownReceiving+"']").dataset.value;
-          var formValues = {
-            "outgoing": outgoingId,
-            "receiving": receivingId,
-              };
-
-          var request = $.get("/ratio.json", formValues, function(results) {
-            if (results) {
-                  $("#ratio").html("Ratio: " + results);
-                  $("#ratio").show();
-                }
-              });
-        } catch(err){
-          $("#ratio").hide();
-        }
-      });
 
     $("#transfer-form").on('submit', transferBalance);
 

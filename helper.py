@@ -2,6 +2,7 @@
 
 from math import floor
 from math import log
+import random
 
 from model import add_balance
 from model import add_transfer
@@ -12,6 +13,23 @@ from model import User
 
 
 #####################################
+
+def generate_random_color(base=(255, 255, 255)):
+    red = random.randint(4, 55)
+    green = random.randint(50, 150)
+    blue = random.randint(100, 170)
+
+    if base:
+        red = (red + base[0]) / 2
+        green = (green + base[1]) / 2
+        blue = (blue + base[2]) / 2
+
+    color = (red, green, blue)
+    return color
+
+
+#####################################
+
 def optimize(user_id, source, goal_amount, commit=False):
     """ Optimizes points transfer """
 
