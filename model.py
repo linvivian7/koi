@@ -221,7 +221,7 @@ class Balance(db.Model):
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     current_balance = db.Column(db.Integer, nullable=False)
 
-    user = db.relationship('User', backref=db.backref('balances', order_by=balance_id))
+    user = db.relationship('User', backref=db.backref('balances', order_by=program_id))
     program = db.relationship('Program', backref=db.backref('balances', order_by=balance_id))
     action = db.relationship('Action', backref=db.backref('balances', order_by=balance_id))
 

@@ -299,22 +299,10 @@ datalist {
   font-family: 'Lato', sans-serif;
 }
 
-#program-balance_wrapper {
-  overflow-x: scroll;
-  white-space: nowrap;
-  font-family: serif;
-  font-size: 13px;
-}
-
 .panel-heading {
   font-family: serif;
   font-size: 13px;
 }
-
-#program-balance {
-  table-layout: auto;
-}
-
 
 /*activity dashboard*/
 
@@ -326,7 +314,7 @@ datalist {
   font-size: 13px;
 }
 
-#transaction-history, #program-balance {
+#transaction-history {
   font-family: serif;
   font-size: 13px;
   table-layout: fixed;

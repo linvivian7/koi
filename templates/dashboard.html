@@ -46,99 +46,81 @@
                 </div>
                 <div class="row">
 
-      <section class="col-xs-4">
+                  <section class="col-xs-6">
 
-        <form id="update-balance-form" method="POST" autocomplete="off">
+                    <form id="update-balance-form" method="POST" autocomplete="off">
 
-          <div class="form-group">
-            <label for="program">Update </label>
-            <select class="form-control" name="program" id="program">
-              {% for program in programs | sort(attribute="program_name") %}
-                <option value="{{ program.program_id }}">{{ program.program_name }}</option>
-              {% endfor %}
-            </select>
-          </div>
+                      <div class="form-group">
+                        <label for="program">Update </label>
+                        <select class="form-control" name="program" id="program" placeholder="Select Program">
+                          {% for program in programs | sort(attribute="program_name") %}
+                            <option value="{{ program.program_id }}">{{ program.program_name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
 
-          <div class="form-group row">
-            <label class="col-2 col-form-label" for="current-balance">Balance: </label>
-            <div class="col-10">
-              <input class="form-control" type="number" name="balance" id="current-balance" min="0" max="1000000000" maxlength="10" placeholder="Enter points" required>
-            </div>
-          </div>
+                      <div class="form-group row">
+                        <label class="col-2 col-form-label" for="current-balance">Balance: </label>
+                        <div class="col-10">
+                          <input class="form-control" type="number" name="balance" id="current-balance" min="0" max="1000000000" maxlength="10" placeholder="Enter Points" required>
+                        </div>
+                      </div>
 
-          <input type="reset" class="btn btn-info reset-btn" value="Reset">
-          <input type="submit" class="btn btn-info" value="Submit Button">
+                      <input type="reset" class="btn btn-info reset-btn" value="Reset">
+                      <input type="submit" class="btn btn-info" value="Submit Button">
 
-        </form>
+                    </form>
+                  </section>
 
-        <form id="transfer-form" method="POST" autocomplete="off">
-          
-          <div class="form-group">
-            <label for="outgoing">Transfer </label>
-            <select class="form-control" name="outgoing" id="outgoing">
-              {% for program in outgoing %}
-                <option value="{{ program.outgoing_program }}">{{ program.outgoing.program_name }}</option>
-              {% endfor %}
-            </select>
-          </div>
+                  <section class="col-xs-6">
 
-          <div class="form-group">
-            <label for="receiving">To </label>
-            <select class="form-control" name="receiving" id="receiving"></select>
-          </div>
+                    <form id="transfer-form" method="POST" autocomplete="off">
+                      
+                      <div class="form-group">
+                        <label for="outgoing">Transfer </label>
+                        <select class="form-control" name="outgoing" id="outgoing" placeholder="Select Outgoing Program">
+                          {% for program in outgoing %}
+                            <option value="{{ program.outgoing_program }}">{{ program.outgoing.program_name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
 
-          <label id="ratio" hidden></label>
-          <br>
+                      <div class="form-group">
+                        <label for="receiving">To </label>
+                        <select class="form-control" name="receiving" id="receiving" placeholder="Select Receiving Program"></select>
+                      </div>
 
-          <div class="form-group row">
-            <label class="col-2 col-form-label" for="transfer-amount">Amount: </label>
-            <div class="col-10">
-              <input class="form-control" type="number" name="amount" id="transfer-amount" min="1" max="1000000000" maxlength="10" placeholder="Enter points" required>
-            </div>
-          </div>
+                      <label id="ratio" hidden></label>
+                      <br>
 
-          <input type="reset" class="btn btn-info reset-btn" value="Reset">
-          <input type="submit" class="btn btn-info" value="Submit Button">
-        </form>
-      </section>
+                      <div class="form-group row">
+                        <label class="col-2 col-form-label" for="transfer-amount">Amount: </label>
+                        <div class="col-10">
+                          <input class="form-control" type="number" name="amount" id="transfer-amount" min="1" max="1000000000" maxlength="10" placeholder="Enter Points" required>
+                        </div>
+                      </div>
 
-      <section class="col-xs-6 col-xs-offset-1">
-          <table class="table table-hover table-striped" id="program-balance">
-              <thead>
-                  <tr>
-                      <th class="nitems"></th>
-                      <th class="nitems"></th>
-                      <th>Program</th>
-                      <th class="current_bal_col">Current Balance</th>
-                      <th>Last Updated</th>
-                  </tr>
-              </thead>
-              <tfoot>
-                  <tr>
-                      <th></th>
-                      <th></th>
-                      <th>Program</th>
-                      <th>Current Balance</th>
-                      <th>Last Updated</th>
-                  </tr>
-              </tfoot>
-              <tbody>
-              {% if balances %}
-                  {% for balance in balances | sort(attribute="program.program_name") %}
-                      <tr id="{{ balance.program_id }}">
-                          <td class="remove"><span class="glyphicon glyphicon-minus-sign"></span></td>
-                          <td class="index">{{ loop.index }}</td>
-                          <td class="program_name dt-left">{{ balance.program.program_name }}</td>
-                          <td class="current_balance dt-right">{{ "{:,}".format(balance.current_balance) }}</td>
-                          <td class="updated_at">{{ moment(balance.updated_at).format('M/D/YYYY, h:mm a') }}</td>
-                      </tr>
-                  {% endfor %}
-              {% endif %}
-          </tbody>
-          </table>
-      </section>
+                      <input type="reset" class="btn btn-info reset-btn" value="Reset">
+                      <input type="submit" class="btn btn-info" value="Submit Button">
+                    </form>
+                  </section>
+
+                  <section class="col-xs-12">
+                    <table class="table-hover table-striped" id="program-balance" style="display:none;" cellspacing="0" width="100%">
+                      <tfoot>
+                          <tr>
+                              <th></th>
+                              <th>Program</th>
+                              <th>Current Balance</th>
+                              <th>Last Updated</th>
+                              <th></th>
+                          </tr>
+                      </tfoot>
+                    </table>
+                  </section>
     </div>
   </div>
+<!-- <script src="/static/js/balances.js"></script> -->
 <script src="/static/js/dashboard_update.js"></script>
 <script src="/static/js/dashboard_transfer.js"></script>
 

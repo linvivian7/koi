@@ -1,18 +1,69 @@
 $(document).ready(function() {
 
-    // Transfer Balance Form //
-
+  // Transfer Balance Form //
   var outgoingProgram = -1;
   var receivingProgram = -1;
 
-  $('#outgoing').editableSelect()
-               .on('select.editable-select', function (e, li) {
-                  outgoingProgram = li.val();
-        });
-
-  $('#outgoing').editableSelect({ effects: 'slide' });
+  $('#outgoing').editableSelect({ effects: 'slide' })
+                .on('select.editable-select', updateOutgoingProgram)
+                .on('select.editable-select', removeReceiving)
+                .on('select.editable-select', getReceiving);
 
   // End Transfer Balance Form //
+
+    function getReceiving() {
+     try {
+          var formValues = {
+              "outgoing": outgoingProgram,
+          };
+
+          $.get("/ratio.json", formValues, function(results) {
+              if (results) {
+                  var programIds = results["program_id"],
+                      programNames = results["program_name"];
+
+                  for (i = 0; i < programIds.length; i++) {
+                      $("#receiving").append("<option class='remove' value="+programIds[i]+">"+programNames[i]+"</option>");
+                  }
+
+              $('#receiving').editableSelect({ effects: 'slide' })
+                             .on('select.editable-select', updateReceivingProgram)
+                             .on('select.editable-select', getRatio);
+              }
+          });
+              
+      } catch(err){}
+ 
+    }
+
+    function getRatio() {
+
+      try {
+        var formValues = {
+          "outgoing": outgoingProgram,
+          "receiving": receivingProgram,
+            };
+
+        var request = $.get("/ratio.json", formValues, function(results) {
+          if (results) {
+                $("#ratio").html("Ratio: " + results);
+                $("#ratio").show();
+              }
+            });
+        $("#transfer-form").on('reset', removeReceiving);
+      } catch (err) {
+        $("#ratio").hide();
+      }
+    }
+
+
+    function updateReceivingProgram(e, li) {
+      receivingProgram = li.val();
+    }
+
+    function updateOutgoingProgram(e, li) {
+      outgoingProgram = li.val();
+    }
 
     function updateBalanceTransfer(results) {
 
@@ -34,71 +85,30 @@ $(document).ready(function() {
         }
     }
 
-    function transferBalance(evt) {
-        evt.preventDefault();
+  function transferBalance(evt) {
+      evt.preventDefault();
 
-        try {
-            var formValues = {
-                "outgoing": outgoingProgram,
-                "receiving": receivingProgram,
-                "amount": $("#transfer-amount").val()
-              };
-
-            $.post("/transfer-balance", formValues, updateBalanceTransfer);
-        }
-        catch(err) {
-          alert("Please enter a valid loyalty program");
-        }
-        $('#transfer-form')[0].reset();
-    }
-
-
-    // Show ratio when program fields are filled out
-    $("#outgoing").on("select.editable-select", function() {
-        $("#all-receiving-programs").empty();
-
-        try {
-            var formValues = {
-                "outgoing": outgoingProgram,
+      try {
+          var formValues = {
+              "outgoing": outgoingProgram,
+              "receiving": receivingProgram,
+              "amount": $("#transfer-amount").val()
             };
 
-            $.get("/ratio.json", formValues, function(results) {
-                if (results) {
+          $.post("/transfer-balance", formValues, updateBalanceTransfer);
+      }
+      catch(err) {
+        alert("Please enter a valid loyalty program");
+      }
+      $('#transfer-form')[0].reset();
+  }
 
-                    var programIds = results["program_id"],
-                        programNames = results["program_name"];
 
-                    for (i = 0; i < programIds.length; i++) {
-                        $("#receiving").append("<option value="+programIds[i]+">"+programNames[i]+"</option>");
-                    }
+  function removeReceiving() {
+    $('#receiving').editableSelect('destroy');
+    $('.remove').remove();
+  }
 
-                $('#receiving').editableSelect()
-                               .on('select.editable-select', function (e, li) {
-                                    try {
-                                      receivingProgram = li.val();
-                                      var formValues = {
-                                        "outgoing": outgoingProgram,
-                                        "receiving": receivingProgram,
-                                          };
-
-                                      var request = $.get("/ratio.json", formValues, function(results) {
-                                        if (results) {
-                                              $("#ratio").html("Ratio: " + results);
-                                              $("#ratio").show();
-                                            }
-                                          });
-                                    } catch (err) {
-                                        $("#ratio").hide();
-                                    }
-                });
-                 $('#receiving').editableSelect({ effects: 'slide' });
-                }
-            });
-                
-        } catch(err){}
-
-        });
-
-    $("#transfer-form").on('submit', transferBalance);
+  $("#transfer-form").on('submit', transferBalance);
 
 } );

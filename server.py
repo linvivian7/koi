@@ -1,4 +1,4 @@
-# import pdb
+import pdb
 import os
 import re
 
@@ -195,10 +195,35 @@ def user_dashboard():
     user = User.query.options(db.joinedload('balances')).get(session["user"])
 
     programs = Program.query.all()  # For update-balance form
-    balances = user.balances  # For program-balance table
     outgoing = user.user_outgoing()  # For transfer-balance form
 
-    return render_template("dashboard.html", balances=balances, programs=programs, outgoing=outgoing)
+    return render_template("dashboard.html", programs=programs, outgoing=outgoing)
+
+
+@app.route('/balances.json')
+def balances_json():
+
+    if "user" not in session:
+        flash("Please log in before navigating to the dashboard")
+        return redirect('/')
+
+    user = User.query.options(db.joinedload('balances')).get(session["user"])
+    balances = user.balances  # For program-balance table
+
+    i = 1
+    program_balances = {}
+    for balance in balances:
+        program_balances["("+str(balance.balance_id)+")"] = {
+            "index": i,
+            "program_id": balance.program_id,
+            "program": balance.program.program_name,
+            "balance": "{:,}".format(balance.current_balance),
+            "timestamp": balance.updated_at,
+        }
+
+        i += 1
+
+    return jsonify(program_balances)
 
 
 @app.route('/activity')
@@ -286,7 +311,7 @@ def update_balance():
     user = User.query.get(user_id)
 
     program = request.form.get("program")
-    new_balance = request.form.get("balance")
+    new_balance = int(request.form.get("balance"))
 
     balance = user.get_balance(program)
     update_id = Action.query.filter(Action.action_type == 'Update').one().action_id
