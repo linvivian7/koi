@@ -287,6 +287,7 @@ a span {
 #update-balance-form, #transfer-form {
   font-family: serif;
   font-size: 13px;
+  max-width: 300px;
 }
 
 /*program-balance table*/
@@ -476,7 +477,19 @@ datalist {
   font-size: 13px;
 }
 
-input.btn.btn-info.reset-btn {
+input.btn.btn-info.reset-btn, .toggle-btn {
     background-color: transparent;
     color: #5bc0de;
+}
+
+
+
+/*newer, for forms on homepage*/
+
+#balance-form-section {
+  margin-top: 8%;
+}
+
+.toggle-btn {
+  margin-bottom: 1em;
 }
