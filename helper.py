@@ -34,7 +34,7 @@ def optimize(user_id, source, goal_amount, commit=False):
     """ Optimizes points transfer """
 
     user = User.query.get(user_id)
-    goal = user.get_balance(source)
+    goal = user.get_balance_first(source)
 
     # counter for paths returned to DOM
     i = 1
@@ -153,7 +153,7 @@ def optimize(user_id, source, goal_amount, commit=False):
                             suggestion["confirmation"] = "Your transfers have been committed. Please go to 'Activity' Page to see the transactions."
 
                         if in_node_id == source:
-                            suggestion["message"] = "You've achieved your goal balance!"
+                            suggestion["message"] = "You've achieved your goal balance! Would you like to commit this transfer?"
                             return suggestion
 
                         inner_node = inner_node.prev

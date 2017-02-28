@@ -1,4 +1,4 @@
-import pdb
+# import pdb
 import os
 import re
 
@@ -32,10 +32,7 @@ from model import db
 from model import Feedback
 from model import mapping
 from model import Program
-from model import Ratio
 from model import ratio_instance
-from model import TransactionHistory
-from model import Transfer
 from model import User
 
 
@@ -47,43 +44,6 @@ bcrypt = Bcrypt(app)
 moment = Moment(app)
 
 app.jinja_env.undefined = StrictUndefined
-
-
-###### temp route ######
-
-@app.route('/temp')
-def temp():
-    return render_template("temp.html")
-
-
-@app.route('/balance-distribution.json')
-def melon_types_data():
-    """Return data about Melon Sales."""
-
-    user_id = session["user"]
-    user = User.query.get(1)
-    balances = Balance.query.filter_by(user_id=user_id).options(db.joinedload('program')).all()
-
-    data_dict = {
-        "labels": [],
-        "datasets": [
-            {
-                "data": [],
-                "backgroundColor": [
-                ],
-                "hoverBackgroundColor": [
-                ]
-            }]
-        }
-
-    for balance in balances:
-        color = "rgb" + str(generate_random_color())
-        data_dict["labels"].append(balance.program.program_name)
-        data_dict["datasets"][0]["data"].append(user.get_balance(balance.program_id).current_balance)
-        data_dict["datasets"][0]["backgroundColor"].append(color)
-        data_dict["datasets"][0]["hoverBackgroundColor"].append(color)
-
-    return jsonify(data_dict)
 
 
 ###### Homepage-related routes ######
@@ -200,6 +160,36 @@ def user_dashboard():
     return render_template("dashboard.html", programs=programs, outgoing=outgoing)
 
 
+@app.route('/balance-distribution.json')
+def donut_chart_data():
+    """Return data about Melon Sales."""
+
+    user_id = session["user"]
+    user = User.query.get(1)
+    balances = Balance.query.filter_by(user_id=user_id).options(db.joinedload('program')).all()
+
+    data_dict = {
+        "labels": [],
+        "datasets": [
+            {
+                "data": [],
+                "backgroundColor": [
+                ],
+                "hoverBackgroundColor": [
+                ]
+            }]
+        }
+
+    for balance in balances:
+        color = "rgb" + str(generate_random_color())
+        data_dict["labels"].append(balance.program.program_name)
+        data_dict["datasets"][0]["data"].append(user.get_balance(balance.program_id).current_balance)
+        data_dict["datasets"][0]["backgroundColor"].append(color)
+        data_dict["datasets"][0]["hoverBackgroundColor"].append(color)
+
+    return jsonify(data_dict)
+
+
 @app.route('/balances.json')
 def balances_json():
 
@@ -216,11 +206,11 @@ def balances_json():
         program_balances["("+str(balance.balance_id)+")"] = {
             "index": i,
             "program_id": balance.program_id,
+            "vendor": balance.program.vendor.vendor_name,
             "program": balance.program.program_name,
             "balance": "{:,}".format(balance.current_balance),
             "timestamp": balance.updated_at,
         }
-
         i += 1
 
     return jsonify(program_balances)
@@ -232,9 +222,49 @@ def transaction_history():
         flash("Please log in before navigating to the dashboard")
         return redirect('/')
 
-    transactions = TransactionHistory.query.filter_by(user_id=session["user"]).all()
+    return render_template("activity.html")
 
-    return render_template("activity.html", activities=transactions)
+
+@app.route('/activity.json')
+def transactions_json():
+    if "user" not in session:
+        flash("Please log in before navigating to the dashboard")
+        return redirect('/')
+
+    user = User.query.get(session["user"])
+    transactions = user.get_transactions()
+
+    i = 1
+    transaction_history = {}
+    for transaction in transactions:
+        change = transaction.ending_balance - transaction.beginning_balance
+        key = "("+str(transaction.transaction_id)+")"
+
+        transaction_history[key] = {
+            "index": i,
+            "type": transaction.action.action_type,
+            "program": transaction.program.program_name,
+            "timestamp": transaction.created_at,
+        }
+
+        if transaction.beginning_balance == 0:
+            transaction_history[key]["beginning"] = "-"
+        else:
+            transaction_history[key]["beginning"] = "{:,}".format(transaction.beginning_balance)
+
+        if transaction.ending_balance == 0:
+            transaction_history[key]["ending"] = "-"
+        else:
+            transaction_history[key]["ending"] = "{:,}".format(transaction.ending_balance)
+
+        if change < 0:
+            transaction_history[key]["change"] = "(" + "{:,}".format(change) + ")"
+        else:
+            transaction_history[key]["change"] = "{:,}".format(change)
+
+        i += 1
+
+    return jsonify(transaction_history)
 
 
 @app.route('/transfers')
@@ -253,10 +283,8 @@ def transfer_json():
         flash("Please log in before navigating to the dashboard")
         return redirect('/')
 
-    transfers = Transfer.query.filter_by(user_id=session["user"])\
-                              .join(Ratio, Ratio.outgoing_program == Transfer.outgoing_program)\
-                              .order_by('transferred_at DESC')\
-                              .all()
+    user = User.query.get(session["user"])
+    transfers = user.get_transfers()
 
     i = 1
     transfer_history = {}

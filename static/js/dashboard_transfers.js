@@ -17,17 +17,12 @@ $(document).ready(function() {
                 "columns": [
                     { "data": "transfer_id", "title": "", "class": "dt-body-center"},
                     { "data": "outgoing", "title": "From" },
-                    { "data": "outgoing_amount", "title": "Transferred Points", "class": "dt-body-right", "type": "formatted-num" },
+                    { "data": "outgoing_amount", "title": "Transferred Points", "class": "dt-body-right  expand-width", "type": "formatted-num" },
                     { "data": "ratio", "title": "Ratio", "class": "dt-body-center" },
-                    { "data": "receiving", "title": "To", "class": "center" },
-                    { "data": "receiving_amount", "title": "Received Points", "class": "dt-body-right", "type": "formatted-num" },
+                    { "data": "receiving", "title": "To", "class": "dt-left" },
+                    { "data": "receiving_amount", "title": "Received Points", "class": "dt-body-right  expand-width", "type": "formatted-num" },
                     { "data": "timestamp", "title": "Timestamp", "class": "dt-right",  "type":'datetime', "format":'dddd D MMMM YYYY',},
                 ],
-
-                "language": {
-                    "thousands": ",",
-                },
-
                 "columnDefs": [{
                     "targets": 6,
                         "data": "timestamp",
@@ -35,11 +30,10 @@ $(document).ready(function() {
                             return moment(data).format('M/D/YYYY, h:mm a');
                     }
                 },
-                  { type: 'formatted-num', targets: 2 },
                 ],
 
                 initComplete: function () {
-                    this.api().columns([1, 2, 3, 4, 5, 6]).every( function () {
+                    this.api().columns([1, 2, 3, 4, 5]).every( function () {
                         var column = this;
                         var select = $('<select><option value=""></option></select>')
                             .appendTo( $(column.footer()).empty() )

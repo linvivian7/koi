@@ -105,8 +105,11 @@ $(document).ready(function() {
 
 
   function removeReceiving() {
+    $("#ratio").hide();
     $('#receiving').editableSelect('destroy');
     $('.remove').remove();
+    $("#transfer-form li").addClass('es-visible');
+    $("#transfer-form li").css("display","block");
   }
 
   $("#transfer-form").on('submit', transferBalance);

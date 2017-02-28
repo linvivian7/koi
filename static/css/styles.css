@@ -284,10 +284,14 @@ a span {
 
 /*main dashboard end*/
 
-#update-balance-form, #transfer-form {
-  font-family: serif;
+#update-balance-form, #transfer-form, .alert-message, #optimization-form {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', "sans-serif";
   font-size: 13px;
   max-width: 300px;
+}
+
+#optimization-form {
+  max-width: 500px;
 }
 
 /*program-balance table*/
@@ -296,61 +300,21 @@ a span {
   color: #b45151;
 }
 
-datalist {
-  font-family: 'Lato', sans-serif;
-}
-
-.panel-heading {
-  font-family: serif;
-  font-size: 13px;
-}
-
 /*activity dashboard*/
 
-#transaction-history_wrapper {
+#transaction-history_wrapper, #program-balance_wrapper, #transfer-history_wrapper {
   margin-top: 5%;
   overflow: hidden;
   white-space: nowrap;
-  font-family: serif;
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', "sans-serif";
   font-size: 13px;
 }
 
-#transaction-history {
-  font-family: serif;
-  font-size: 13px;
-  table-layout: fixed;
-  width: 90%;
-  background-color: white;
+#program-balance_wrapper {
+  margin-top: 0;
 }
-
-.nitems {
-  width: 8px;
-}
-
-.Type-search {
-  width: 80px;
-}
-
-.current_bal_col {
-  width: 100px;
-}
-
-.Program-search, .Beginning-search, .Change-search, .Ending-search {
-  width: 120px;
-}
-
-.Timestamp-search {
-  width: 130px;
-}
-
 
 /* side nav */
-
-/*!
- * Start Bootstrap - Simple Sidebar HTML Template (http://startbootstrap.com)
- * Code licensed under the Apache License v2.0.
- * For details, see http://www.apache.org/licenses/LICENSE-2.0.
- */
 
 /* Toggle Styles */
 
@@ -478,18 +442,36 @@ datalist {
 }
 
 input.btn.btn-info.reset-btn, .toggle-btn {
-    background-color: transparent;
-    color: #5bc0de;
+  background-color: transparent;
+  color: #5bc0de;
 }
 
-
+#ratio {
+  margin-bottom: 0;
+}
 
 /*newer, for forms on homepage*/
 
-#balance-form-section {
-  margin-top: 8%;
+#balance-form-section, #transfer-form-section {
+  padding: 0;
+  table-layout: auto;
 }
 
 .toggle-btn {
+  margin-top: 2em;
   margin-bottom: 1em;
+}
+
+.alert-warning {
+    margin: 1em 0 0 0;
+}
+
+.btn-danger, .btn-danger:hover {
+    background-color: transparent;
+    color: #d43f3a;
+    border-color: transparent;
+}
+
+th.no-space, td.no-space {
+  width: 13px;
 }

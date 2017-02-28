@@ -1,5 +1,15 @@
 $(document).ready(function() {
 
+  // Toggle between transfer and update forms
+
+  $(".toggle-btn").on('click', function () {
+    $("#balance-form-section").toggle();
+    $("#transfer-form-section").toggle();
+    $(".toggle-btn").toggle();
+  });
+
+  // Loading and updating program balance table //
+
   function loadBalances() {
 
         $.get( "/balances.json", function(data) {
@@ -16,29 +26,24 @@ $(document).ready(function() {
                 "select": true,
                 "data": userData, // array with the data objects
                 "columns": [
-                    { "data": "index", "title": "", "class": "dt-body-center index"},
-                    { "data": "program", "title": "Program", "class": "dt-left" },
+                    { "data": "index", "title": "", "class": "dt-body-center index no-space"},
+                    { "data": null, "class": "no-space", "defaultContent": "<button type=button' class='btn btn-danger'><i class='fa fa-times' aria-hidden='true'></i></button>"},
+                    { "data": "vendor", "title": "Vendor", "class": "dt-left expand-width" },
+                    { "data": "program", "title": "Program", "class": "dt-left expand-width" },
                     { "data": "balance", "title": "Current Balance", "class": "dt-body-right expand-width current-balance", "type": "formatted-num" },
                     { "data": "timestamp", "title": "Timestamp", "class": "dt-right updated-at",  "type":'datetime', "format":'dddd D MMMM YYYY',},
-                    { "data": "program_id", "title": "", "class": "dt-body-center"},
                 ],
-
-                "language": {
-                    "thousands": ",",
-                },
-
                 "columnDefs": [{
-                    "targets": 3,
+                    "targets": 5,
                         "data": "timestamp",
                         "render": function (data, type, full, meta) {
                             return moment(data).format('M/D/YYYY, h:mm a');
-                    }
+                    },
                 },
-                  { type: 'formatted-num', targets: 2 },
                 ],
 
                 initComplete: function () {
-                    this.api().columns([1, 2, 3]).every( function () {
+                    this.api().columns([2, 3, 4]).every( function () {
                         var column = this;
                         var select = $('<select><option value=""></option></select>')
                             .appendTo( $(column.footer()).empty() )
@@ -63,23 +68,47 @@ $(document).ready(function() {
                 }
             });
 
+            $('#program-balance').on( 'click', 'button', removeBalance);
+
+            function removeBalance() {
+
+              if (confirm("Delete this program balance?") === true) {
+                var $this = $(this);
+                var trId = $this.closest('tr').prop('id');
+
+                var data = {
+                  "program_id": $this.closest('tr').prop('id')
+                };
+
+                $.post("/remove-balance", data, function(results) {
+                  $('#'+trId+"").remove();
+                });
+              }
+            }
+
             table.show();
             new $.fn.dataTable.FixedHeader(table,{});
             new $.fn.dataTable.ColReorder(table,{});
 
-            $("#update-balance-form").on('submit',updateBalance);
+            $("#update-balance-form").on('submit', updateBalance);
+            $("#update-balance-form").on('reset', clearFields);
+
+            function clearFields() {
+                $("#update-balance-form li").addClass('es-visible');
+                $("#update-balance-form li").css("display","block");
+              }
 
             // Update Balance Form //
             var updateProgram = -1;
 
             $('#program').editableSelect({ effects: 'slide' })
-                         .on('select.editable-select', function (e, li) {
-                            updateProgram = li.val();
-                  });
+                         .on('select.editable-select', updateProgramVar);
 
-            // $('#program').editableSelect(;
+            function updateProgramVar(e, li) {
+              updateProgram = li.val();
+            }
+
             // End Update Balance Form //
-
 
             function updateBalance(evt) {
                 evt.preventDefault();
@@ -89,13 +118,23 @@ $(document).ready(function() {
                     "program": updateProgram,
                     "balance": $("#current-balance").val()
                   };
-                    $.post("/update-balance", formValues, appendNew);
-                }
-                catch(err) {
-                  alert("Please enter a valid loyalty program");
+
+                  $.post("/update-balance", formValues).success(appendNew).fail(alertUser);
+                } catch(err) {
                 }
 
                 $('#update-balance-form')[0].reset();
+                $("#transfer-form li").addClass('es-visible');
+                $("#transfer-form li").css("display","block");
+                updateProgram = -1;
+            }
+
+            function alertUser() {
+                $("#update-balance-form").after("<div class='alert alert-warning alert-message'>Please select a valid program. </div>");
+
+                setTimeout(function() {
+                  $(".alert-message").fadeOut();
+                }, 2000);
             }
 
             function appendNew(data) {
@@ -121,7 +160,6 @@ $(document).ready(function() {
                                                         '<td class=" dt-body-right expand-width current-balance">'+data.current_balance.toLocaleString()+'</td>'+
                                                         '<td class=" dt-right updated-at">'+moment().format('M/D/YYYY, h:mm a')+'</td>'+
                                                         '<td class=" dt-body-center">16</td></tr>');                  }
-                  // $("#"+data.program_id+" .remove").on('click', removeBalance);
 
                 } else {
                   $("#" + data.program_id + " td.current-balance").html(data.current_balance.toLocaleString());
@@ -132,5 +170,7 @@ $(document).ready(function() {
     }
 
     loadBalances();
+
+    // End loading and updating program balance table //
 
 } );

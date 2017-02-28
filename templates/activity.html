@@ -29,19 +29,7 @@
           <div class="col-xs-12">
             <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><i class="fa fa-arrows-h" aria-hidden="true"></i></a>
 
-              <table class="table table-hover table-striped display" id="transaction-history" cellspacing="0">
-                <thead>
-                  <tr>
-                      <th class="nitems"></th>
-                      <th>Type</th>
-                      <th>Program</th>
-                      <th>Beginning</th>
-                      <th>Change</th>
-                      <th>Ending</th>
-                      <th>Timestamp</th>
-                  </tr>
-                </thead>
-
+              <table class="table-hover table-striped" id="transaction-history" style="display:none;" cellspacing="0" width="100%">
                 <tfoot>
                   <tr>
                       <th></th>
@@ -50,46 +38,13 @@
                       <th>Beginning</th>
                       <th>Change</th>
                       <th>Ending</th>
-                      <th>Timestamp</th>
+                      <th></th>
                   </tr>
                 </tfoot>
-
-                {% if activities %}
-                  {% for activity in activities | sort(attribute="created_at", reverse=True) %}
-                      <tr id="{{ activity.program_id }}">
-                          <td class="index">{{ loop.index }}</td>
-                          <td class="action">{{ activity.action.action_type }}</td>                     
-                          <td class="program_name">{{ activity.program.program_name }}</td>
-                          <td class="beginning">
-                          {% if activity.beginning_balance == 0 %}
-                              - 
-                          {% else %}
-                              {{ "{:,}".format(activity.beginning_balance) }}
-                          </td>
-                          {% endif %}  
-
-
-                          <td class="change">
-                          {% if (activity.ending_balance - activity.beginning_balance) < 0 %}
-                              ({{ "{:,}".format((activity.beginning_balance - activity.ending_balance)) }})</td>
-                          {% else %}
-                              {{ "{:,}".format(activity.ending_balance - activity.beginning_balance) }}</td>
-                          {% endif %}
-
-                          <td class="ending">
-                          {% if activity.ending_balance == 0 %}
-                              - 
-                          {% else %}
-                              {{ "{:,}".format(activity.ending_balance) }}
-                          </td>
-                          {% endif %}  
-                          <td class="timestamp">{{ moment(activity.created_at).format('M/D/YYYY, h:mm a') }}</td>
-                      </tr>
-                  {% endfor %}
-                {% endif %}
               </table>
 
-          <script src="/static/js/dashboard_activity.js"></script>
+
+          <script src="/static/js/activity.js"></script>
           </div>
         </div>
       </div>

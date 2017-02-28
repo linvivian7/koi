@@ -41,13 +41,14 @@
                           <canvas id="donutChart"></canvas>
                           <div id="donutLegend" class="chart-legend"></div>
                         </div>
-                        <script src="/static/js/temp.js"></script>
+                        <script src="/static/js/donut.js"></script>
                   
                 </div>
                 <div class="row">
+                  <input type="button" class="btn btn-info toggle-btn" value="Transfer Between Programs">
+                  <input style="display: none" type="button" class="btn btn-info toggle-btn" value="Update Program Balance">
 
                   <section class="col-xs-4" id="balance-form-section">
-                    <input type="button" class="btn btn-info toggle-btn" value="Transfer Between Programs">
 
                     <form id="update-balance-form" method="POST" autocomplete="off">
 
@@ -73,12 +74,12 @@
                     </form>
                   </section>
 
-                  <section class="col-xs-4" id="transfer-form-section" hidden>
+                  <section style="display: none" class="col-xs-4" id="transfer-form-section">
 
                     <form id="transfer-form" method="POST" autocomplete="off">
                       
                       <div class="form-group">
-                        <label for="outgoing">Transfer </label>
+                        <label for="outgoing">Transfer From </label>
                         <select class="form-control" name="outgoing" id="outgoing" placeholder="Select Outgoing Program">
                           {% for program in outgoing %}
                             <option value="{{ program.outgoing_program }}">{{ program.outgoing.program_name }}</option>
@@ -111,9 +112,10 @@
                       <tfoot>
                           <tr>
                               <th></th>
+                              <th></th>
+                              <th>Vendor</th>
                               <th>Program</th>
                               <th>Current Balance</th>
-                              <th>Last Updated</th>
                               <th></th>
                           </tr>
                       </tfoot>

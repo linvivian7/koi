@@ -168,9 +168,35 @@ class User(db.Model):
     def get_balance(self, program_id):
         """Given a program id, return the balance instance"""
 
+        balance = Balance.query.filter((Balance.user_id == self.user_id) & (Balance.program_id == program_id)).one()
+
+        return balance
+
+    def get_balance_first(self, program_id):
+        """Given a program id, return the balance instance"""
+
         balance = Balance.query.filter((Balance.user_id == self.user_id) & (Balance.program_id == program_id)).first()
 
         return balance
+
+    def get_transactions(self):
+        """ Return all transactions for a given user *activity.html """
+
+        transactions = TransactionHistory.query.filter_by(user_id=self.user_id)\
+                                               .order_by('created_at DESC')\
+                                               .all()
+
+        return transactions
+
+    def get_transfers(self):
+        """ Return all transactions for a given user *activity.html """
+
+        transfers = Transfer.query.filter_by(user_id=self.user_id)\
+                                  .join(Ratio, Ratio.outgoing_program == Transfer.outgoing_program)\
+                                  .order_by('transferred_at DESC')\
+                                  .all()
+
+        return transfers
 
 
 class Ratio(db.Model):

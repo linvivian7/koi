@@ -6,7 +6,6 @@ $(document).ready(function() {
     var i = 0;
 
     function changeGoal (e, li) {
-        console.log(1);
         try {
             goalProgram = li.val();
         } catch(err) {}
@@ -22,9 +21,9 @@ $(document).ready(function() {
         $("#run-optimize").removeAttr('disabled');
         $('#optimization-form').on('reset', removeElements);
 
-        $("#optimization-results").after("<h5 class='to-remove results' id='results-message'>"+results.message+"</h5>");
-
-        if ((results.message !== "You do not have enough points to achieve your goal.") && (results.message != "You've already achieved your goal.")) {
+        if (results.message === "You do not have enough points to achieve your goal." || results.message === "You've already achieved your goal.") {
+            $("#optimization-results").append("<div class='alert alert-warning to-remove results' id='results-message'>"+results.message+"</div>");
+        } else {
             for (var transfer in results.path) {
                 if (results.path.hasOwnProperty(transfer)) {
 
@@ -34,7 +33,7 @@ $(document).ready(function() {
                                                       transfer+
                                                       "Transfer "+
                                                       results.path[transfer].amount.toLocaleString()+
-                                                      " points from "+
+                                                      " point(s) from "+
                                                       results.path[transfer].outgoing+
                                                       " at "+
                                                       results.path[transfer].denominator+
@@ -42,13 +41,16 @@ $(document).ready(function() {
                                                       results.path[transfer].numerator+
                                                       " ratio to "+
                                                       transferred+
-                                                      " points at "+
+                                                      " point(s) at "+
                                                       results.path[transfer].receiving+
                                                       ".</h5>");
               }
             }
-            $("#optimization-results").after("<h5 id='statement-6' class='to-remove results'> Would you like to commit this transfer?</h5>"+
-            "<button type='button' class='btn btn-primary btn-sm to-remove results' id='yes-btn'>Yes</button><br class='to-remove results'>");
+
+            $("#optimization-results").append("<div class='alert alert-warning to-remove results' id='results-message'>"+results.message+
+                                              "<br class='to-remove results'></div>");
+
+            $("#optimization-results").append("<button type='button' class='btn btn-info' id='yes-btn'>Yes</button>");
 
             $('#optimization-form').on('reset', removeElements);
             $("#yes-btn").on('click', commitTransfer);
@@ -57,13 +59,12 @@ $(document).ready(function() {
                 $(".results").remove();
             });
         }
-
     }
 
     function showConfirmation(results) {
         $('#optimization-form').on('reset', removeElements);
 
-        $("#results-message").after("<h5 class='to-remove' id='transfer-confirmation'>"+results.confirmation+"</h5>");
+        $("#results-message").html(results.confirmation);
     }
 
 
@@ -105,12 +106,13 @@ $(document).ready(function() {
     function removeElements() {
         $(".to-remove").remove();
         $('#run-optimize').attr('disabled', 'disabled');
+        $("#optimization-form li").addClass('es-visible');
+        $("#optimization-form li").css("display","block");
     }
 
     $('#optimization-form').on('reset', removeElements);
 
     function listDetails() {
-        console.log(2);
         removeElements();
 
         try {
@@ -121,7 +123,7 @@ $(document).ready(function() {
             $.get("/optimize", formValues, function(results) {
                 if (results) {
 
-                    $("#goal-program").after("<h5 id='statement-2' class='to-remove'> You currently have "+results.display_program.balance.toLocaleString()+" points with "+results.display_program.program_name+".</h5>");
+                    $("#goal-program").after("<h5 id='statement-2' class='to-remove'> You currently have "+results.display_program.balance.toLocaleString()+" point(s) with "+results.display_program.program_name+".</h5>");
 
                     if (results.outgoing) {
                         $("#run-optimize").removeAttr('disabled');
