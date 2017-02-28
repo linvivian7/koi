@@ -2,6 +2,7 @@
 
 from math import floor
 from math import log
+import numpy as np
 import random
 
 from model import add_balance
@@ -56,77 +57,46 @@ def optimize(user_id, source, goal_amount, commit=False):
         db.session.commit()
 
     graph = get_graph_nodes(user_id)
+
+    # example_min_cost: [(16, 0), (212, 0.0), (164, 1.0986122886681098), (6, inf), (170, inf), (187, inf)]
+    # example predecessor: {164: 212, 6: None, 170: None, 16: None, 212: 16, 187: None}
+
     cost, predecessor = bellman_ford(graph, source)
     min_cost = sorted(cost.items(), key=lambda (node, cost): cost)
 
     for flow in min_cost:
-        # Assigned for clarity
-        cost = flow[1]
+        cost = flow[1]  # Assigned for clarity
 
         if cost != float('inf'):
-            # current is an integer for program id
-            current = flow[0]
+            current = flow[0]  # current is an integer for program id
 
-            # Create path for each possible flow
-            path = {}
-            path[current] = DoublyLinkedList()
-            path[current].append(current)
+            # example path: None -- 212 -- 16 -- None
+            path = make_path(current, source, predecessor)
 
-            # current node is a Node instance
-            current_node = path[current].head
+            current_node = path.tail  # current_node is a node instance
 
-            if current_node.data == source:
-                continue
-
-            path[current].append(predecessor[current_node.data])
-
-            if current_node.next:
-                while current_node.next.data != source:
-                    ancestor = predecessor[current_node.next.data]
-                    path[current].append(ancestor)
-                    current_node = current_node.next
-
-            path[current].reverse()
-
-            current_node = path[current].head
-
-            while current_node != path[current].tail:
+            while current_node != path.head:
 
                 # If enough funds at this route
-                if is_route_possible(user, goal_amount, path[current].head):
-                    inner_node = path[current].tail
+                if is_route_possible(user, goal_amount, path.tail):
+                    inner_node = path.head
 
-                    while inner_node != path[current].head:
+                    while inner_node != path.tail:
                         out_node_id = inner_node.data  # Outgoing program
                         out_node = user.get_balance(out_node_id)
 
-                        in_node_id = inner_node.prev.data  # Receiving program
+                        in_node_id = inner_node.next.data  # Receiving program
                         in_node = user.get_balance(in_node_id)
 
                         # Start by transferring from last source
-                        if inner_node == path[current].tail:
-                            product_ratio_balance = []
-
-                            node = inner_node.prev
-
-                            while node:
-                                if node == source:
-                                    edge_ratio = 0  # Goal amount already deducted up-front, no need to count current balance at goal program again
-
-                                else:
-                                    if node.prev:
-                                        edge_ratio = ratio_instance(node.data, node.prev.data).ratio_to()
-                                        node_balance = calc_balance_ceiling(user.get_balance(node.data).current_balance, edge_ratio)
-                                        product_ratio_balance.append(edge_ratio * node_balance)
-
-                                node = node.prev
-
-                            transfer_amount = (goal_amount - sum(product_ratio_balance)) / ratio_instance(out_node_id, in_node_id).ratio_to()
+                        if inner_node == path.head:
+                            transfer_amount = calc_first_transfer_amount(user, goal_amount, path, source)
 
                         else:
                             edge_ratio = ratio_instance(out_node_id, in_node_id).ratio_to()
                             transfer_amount = calc_balance_ceiling(user.get_balance(out_node_id).current_balance, edge_ratio)
 
+                        print "transfer_amount", transfer_amount
                         transfer = ratio_instance(out_node_id, in_node_id)
                         transfer_ratio = transfer.ratio_to()
                         add_transfer(user_id, out_node_id, in_node_id, transfer_amount)
@@ -156,11 +126,11 @@ def optimize(user_id, source, goal_amount, commit=False):
                             suggestion["message"] = "You've achieved your goal balance! Would you like to commit this transfer?"
                             return suggestion
 
-                        inner_node = inner_node.prev
+                        inner_node = inner_node.next
 
                 # If not enough funds at this route, try next
                 else:
-                    current_node = current_node.next
+                    current_node = current_node.prev
                     continue
 
     suggestion["message"] = "You do not have enough points to achieve your goal."
@@ -190,6 +160,59 @@ def get_graph_nodes(user_id):
     return optimization
 
 
+def calc_first_transfer_amount(user, goal_amount, path, source):
+    """ The first transfer, from the "outest program", is the only one that is not the full balance capacity. """
+
+    # Start by transferring from last source
+    product_ratio_balance = []
+    ratios = []
+
+    # We only want to take into account how much could have been transferred thus far
+    node = path.head.next
+
+    while node.next:
+        # node.data = outgoing_program id
+        # node.next.data = receiving_program id
+
+        edge_ratio = ratio_instance(node.data, node.next.data).ratio_to()
+        node_balance = calc_balance_ceiling(user.get_balance(node.data).current_balance, edge_ratio)
+        product_ratio_balance.append(edge_ratio * node_balance)
+
+        node = node.next
+
+    # We calculate the transfer amount as follows:
+    # Step 1) goal_amount minus what has been transferred thus far, which is the product of edge ratio and balance between two prgograms
+    # Step 2) result of step 1 divide by the cumulative ratios, np.prod((ratios)), yields the amount needed from the last outgoing program
+    # Step 3) result of step 2 divide by the ratio between the last program the one preceding one to get the amount outgoing required
+
+    transfer_amount = ((goal_amount - sum(product_ratio_balance)) / np.prod(ratios)) / ratio_instance(path.head.data, path.head.next.data).ratio_to()
+
+    return transfer_amount
+
+
+def make_path(current, source, predecessor):
+
+    # Create path for flow
+    path = DoublyLinkedList()
+    path.append(current)
+
+    # current node is a Node instance
+    current_node = path.head
+
+    if current_node.data == source:
+        return path
+
+    path.append(predecessor[current_node.data])
+
+    if current_node.next:
+        while current_node.next.data != source:
+            ancestor = predecessor[current_node.next.data]
+            path.append(ancestor)
+            current_node = current_node.next
+
+    return path
+
+
 def calc_balance_ceiling(balance, ratio):
     """ Return balance ceiling (maximum divisible by ratio) given balance and ratio """
 
@@ -204,13 +227,13 @@ def calc_balance_ceiling(balance, ratio):
 
 def balance_capacity(user, current):
 
-    if current.next is None:
+    if current.prev is None:
             return 0
 
-    ratio = ratio_instance(current.next.data, current.data).ratio_to()
-    balance = user.get_balance(current.next.data).current_balance
+    ratio = ratio_instance(current.prev.data, current.data).ratio_to()
+    balance = user.get_balance(current.prev.data).current_balance
 
-    current = current.next
+    current = current.prev
 
     return floor((ratio * balance) + balance_capacity(user, current))
 
@@ -250,35 +273,6 @@ class DoublyLinkedList(object):
             new_node.next = None
             self.tail.next = new_node
             self.tail = new_node
-
-    def remove(self, value):
-        """ Remove node with given value """
-
-        current = self.head
-
-        while current:
-            if current.data == value:
-                if current.prev:
-                    current.prev.next = current.next
-                    current.next.prev = current.prev
-                else:
-                    self.head = current.next
-                    current.next.prev = None
-
-            current = current.next
-
-    def reverse(self):
-        """ Reversing a DLL in place """
-
-        temp = self.tail
-        current = self.tail
-
-        while current.prev:
-            self.append(current.prev.data)
-            current = current.prev
-
-        self.head = temp
-        self.head.prev = None
 
     def print_list(self):
         print "Doubly linked list:"
