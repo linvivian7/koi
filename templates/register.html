@@ -8,13 +8,9 @@
 
 {% block body %}
 
-  {% with messages = get_flashed_messages() %}
-      {% for message in messages %}
-          <div class="alert alert-warning">{{ message }}</div>
-      {% endfor %}
-  {% endwith %}
-
   <body class="intro-header" id="no-scroll">
+
+    <div class="row">
       <section class="register-section col-xs-5 col-xs-offset-2">
         <h1>Koi</h1>
 
@@ -71,10 +67,25 @@
                     type="submit" disabled>
               <span class="glyphicon glyphicon-send fa-fw"></span> Sign Up
             </button>
-            
-        </form></h4>
+          
+        </form>
+      </h4>
+    </section>
+    </div>
 
-      </section>
+        {% with messages = get_flashed_messages() %}
+      {% for message in messages %}
+
+    <div class="row register-flash-row">
+      <section class="register-flash col-xs-12">
+      
+            <div class="alert alert-warning">{{ message }}</div>
+
+        </section>
+    </div>
+      {% endfor %}
+    {% endwith %}
+
 
     <script src="/static/js/register.js"></script>
 

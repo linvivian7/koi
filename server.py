@@ -126,7 +126,7 @@ def register_user():
             return redirect("/dashboard")
 
         else:
-            flash("Please enter a valid email!")
+            flash("Please enter a valid email.")
             return redirect('/register')
 
 

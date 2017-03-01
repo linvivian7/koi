@@ -27,7 +27,6 @@ $(document).ready(function(){
         .gravity(0.02)
         .charge(-150)
         .linkDistance(80)
-        // .friction(0.2)
         .size([width, height]);
 
     //Append a SVG to the body of the html page. Assign this SVG as an object to svg

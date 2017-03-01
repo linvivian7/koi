@@ -86,40 +86,101 @@
 
     </header>
 
-    <!-- Start of About page -->
+    <!-- Start of About -->
     <header class="about-container row about-header">
 
-
-        <section id="home-d3-div" class="hidden-xs hidden-sm col-md-6 col-lg-6">
+        <section id="home-d3-div" class="col-xs-12 col-md-6">
           V<span>i</span>sual<span>i</span>ze</section> 
         <script src="/static/js/homeD3.js"></script>
 
-      <section id="contact-us-div" class="contact-message col-xs-12 col-sm-12 col-md-6 col-lg-6">
+        <section class="col-xs-12 col-md-6">
+          <p> Placeholder </p>
+        </section>
+
+    </header>
+
+    <!-- End About -->
+
+    <!-- Start of Contact Us page -->
+    <header class="contact-container row contact-header">
+
+      <div class="row contact-row">
+
+      <section id="contact-us-div" class="contact-message col-xs-4 col-xs-offset-4">
         Contact Us
 
         <form class="feedback-form" action="/contact" method="POST" autocomplete="off">
 
           <div class="form-group">
+              <label for="email-field" class="sr-only">Email Address</label>
+              <input type="email"
+                     name="email"
+                     class="form-control input-lg"
+                     placeholder="Email Address"
+                     required
+                     >
+          </div>
+
+          <div class="form-group">
               <label for="feedback-type" class="sr-only">Feedback Category</label>
               <select class="form-control" id="feedback-type">
-                <option selected>Choose...</option>
+                <option selected>Choose Category...</option>
                 {% for type in menu %}
                  <option value="{{ type }}">{{ type }}</option>
                 {% endfor %}
               </select>
             </div>
 
+            <!-- I don't see ratio -->
             <div class="form-group">
-                <label for="email-field" class="sr-only">Email Address</label>
-                <input type="email"
-                       name="email"
+                <label for="modal-program-1" class="sr-only">Program 1: </label>
+                <input type="text"
+                       name="program-1"
                        class="form-control input-lg"
-                       placeholder="Email Address"
-                       required
+                       placeholder="Outgoing program"
                        >
             </div>
 
             <div class="form-group">
+                <label for="modal-program-2" class="sr-only">Program 2: </label>
+                <input type="text"
+                       name="program-2"
+                       class="form-control input-lg"
+                       placeholder="Receiving program"
+                       >
+            </div>
+
+            <div class="form-group">
+                <label for="modal-program-2" class="sr-only">Numerator</label>
+                <input type="number"
+                       style="width:150px"
+                       name="denominator"
+                       placeholder="1"
+                       class="input-lg"
+                       >
+                       :
+                <label for="modal-program-2" class="sr-only">Denominator</label>
+                <input type="number"
+                       style="width:150px"
+                       name="numerator"
+                       placeholder="3"
+                       class="input-lg"
+                       >
+            </div>
+
+            <!-- New feature -->
+            <div class="form-group" style="display:none">
+                <label for="feedback-field"></label>
+                <textarea rows="10" 
+                          cols="100"
+                          name="feedback"
+                          class="form-control input-lg"
+                          placeholder="We'd love to hear from you!"
+                          ></textarea>
+            </div>
+
+            <!-- Other feedback -->
+            <div class="form-group" style="display:none">
                 <label for="feedback-field"></label>
                 <textarea rows="10" 
                           cols="100"
@@ -138,6 +199,12 @@
         </form>
       </section>
     </header>
+
+    <footer id="footer">
+      <div class="container"></div>
+    </footer>
+
+    <!-- End Contact Us -->
 
     <script src="/static/js/homepage.js"></script>
 

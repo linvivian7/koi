@@ -30,11 +30,11 @@ html::-webkit-scrollbar {
   -o-background-size: cover;
 }
 
-.about-header {
+.about-header, .contact-header {
   display: table;
   position: relative;
   width: 100%;
-  height: 800px;
+  height: 100%;
   background-color: #FFFFFF;
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -42,6 +42,15 @@ html::-webkit-scrollbar {
   -o-background-size: cover;
 }
 
+
+.contact-header {
+  height: 93%;
+}
+
+.contact-header {
+  background-color: #00A99E;
+  color: ghostwhite;
+}
 .about-header span {
   color: teal;
 }
@@ -66,6 +75,36 @@ html::-webkit-scrollbar {
   margin: 15px 0 0 0;
 }
 
+
+#home-d3-div {
+  display: inline-block;
+  position: relative;
+  padding-bottom: 40%; /* aspect ratio */
+  vertical-align: top;
+  overflow: hidden;
+  margin-top: 8%;
+  text-align: center;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 70px;
+}
+
+#contact-us-div {
+  text-align: center;
+  margin-top: 8%;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 70px;
+  color: ghostwhite;
+}
+
+.contact-row {
+    text-align: center;
+}
+
+.contact-message {
+  font-family: 'Lato', sans-serif;
+  color: ghostwhite;
+}
+
 #login-btn, #dashboard-btn {
   float: right;
   margin: 0.5em 0 0 2em;
@@ -78,6 +117,31 @@ html::-webkit-scrollbar {
   background-color: #12133d;
   margin: 0.5em 0 0 2em;
   border: 1px solid transparent;
+}
+
+#wrap {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  /* Negative indent footer by it's height */
+  margin: 0 auto -60px;
+}
+
+/* Set the fixed height of the footer here */
+#push,
+#footer {
+  height: 60px;
+}
+#footer {
+  background-color: #12133d;
+}
+
+/* Lastly, apply responsive CSS fixes as necessary */
+@media (max-width: 767px) {
+  #footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 }
 
 /*landing page css end*/
@@ -174,25 +238,34 @@ html::-webkit-scrollbar {
   margin-top: 1em;
 }
 
-.form-group {
+/*.form-group {
     margin-bottom: 0.7em;
 }
-
+*/
 
 /* login modal end */
 
 /*register page*/
 
-.register-section {
+.register-section{
   font-family: 'Lato', sans-serif;
   color: ghostwhite;
-  max-width: 380px;
+  max-width: 425px;
   margin: 8% auto auto 10%;
   border-radius: 25px;
   border: 1px solid #FFFFFF;
   padding: 2em; 
 }
 
+.register-flash {
+  font-family: 'Lato', sans-serif;
+  max-width: 425px;
+  margin: 0 auto 0 10%;
+}
+
+/*.register-flash-row {
+
+*/}
 #fname-field {
   margin-top: -30px;
   margin-bottom: 0.5em;
@@ -314,6 +387,11 @@ a span {
   white-space: nowrap;
   font-family: 'Helvetica Neue', 'Helvetica', 'Arial', "sans-serif";
   font-size: 13px;
+}
+
+::-webkit-scrollbar {
+    width: 0;  /* remove scrollbar space */
+    background: transparent;  /* optional: just make scrollbar invisible */
 }
 
 #program-balance_wrapper {

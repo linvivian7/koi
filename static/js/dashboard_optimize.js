@@ -30,7 +30,7 @@ $(document).ready(function() {
         $("#run-optimize").removeAttr('disabled');
         $('#optimization-form').on('reset', removeElements);
 
-        if (results.message === "There are currently no known relationship between your goal program and those in your profile." || results.message === "You've already achieved your goal.") {
+        if (results.message === "There are currently no known relationship between your goal program and those in your profile." || results.message === "You've already achieved your goal." || results.message === "You currently do not have enough outstanding points for a transfer.") {
             $("#optimization-results").append("<div class='alert alert-warning to-remove results' id='results-message'>"+results.message+"</div>");
         } else {
             for (var transfer in results.path) {

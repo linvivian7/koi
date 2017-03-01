@@ -52,19 +52,7 @@ svg {
   left: 0;
 }
 
-/*home*/
-
-#home-d3-div {
-  display: inline-block;
-  position: relative;
-  padding-bottom: 40%; /* aspect ratio */
-  vertical-align: top;
-  overflow: hidden;
-  margin-top: 8%;
-  text-align: center;
-  font-family: 'Work Sans', sans-serif;
-  font-size: 70px;
-}
+/*homed3*/
 
 #home_d3 {
   margin-left: 20%;
@@ -72,20 +60,6 @@ svg {
   border: 1px solid #000000;
 }
 
-#contact-us-div {
-  text-align: center;
-  margin-top: 8%;
-  font-family: 'Work Sans', sans-serif;
-  font-size: 70px;
-  color: black;
-  margin-left: 5%;
-}
-
-.contact-message {
-  font-family: 'Lato', sans-serif;
-  color: ghostwhite;
-  max-width: 480px;
-}
 
 #home_d3.svg-content-responsive {
   display: inline-block;
@@ -94,4 +68,4 @@ svg {
   top: 10px;
   left: 0;
 }
-
+/*homed3*/

@@ -176,35 +176,38 @@ def optimize(user_id, source, goal_amount, commit=False):
                 edge_ratio = ratio_instance(outgoing_program_id, receiving_program_id).ratio_to()
                 transfer_amount = calc_balance_ceiling(user.get_balance(outgoing_program_id).current_balance, edge_ratio)
 
-            # Update to outgoing & receiving program in balances table
-            transfer = ratio_instance(outgoing_program_id, receiving_program_id)
-            transfer_ratio = ratio_instance(outgoing_program_id, receiving_program_id).ratio_to()
-            add_transfer(user_id, outgoing_program_id, receiving_program_id, transfer_amount)
+            if transfer_amount > 0:
+                # Update to outgoing & receiving program in balances table
+                transfer = ratio_instance(outgoing_program_id, receiving_program_id)
+                transfer_ratio = ratio_instance(outgoing_program_id, receiving_program_id).ratio_to()
+                add_transfer(user_id, outgoing_program_id, receiving_program_id, transfer_amount)
 
-            # Update to outgoing & receiving program in balances table
-            outgoing_program.transferred_from(transfer_amount)
-            receiving_program.transferred_to(transfer_amount, transfer_ratio)
+                # Update to outgoing & receiving program in balances table
+                outgoing_program.transferred_from(transfer_amount)
+                receiving_program.transferred_to(transfer_amount, transfer_ratio)
 
-            # Update transfer info (outgoing, receiving, transfer_amount, numerator, denominator)
-            key = "Step " + str(i) + ": "
+                # Update transfer info (outgoing, receiving, transfer_amount, numerator, denominator)
+                key = "Step " + str(i) + ": "
 
-            suggestion["path"][key] = {}
+                suggestion["path"][key] = {}
 
-            suggestion["path"][key]["outgoing"] = Program.query.get(outgoing_program_id).program_name
-            suggestion["path"][key]["receiving"] = Program.query.get(receiving_program_id).program_name
-            suggestion["path"][key]["amount"] = transfer_amount
-            suggestion["path"][key]["numerator"] = transfer.numerator
-            suggestion["path"][key]["denominator"] = transfer.denominator
+                suggestion["path"][key]["outgoing"] = Program.query.get(outgoing_program_id).program_name
+                suggestion["path"][key]["receiving"] = Program.query.get(receiving_program_id).program_name
+                suggestion["path"][key]["amount"] = transfer_amount
+                suggestion["path"][key]["numerator"] = transfer.numerator
+                suggestion["path"][key]["denominator"] = transfer.denominator
 
-            i += 1
+                i += 1
 
-            if commit:
-                db.session.commit()
-                suggestion["confirmation"] = "Your transfers have been committed. Please go to 'Activity' Page to see the transactions."
+                if commit:
+                    db.session.commit()
+                    suggestion["confirmation"] = "Your transfers have been committed. Please go to 'Activity' Page to see the transactions."
 
             if receiving_program_id == source:
                 shortage = original_goal - user.get_balance(source).current_balance
-                if shortage > 0:
+                if shortage == goal_amount:
+                    suggestion["message"] = "You currently do not have enough outstanding points for a transfer."
+                elif shortage > 0:
                     suggestion["message"] = "You do not have enough points to achieve your goal. The maximum you can reach is {} point(s), which is {} point(s) short of your goal.\
                                              Would you like to commit this transfer?".format("{:,}".format(int(user.get_balance(source).current_balance)), "{:,}".format(int(shortage)))
                 else:
