@@ -1,5 +1,12 @@
 $(document).ready(function() {
 
+    $("[href]").each(function() {
+        if (this.href == window.location.href) {
+            $(this).addClass("active");
+        }
+    });
+
+
   // Transfer Balance Form //
   var outgoingProgram = -1;
   var receivingProgram = -1;

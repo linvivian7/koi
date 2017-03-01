@@ -34,6 +34,7 @@ from model import mapping
 from model import Program
 from model import ratio_instance
 from model import User
+from model import Vendor
 
 
 app = Flask(__name__)
@@ -164,11 +165,13 @@ def user_dashboard():
 
 @app.route('/balance-distribution.json')
 def donut_chart_data():
-    """Return data about Melon Sales."""
+    """Return data about user's points."""
 
-    user_id = session["user"]
-    user = User.query.get(1)
-    balances = Balance.query.filter_by(user_id=user_id).options(db.joinedload('program')).all()
+    user = User.query.get(session["user"])
+    base = Balance.query.filter_by(user_id=session["user"]).options(db.joinedload('program'))
+    balances = base.all()
+    count = base.count()
+    colors = generate_random_color(ntimes=count)
 
     data_dict = {
         "labels": [],
@@ -183,7 +186,7 @@ def donut_chart_data():
         }
 
     for balance in balances:
-        color = "rgb" + str(generate_random_color())
+        color = "rgb" + str(colors.pop())
         data_dict["labels"].append(balance.program.program_name)
         data_dict["datasets"][0]["data"].append(user.get_balance(balance.program_id).current_balance)
         data_dict["datasets"][0]["backgroundColor"].append(color)
@@ -199,17 +202,23 @@ def balances_json():
         flash("Please log in before navigating to the dashboard")
         return redirect('/')
 
-    user = User.query.options(db.joinedload('balances')).get(session["user"])
-    balances = user.balances  # For program-balance table
+    balances = db.session.query(Balance.program_id,
+                                Vendor.vendor_name,
+                                Program.program_name,
+                                Balance.updated_at,
+                                Balance.current_balance, Vendor.vendor_name)\
+        .join(Program)\
+        .join(Vendor)\
+        .filter(Balance.user_id == session["user"]).all()
 
     i = 1
     program_balances = {}
     for balance in balances:
-        program_balances["("+str(balance.balance_id)+")"] = {
+        program_balances["("+str(i)+")"] = {
             "index": i,
             "program_id": balance.program_id,
-            "vendor": balance.program.vendor.vendor_name,
-            "program": balance.program.program_name,
+            "vendor": balance.vendor_name,
+            "program": balance.program_name,
             "balance": "{:,}".format(balance.current_balance),
             "timestamp": balance.updated_at,
         }

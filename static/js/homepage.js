@@ -43,25 +43,25 @@ $(document).ready(function() {
         if (($("#email-field").valid() === 0) && ($("#password-field").valid() === 0)) {
             $('#submit-login-btn').attr('disabled', 'disabled');
             $('#submit-login-btn').css('margin-top', '-0.8em');
-            $('#password-field').css('margin-top', '-1em');
+            $('#password-field').css('margin-top', '-0.8em');
 
         // if both are valid
         } else if (validated) {
             $('#submit-login-btn').removeAttr('disabled');
             $('#submit-login-btn').css('margin-top', '0.4em');
-            $('#password-field').css('margin-top', '1em');
+            $('#password-field').css('margin-top', '0.8em');
 
         // if only email is valid
         } else if ($("#email-field").valid() === 1) {
             $('#submit-login-btn').attr('disabled', 'disabled');
-            $('#submit-login-btn').css('margin-top', '-0.8em');
-            $('#password-field').css('margin-top', '1em');
+            $('#submit-login-btn').css('margin-top', '-0.5em');
+            $('#password-field').css('margin-top', '0.9em');
 
         // if only password is valid
         } else if ($("#password-field").valid() === 1) {
             $('#submit-login-btn').attr('disabled', 'disabled');
             $('#submit-login-btn').css('margin-top', '0.4em');
-            $('#password-field').css('margin-top', '-1em');
+            $('#password-field').css('margin-top', '-0.8em');
         }
     });
 
@@ -83,7 +83,7 @@ $(document).ready(function() {
     function loginUser(results) {
         if (results === "This email has not been registered" ||
             results === "This is not a valid email/password combination") {
-                $('.modal-content').prepend("<div class='alert alert-warning'>"+results+"</div>");
+                $('.modal-content').prepend("<div class='alert alert-warning' id='login-flash'>"+results+"</div>");
                 $('#login-form #password-field').val("");
 
                 setTimeout(function () {

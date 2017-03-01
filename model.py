@@ -182,7 +182,8 @@ class User(db.Model):
     def get_transactions(self):
         """ Return all transactions for a given user *activity.html """
 
-        transactions = TransactionHistory.query.filter_by(user_id=self.user_id)\
+        transactions = TransactionHistory.query.options(db.joinedload('program'))\
+                                               .filter_by(user_id=self.user_id)\
                                                .order_by('created_at DESC')\
                                                .all()
 
@@ -492,6 +493,7 @@ def connect_to_db(app):
     # Configure to use our PstgreSQL database
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///koi'
     app.config['SQLALCHEMY_ECHO'] = False
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
     db.init_app(app)
 

@@ -2,6 +2,10 @@
   stroke: #ccc;
 }
 
+#user_d3 .link {
+  stroke: #aaa;
+}
+
 .node text {
   pointer-events: none;
   font: 9px helvetica;
@@ -20,11 +24,16 @@ svg {
 #user_d3 {
   margin-left: 0;
   margin-right: auto;
+  margin-top: 0;
 }
 
-d3-tip {
-  line-height: 5;
-  color: black;
+.d3-tip {
+  line-height: 1;
+  color: white;
+  background-color: #5bc0de;
+  opacity: 0.5;
+  /*padding: 5px;*/
+  box-shadow: 0 0 10px 2px #5bc0de;
 }
 
 #d3-div {

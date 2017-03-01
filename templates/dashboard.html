@@ -13,12 +13,12 @@
         <div id="sidebar-wrapper">
             <ul class="sidebar-nav">
                 <li class="sidebar-brand"><a href="/">Koi</a></li>
-                <li><a href="/dashboard">Main<span></span></a></li>
-                <li><a href="/activity">Activity<span></span></a></li>
-                <li><a href="/transfers">Transfer History<span></span></a></li>
-                <li><a href="/optimize">Optimize<span></span></a></li>
-                <li><a href="/process">How Koi Optimizes<span></span></a></li>
-                <li><a href="/logout">Log Out<span></span></a></li>
+                <li><a href="/dashboard"><i class="fa fa-fw fa-tachometer" aria-hidden="true"></i>Main</a></li>
+                <li><a href="/activity"><i class="fa fa-fw fa-history" aria-hidden="true"></i>Activity</a></li>
+                <li><a href="/transfers"><i class="fa fa-fw fa-arrows-h" aria-hidden="true"></i>Transfers</a></li>
+                <li><a href="/optimize"><i class="fa fa-fw fa-flag-checkered" aria-hidden="true"></i>Optimize</a></li>
+                <li><a href="/process"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i>Our Process</a></li>
+                <li><a href="/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i>Log Out</a></li>
             </ul>
         </div>
         <!-- /#sidebar-wrapper -->
@@ -27,9 +27,10 @@
         <div id="page-content-wrapper">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-xs-8">
+                    <div class="col-xs-12 col-md-7">
 
-                        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><i class="fa fa-arrows-h" aria-hidden="true"></i></a>
+                        <a href="#menu-toggle" class="btn btn-default menu-toggle"><i class="fa fa-toggle-on" aria-hidden="true"></i></a>
+                        <a href="#menu-toggle" class="btn btn-default menu-toggle" style="display: none"><i class="fa fa-toggle-off" aria-hidden="true"></i></a>
                       
                           <!-- Show flashed messages -->
                           {% with messages = get_flashed_messages() %}
@@ -40,16 +41,15 @@
 
                         <div class="balance-chart">
                           <canvas id="donutChart"></canvas>
-                          <div id="donutLegend" class="chart-legend"></div>
                         </div>
                         <script src="/static/js/donut.js"></script>
                   
                 </div>
                 <div class="row">
-                  <input type="button" class="btn btn-info toggle-btn" value="Transfer Between Programs">
-                  <input style="display: none" type="button" class="btn btn-info toggle-btn" value="Update Program Balance">
+                  <section class="col-xs-12 col-md-4 col-md-offset-1" id="balance-form-section">
 
-                  <section class="col-xs-4" id="balance-form-section">
+                  <input type="button" class="btn btn-info toggle-btn transfer-toggle" value="Transfer Points">
+                  <input type="button" class="btn btn-info toggle-btn active update-toggle" value="Update Balance">
 
                     <form id="update-balance-form" method="POST" autocomplete="off">
 
@@ -75,7 +75,11 @@
                     </form>
                   </section>
 
-                  <section style="display: none" class="col-xs-4" id="transfer-form-section">
+                  <section style="display: none" class="col-xs-12 col-md-4 col-md-offset-1" id="transfer-form-section">
+
+                  <input type="button" class="btn btn-info toggle-btn active transfer-toggle" value="Transfer Points">
+                  <input type="button" class="btn btn-info toggle-btn update-toggle" value="Update Balance">
+
 
                     <form id="transfer-form" method="POST" autocomplete="off">
                       
@@ -109,6 +113,10 @@
                   </section>
 
                   <section class="col-xs-12">
+                    <h4 class="table-title"><i class="fa fa-fw fa-star" aria-hidden="true"></i> My Program Balances <i class="fa fa-fw fa-star" aria-hidden="true"></i></h4>
+                  </section>
+
+                  <section class="col-xs-12">
                     <table class="table-hover table-striped" id="program-balance" style="display:none;" cellspacing="0" width="100%">
                       <tfoot>
                           <tr>
@@ -124,7 +132,6 @@
                   </section>
     </div>
   </div>
-<!-- <script src="/static/js/balances.js"></script> -->
 <script src="/static/js/dashboard_update.js"></script>
 <script src="/static/js/dashboard_transfer.js"></script>
 
@@ -136,7 +143,7 @@
     <!-- /#wrapper -->
      <!-- Menu Toggle Script -->
     <script>
-    $("#menu-toggle").click(function(e) {
+    $(".menu-toggle").click(function(e) {
         e.preventDefault();
         $("#wrapper").toggleClass("toggled");
     });

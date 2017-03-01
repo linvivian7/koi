@@ -1,5 +1,16 @@
 $(document).ready(function() {
 
+    $(".menu-toggle").on('click', function () {
+        $(".menu-toggle").toggle();
+      });
+
+    $("[href]").each(function() {
+        if (this.href == window.location.href) {
+            $(this).addClass("active");
+        }
+    });
+
+
     // Optimize Balance Form //
     var goalProgram = -1;
     var i = 0;
@@ -27,7 +38,7 @@ $(document).ready(function() {
 
                     var transferred = (results.path[transfer].amount * (results.path[transfer].numerator / results.path[transfer].denominator)).toLocaleString();
 
-                    $("#optimization-results").append("<h5 class='to-remove results'>"+
+                    $("#optimization-results").append("<h5 class='to-remove results results-color'>"+
                                                       transfer+
                                                       "Transfer "+
                                                       results.path[transfer].amount.toLocaleString()+
@@ -121,7 +132,7 @@ $(document).ready(function() {
             $.get("/optimize", formValues, function(results) {
                 if (results) {
 
-                    $("#goal-program").after("<h5 id='statement-2' class='to-remove'> You currently have "+results.display_program.balance.toLocaleString()+" point(s) with "+results.display_program.program_name+".</h5>");
+                    $("#goal-program").after("<h5 id='statement-2' class='to-remove'> You currently have <span id='npoints'>"+results.display_program.balance.toLocaleString()+"</span> point(s) with "+results.display_program.program_name+".</h5>");
 
                     if (results.outgoing) {
                         $("#run-optimize").removeAttr('disabled');

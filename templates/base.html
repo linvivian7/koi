@@ -5,14 +5,14 @@
 <head>
 
     <!-- jQuery -->
-    <script src="static/js/jquery/3.1.1/jquery.min.js"></script>
-    <script src="static/js/jquery/ui/1.12.1/jquery-ui.js"></script>
-    <script src="static/js/jquery/1.12.4/jquery-1.12.4.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.7/jquery.validate.min.js"></script>
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.15.0/additional-methods.min.js"></script>
 
     <!-- D3-related -->
-    <script src="static/js/d3/d3.v3.min.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
     <link rel="stylesheet" href="/static/css/D3.css"/>
 
     <!-- ChartJS -->
@@ -24,36 +24,35 @@
     {{ moment.include_moment() }}
 
     <!-- datatable-related -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.13/b-1.2.4/b-print-1.2.4/cr-1.3.2/fh-3.1.2/se-1.2.0/datatables.min.css"/>
- 
     <script type="text/javascript" 
             src="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.13/b-1.2.4/b-colvis-1.2.4/b-html5-1.2.4/b-print-1.2.4/cr-1.3.2/fh-3.1.2/se-1.2.0/datatables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.13/sorting/formatted-numbers.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.13/sorting/datetime-moment.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.13/b-1.2.4/b-print-1.2.4/cr-1.3.2/fh-3.1.2/se-1.2.0/datatables.min.css"/>
 
-
+    <!-- jQuery Editable-Select -->
     <script src="//rawgithub.com/indrimuska/jquery-editable-select/master/dist/jquery-editable-select.min.js"></script>
     <link href="//rawgithub.com/indrimuska/jquery-editable-select/master/dist/jquery-editable-select.min.css" rel="stylesheet">
 
-
-    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.13/sorting/formatted-numbers.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.13/sorting/datetime-moment.js"></script>
-
     <!-- style-related -->
-    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-    <link rel="stylesheet"
-          href="/static/bootstrap-3.3.4/css/bootstrap.css"/>
-    <script src="/static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" 
-          href="https://fonts.googleapis.com/css?family=Lato" >
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.css"/>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" >
     <link href="https://fonts.googleapis.com/css?family=Work+Sans" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/styles.css"/>
     <link rel="stylesheet" href="/static/css/datatables.css"/>
 
-
+    <!-- Loading animation -->
     <script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.2/modernizr.js"></script>
     <script>$(window).load(function() {
       // Animate loader off screen
       $(".se-pre-con").fadeOut("slow");;
+
+      $(document).ready(function() {
+        $("html")[0].style.visibility = "visible";
+      });
     });</script>
 
 </head>

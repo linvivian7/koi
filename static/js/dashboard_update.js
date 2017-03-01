@@ -1,11 +1,35 @@
 $(document).ready(function() {
 
+    $("[href]").each(function() {
+        if (this.href == window.location.href) {
+            $(this).addClass("active");
+        }
+    });
+
   // Toggle between transfer and update forms
 
-  $(".toggle-btn").on('click', function () {
-    $("#balance-form-section").toggle();
-    $("#transfer-form-section").toggle();
-    $(".toggle-btn").toggle();
+  $(".update-toggle").on('click', function () {
+    $(".update-toggle").addClass("active");
+    $(".transfer-toggle").removeClass("active");
+  });
+
+  $(".transfer-toggle").on('click', function () {
+    $(".transfer-toggle").addClass("active");
+    $(".update-toggle").removeClass("active");
+  });
+
+  $(".menu-toggle").on('click', function () {
+    $(".menu-toggle").toggle();
+  });
+
+  $(".update-toggle").on('click', function () {
+    $("#balance-form-section").show();
+    $("#transfer-form-section").hide();
+  });
+
+  $(".transfer-toggle").on('click', function () {
+    $("#balance-form-section").hide();
+    $("#transfer-form-section").show();
   });
 
   // Loading and updating program balance table //
@@ -33,6 +57,7 @@ $(document).ready(function() {
             }
 
             table.dataTable({
+                "dom": 'rt<"lf><"bottom"ip><"clear">',
                 "rowId": 'program_id',
                 "deferRender": true,
                 "select": true,

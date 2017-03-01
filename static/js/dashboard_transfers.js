@@ -1,5 +1,16 @@
 $(document).ready(function() {
 
+    $(".menu-toggle").on('click', function () {
+        $(".menu-toggle").toggle();
+    });
+
+    $("[href]").each(function() {
+        if (this.href == window.location.href) {
+            $(this).addClass("active");
+        }
+    });
+
+
     function loadTransfers() {
 
         $.get( "/transfers.json", function(data) {
@@ -11,6 +22,7 @@ $(document).ready(function() {
             }
 
             table.dataTable({
+                "dom": '<"top"lf>rt<"bottom"ip><"clear">',
                 "deferRender": true,
                 "select": true,
                 "data": userData, // array with the data objects

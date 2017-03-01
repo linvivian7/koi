@@ -20,13 +20,14 @@ $(document).ready(function(){
     function renderD3(url) {
     //Constants for the SVG
     var width = 300,
-        height = 700;
+        height = 500;
 
     //Set up the force layout
     var force = d3.layout.force()
-        .gravity(0.08)
+        .gravity(0.02)
         .charge(-150)
-        .linkDistance(90)
+        .linkDistance(80)
+        // .friction(0.2)
         .size([width, height]);
 
     //Append a SVG to the body of the html page. Assign this SVG as an object to svg
@@ -35,9 +36,20 @@ $(document).ready(function(){
         .attr("id", "user_d3")
         .classed("svg-content-responsive", true)
         .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 300 700")
+        .attr("viewBox", "0 0 300 500")
         .attr("width", width)
         .attr("height", height);
+
+    //Set up tooltip
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        .offset([-10, 0])
+        .html(function (d) {
+        return  d.name + "";
+    });
+    svg.call(tip);
+
+    // End tooltip
 
     //-- Insert for pinning
     var node_drag = d3.behavior.drag()
@@ -77,32 +89,39 @@ $(document).ready(function(){
         .data(json.links)
         .enter().append("line")
         .attr("class", "link")
-        .style("marker-end",  "url(#suit)") //Added 
+        .style("marker-end",  "url(#suit)") //Added for arrows
         ;
 
     //Do the same with the circles for the nodes - no 
     var node = svg.selectAll(".node")
         .data(json.nodes)
-        .enter().append("g")
+        .enter().append("svg:g")
         .attr("class", "node")
+        // .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+        .attr("r", 8)
         .call(node_drag) // changed from force.drag for pinning
+        .on('mouseover', tip.show) //Added for tooltip
+        .on('mouseout', tip.hide) //Added for tooltip
         .on('click', connectedNodes) //Added code for highlighting
         .on('dblclick', releasenode); //Added for pinning
+ // Append a circle
+  
+  node.append("svg:circle")
+      .attr("r", function(d) { return Math.sqrt(d.size) / 10 || 4.5; })
+      .style("fill", "#eee");
 
-    node.append("image")
-        .attr("xlink:href", function(d) { return d.img;})
-        .attr("class", "circle")
-        .attr("cx", -8)
-        .attr("cy", -8)
-        .attr("width", 16)
-        .attr("height", 16);
+  var images = node.append("image")
+        .attr("xlink:href",  function(d) { return d.img;})
+        .attr("x", function(d) { return -15;})
+        .attr("y", function(d) { return -15;})
+        .attr("height", 20)
+        .attr("width", 20);
 
-    node.append("text")
-          .attr("dx", 10)
-          .attr("dy", ".35em")
-          .text(function(d) { return d.name ;})
-          .style("stroke", "gray");
-        
+    // node.append("text")
+    //       .attr("dx", 10)
+    //       .attr("dy", ".35em")
+    //       .text(function(d) { return d.name ;})
+    //       .style("stroke", "gray");
 
     //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
     force.on("tick", function () {
@@ -119,11 +138,11 @@ $(document).ready(function(){
             .attr("y2", function (d) {
             return d.target.y;
         });
-        
+
         node.attr("cx", function(d) {
-            return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
+            return d.x = Math.max(radius, Math.min(width-10 - radius, d.x)); })
             .attr("cy", function(d) {
-            return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
+            return d.y = Math.max(radius, Math.min(height-10 - radius, d.y)); });
 
         d3.selectAll("circle").attr("cx", function (d) {
             return d.x;
@@ -152,19 +171,21 @@ $(document).ready(function(){
     //---Insert for arrows-------
     svg.append("defs").selectAll("marker")
         .data(["suit", "licensing", "resolved"])
-      .enter().append("marker")
+        .enter().append("marker")
         .attr("id", function(d) { return d; })
         .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 25)
+        .attr("refX", 10)
         .attr("refY", 0)
-        .attr("markerWidth", 6)
-        .attr("markerHeight", 6)
+        .attr("markerWidth", 10)
+        .attr("markerHeight", 10)
         .attr("orient", "auto")
-      .append("path")
+        .append("path")
         .attr("d", "M0,-5L10,0L0,5 L10,0 L0, -5")
         .style("stroke", "#4679BD")
-        .style("opacity", "0.6");
+        .style("opacity", "0.9");
     //---End Insert for arrows---
+
+
 
     //--Insert for collision detection--
     var padding = 1, // separation between circles
@@ -235,7 +256,6 @@ $(document).ready(function(){
     //---End Insert for highlighting ---
 
         });
-    // //--End insert for search ---
     }
 
 });

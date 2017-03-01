@@ -1,5 +1,7 @@
 /* landing page */
-
+html {
+  visibility:hidden;
+}
 
 .row {
     margin-right: auto;
@@ -81,6 +83,9 @@ html::-webkit-scrollbar {
 /*landing page css end*/
 
 /* login modal */
+.modal-backdrop.in {
+    opacity: 0.7;
+}
 
 .modal {
   margin: 10em auto;
@@ -148,7 +153,7 @@ html::-webkit-scrollbar {
 .modal-body {
   position: relative;
   padding: 15px;
-  height: 325;
+  height: 310px;
 }
 
 .modal a {
@@ -157,8 +162,8 @@ html::-webkit-scrollbar {
   text-decoration: italic;
 }
 
-.alert-warning {
-  margin: 1em 0 -3.5em 0;
+#login-flash {
+  margin: 0.5em 0 -4.2em 0;
 }
 
 .login-section {
@@ -182,7 +187,7 @@ html::-webkit-scrollbar {
   font-family: 'Lato', sans-serif;
   color: ghostwhite;
   max-width: 380px;
-  margin: 15% auto auto 10%;
+  margin: 8% auto auto 10%;
   border-radius: 25px;
   border: 1px solid #FFFFFF;
   padding: 2em; 
@@ -190,6 +195,7 @@ html::-webkit-scrollbar {
 
 #fname-field {
   margin-top: -30px;
+  margin-bottom: 0.5em;
 }
 
 .register-section h5 {
@@ -287,7 +293,8 @@ a span {
 #update-balance-form, #transfer-form, .alert-message, #optimization-form {
   font-family: 'Helvetica Neue', 'Helvetica', 'Arial', "sans-serif";
   font-size: 13px;
-  max-width: 300px;
+  max-width: 350px;
+  color: #666;
 }
 
 #optimization-form {
@@ -303,8 +310,7 @@ a span {
 /*activity dashboard*/
 
 #transaction-history_wrapper, #program-balance_wrapper, #transfer-history_wrapper {
-  margin-top: 5%;
-  overflow: hidden;
+  overflow-x: scroll;
   white-space: nowrap;
   font-family: 'Helvetica Neue', 'Helvetica', 'Arial', "sans-serif";
   font-size: 13px;
@@ -338,7 +344,8 @@ a span {
     height: 100%;
     margin-left: -180px;
     overflow-y: auto;
-    background: #12133d;
+    background: #333333;
+;
     -webkit-transition: all 0.5s ease;
     -moz-transition: all 0.5s ease;
     -o-transition: all 0.5s ease;
@@ -372,8 +379,10 @@ a span {
 }
 
 .sidebar-nav li {
-    text-indent: 20px;
+    text-indent: 5px;
     line-height: 40px;
+    margin-right: 0;
+    margin-left: 15px;
 }
 
 .sidebar-nav li a {
@@ -387,58 +396,73 @@ a span {
     text-decoration: none;
     color: #fff;
     background: rgba(255,255,255,0.2);
+    margin-right: 0;
+    margin-left: 15px;
 }
 
 .sidebar-nav li a:active,
 .sidebar-nav li a:focus {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 .sidebar-nav > .sidebar-brand {
-    font-size: 3em;
-    font-family: 'Lato', sans-serif;
-    height: 65px;
-    line-height: 60px;
+  font-size: 3em;
+  font-family: 'Lato', sans-serif;
+  height: 65px;
+  line-height: 60px;
 }
 
 .sidebar-nav > .sidebar-brand a {
-    color: ghostwhite;
+  margin-left: 32%;
+  margin-top: 20%;
+  color: ghostwhite;
+}
+
+.sidebar-nav > .sidebar-brand {
+  margin-bottom: 15%;
+}
+
+.sidebar-nav > .sidebar-brand a:hover {
+  color: ghostwhite;
+  background-color: transparent;
+  margin-left: 32%;
+  margin-top: 20%;
 }
 
 
 @media(min-width:768px) {
-    #wrapper {
-        padding-left: 180px;
-    }
+  #wrapper {
+      padding-left: 180px;
+  }
 
-    #wrapper.toggled {
-        padding-left: 0;
-    }
+  #wrapper.toggled {
+      padding-left: 0;
+  }
 
-    #sidebar-wrapper {
-        width: 200px;
-    }
+  #sidebar-wrapper {
+      width: 200px;
+  }
 
-    #wrapper.toggled #sidebar-wrapper {
-        width: 0;
-    }
+  #wrapper.toggled #sidebar-wrapper {
+      width: 0;
+  }
 
-    #page-content-wrapper {
-        padding: 20px;
-        position: relative;
-    }
+  #page-content-wrapper {
+      padding: 20px;
+      position: relative;
+  }
 
-    #wrapper.toggled #page-content-wrapper {
-        position: relative;
-        margin-right: 0;
-    }
+  #wrapper.toggled #page-content-wrapper {
+      position: relative;
+      margin-right: 0;
+  }
 }
 
 /* optimization page */
 
 #optimization-form {
-  font-family: serif;
   font-size: 13.5px;
+  color: #666;
 }
 
 input.btn.btn-info.reset-btn, .toggle-btn {
@@ -464,13 +488,13 @@ input.btn.btn-info.reset-btn, .toggle-btn {
 }
 
 .alert-warning {
-    margin: 1em 0 0 0;
+  margin: 1em 0 0 0;
 }
 
 .btn-danger, .btn-danger:hover {
-    background-color: transparent;
-    color: #d43f3a;
-    border-color: transparent;
+  background-color: transparent;
+  color: #F96872;
+  border-color: transparent;
 }
 
 th.no-space, td.no-space {
@@ -497,5 +521,55 @@ if it's not present, don't show loader */
   background: url(images/loader-64x/Preloader_2.gif) center no-repeat #fff;
 }
 
+ /* clickable cursor */
+svg image, .pointer {
+       cursor:pointer;
+}
 
+.sidebar-nav li .active {
+    background-color: #00A99E;
+    color: ghostwhite;
+    margin-right: 0;
+    margin-left: 15px;
+}
 
+.fa-fw {
+  width: 50px;
+}
+
+.menu-toggle.btn-default, .menu-toggle:hover, .menu-toggle:active {
+  font-size: 22px;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  color: #5bc0de;
+  padding-left: 0;
+}
+
+.transfer-toggle, .update-toggle {
+  border-color: #F96872;
+  color: #F96872;
+  background-color: transparent;
+}
+
+.transfer-toggle.active, .update-toggle.active, .transfer-toggle:hover, .update-toggle:hover, .transfer-toggle:active, .update-toggle:active  {
+  background-color: #F96872;
+  border-color: #F96872;
+  color: #fff;
+}
+
+#npoints {
+  color: #FFA800;
+}
+
+.results-color {
+  color: #F96872;
+}
+
+#yes-btn {
+  background-color: #F96872;
+  border-color: #F96872;
+  color: #fff;
+
+}
