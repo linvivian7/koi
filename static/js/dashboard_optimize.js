@@ -1,7 +1,6 @@
 $(document).ready(function() {
 
     // Optimize Balance Form //
-
     var goalProgram = -1;
     var i = 0;
 
@@ -11,17 +10,16 @@ $(document).ready(function() {
         } catch(err) {}
     }
 
-    $('#goal-program').editableSelect()
+    $('#goal-program').editableSelect({ effects: 'slide' })
                       .on('select.editable-select', changeGoal)
                       .on('select.editable-select', listDetails);
-    $('#goal-program').editableSelect({ effects: 'slide' });
     // End Update Balance Form //
 
     function showOptimization(results) {
         $("#run-optimize").removeAttr('disabled');
         $('#optimization-form').on('reset', removeElements);
 
-        if (results.message === "You do not have enough points to achieve your goal." || results.message === "You've already achieved your goal.") {
+        if (results.message === "There are currently no known relationship between your goal program and those in your profile." || results.message === "You've already achieved your goal.") {
             $("#optimization-results").append("<div class='alert alert-warning to-remove results' id='results-message'>"+results.message+"</div>");
         } else {
             for (var transfer in results.path) {
@@ -50,7 +48,7 @@ $(document).ready(function() {
             $("#optimization-results").append("<div class='alert alert-warning to-remove results' id='results-message'>"+results.message+
                                               "<br class='to-remove results'></div>");
 
-            $("#optimization-results").append("<button type='button' class='btn btn-info' id='yes-btn'>Yes</button>");
+            $("#optimization-results").append("<br class='to-remove results'><button type='button' class='btn btn-info to-remove results' id='yes-btn'>Yes</button>");
 
             $('#optimization-form').on('reset', removeElements);
             $("#yes-btn").on('click', commitTransfer);
@@ -128,9 +126,9 @@ $(document).ready(function() {
                     if (results.outgoing) {
                         $("#run-optimize").removeAttr('disabled');
                         
-                        $("#reset-optimize-btn").before('<div class="form-group row"><label class="col-2 col-form-label to-remove" for="goal-amount">'+
+                        $("#reset-optimize-btn").before('<div class="form-group row to-remove"><label class="col-2 col-form-label to-remove" for="goal-amount">'+
                                                         '<h5 class="to-remove" id="statement-3"> Please enter your goal for this account</h5></label><br class="to-remove">'+
-                                                        '<div class="col-10"><input class="form-control to-remove" type="number" name="amount" id="goal-amount" min="1" max="1000000000" maxlength="10" placeholder="Goal Points" required>'+
+                                                        '<input class="form-control to-remove" type="number" name="amount" id="goal-amount" min="1" max="1000000000" maxlength="10" placeholder="Goal Points" required>'+
                                                         '<br class="to-remove"></div>');
 
                         $("#reset-optimize-btn").before("<h5 id='statement-4' class='to-remove'> The program(s) listed below are your point source(s).</h5><br class='to-remove'>");

@@ -16,6 +16,8 @@ from model import User
 #####################################
 
 def generate_random_color(base=(255, 255, 255)):
+    """ Generate random pastel blue-greenish colors for charts """
+
     red = random.randint(4, 55)
     green = random.randint(50, 150)
     blue = random.randint(100, 170)
@@ -36,6 +38,7 @@ def optimize(user_id, source, goal_amount, commit=False):
 
     user = User.query.get(user_id)
     goal = user.get_balance_first(source)
+    original_goal = goal_amount
 
     # counter for paths returned to DOM
     i = 1
@@ -62,78 +65,140 @@ def optimize(user_id, source, goal_amount, commit=False):
     # example predecessor: {164: 212, 6: None, 170: None, 16: None, 212: 16, 187: None}
 
     cost, predecessor = bellman_ford(graph, source)
-    min_cost = sorted(cost.items(), key=lambda (node, cost): cost)
+    min_cost = [flow for flow in sorted(cost.items(), key=lambda (node, cost): cost) if flow[1] != float('inf')]
 
-    for flow in min_cost:
-        cost = flow[1]  # Assigned for clarity
+    # If no other programs are connected to goal program
+    if len(min_cost) == 1:
+        suggestion["message"] = "There are currently no known relationship between your goal program and those in your profile."
+        return suggestion
 
-        if cost != float('inf'):
-            current = flow[0]  # current is an integer for program id
+    for flow in min_cost[:-1]:
+        current = flow[0]  # current is an integer for program id
 
-            # example path: None -- 212 -- 16 -- None
-            path = make_path(current, source, predecessor)
+        # example path: None -- 212 -- 16 -- None
+        path = make_path(current, source, predecessor)
 
-            current_node = path.tail  # current_node is a node instance
+        current_node = path.tail  # current_node is a node instance
 
-            while current_node != path.head:
+        while current_node != path.head:
+            # If enough funds at this route
+            if is_route_possible(user, goal_amount, path.tail):
+                inner_node = path.head
 
-                # If enough funds at this route
-                if is_route_possible(user, goal_amount, path.tail):
-                    inner_node = path.head
+                while inner_node != path.tail:
+                    outgoing_program_id = inner_node.data  # Outgoing program
+                    outgoing_program = user.get_balance(outgoing_program_id)
 
-                    while inner_node != path.tail:
-                        out_node_id = inner_node.data  # Outgoing program
-                        out_node = user.get_balance(out_node_id)
+                    receiving_program_id = inner_node.next.data  # Receiving program
+                    receiving_program = user.get_balance(receiving_program_id)
 
-                        in_node_id = inner_node.next.data  # Receiving program
-                        in_node = user.get_balance(in_node_id)
+                    # Start by transferring from last source
+                    if inner_node == path.head:
+                        transfer_amount = calc_first_transfer_amount(user, goal_amount, path, source)
 
-                        # Start by transferring from last source
-                        if inner_node == path.head:
-                            transfer_amount = calc_first_transfer_amount(user, goal_amount, path, source)
+                    else:
+                        edge_ratio = ratio_instance(outgoing_program_id, receiving_program_id).ratio_to()
+                        transfer_amount = calc_balance_ceiling(user.get_balance(outgoing_program_id).current_balance, edge_ratio)
 
-                        else:
-                            edge_ratio = ratio_instance(out_node_id, in_node_id).ratio_to()
-                            transfer_amount = calc_balance_ceiling(user.get_balance(out_node_id).current_balance, edge_ratio)
+                    # Update to outgoing & receiving program in balances table
+                    transfer = ratio_instance(outgoing_program_id, receiving_program_id)
+                    transfer_ratio = ratio_instance(outgoing_program_id, receiving_program_id).ratio_to()
+                    add_transfer(user_id, outgoing_program_id, receiving_program_id, transfer_amount)
 
-                        print "transfer_amount", transfer_amount
-                        transfer = ratio_instance(out_node_id, in_node_id)
-                        transfer_ratio = transfer.ratio_to()
-                        add_transfer(user_id, out_node_id, in_node_id, transfer_amount)
+                    # Update to outgoing & receiving program in balances table
+                    outgoing_program.transferred_from(transfer_amount)
+                    receiving_program.transferred_to(transfer_amount, transfer_ratio)
 
-                        # Update to outgoing & receiving program in balances table
-                        out_node.transferred_from(transfer_amount)
-                        in_node.transferred_to(transfer_amount, transfer_ratio)
+                    # Update transfer info (outgoing, receiving, transfer_amount, numerator, denominator)
+                    key = "Step " + str(i) + ": "
 
-                        # Update transfer info (outgoing, receiving, transfer_amount, numerator, denominator)
-                        key = "Step " + str(i) + ": "
+                    suggestion["path"][key] = {}
 
-                        suggestion["path"][key] = {}
+                    suggestion["path"][key]["outgoing"] = Program.query.get(outgoing_program_id).program_name
+                    suggestion["path"][key]["receiving"] = Program.query.get(receiving_program_id).program_name
+                    suggestion["path"][key]["amount"] = transfer_amount
+                    suggestion["path"][key]["numerator"] = transfer.numerator
+                    suggestion["path"][key]["denominator"] = transfer.denominator
 
-                        suggestion["path"][key]["outgoing"] = Program.query.get(out_node_id).program_name
-                        suggestion["path"][key]["receiving"] = Program.query.get(in_node_id).program_name
-                        suggestion["path"][key]["amount"] = transfer_amount
-                        suggestion["path"][key]["numerator"] = transfer.numerator
-                        suggestion["path"][key]["denominator"] = transfer.denominator
+                    i += 1
 
-                        i += 1
+                    if commit:
+                        db.session.commit()
+                        suggestion["confirmation"] = "Your transfers have been committed. Please go to 'Activity' Page to see the transactions."
 
-                        if commit:
-                            db.session.commit()
-                            suggestion["confirmation"] = "Your transfers have been committed. Please go to 'Activity' Page to see the transactions."
+                    if receiving_program_id == source:
+                        suggestion["message"] = "You've achieved your goal balance! Would you like to commit this transfer?"
+                        return suggestion
 
-                        if in_node_id == source:
-                            suggestion["message"] = "You've achieved your goal balance! Would you like to commit this transfer?"
-                            return suggestion
+                    inner_node = inner_node.next
 
-                        inner_node = inner_node.next
+            # If not enough funds at this route, try next
+            else:
+                current_node = current_node.prev
+                continue
 
-                # If not enough funds at this route, try next
+    current = min_cost[-1][0]  # Best, worst-case
+
+    # example path: None -- 212 -- 16 -- None
+    path = make_path(current, source, predecessor)
+    current_node = path.tail  # current_node is a node instance
+
+    while current_node != path.head:
+
+        inner_node = path.head
+
+        while inner_node != path.tail:
+            outgoing_program_id = inner_node.data  # Outgoing program
+            outgoing_program = user.get_balance(outgoing_program_id)
+
+            receiving_program_id = inner_node.next.data  # Receiving program
+            receiving_program = user.get_balance(receiving_program_id)
+
+            # Start by transferring from last source
+            if inner_node == path.head:
+                transfer_amount = calc_first_transfer_amount(user, goal_amount, path, source)
+
+            else:
+                edge_ratio = ratio_instance(outgoing_program_id, receiving_program_id).ratio_to()
+                transfer_amount = calc_balance_ceiling(user.get_balance(outgoing_program_id).current_balance, edge_ratio)
+
+            # Update to outgoing & receiving program in balances table
+            transfer = ratio_instance(outgoing_program_id, receiving_program_id)
+            transfer_ratio = ratio_instance(outgoing_program_id, receiving_program_id).ratio_to()
+            add_transfer(user_id, outgoing_program_id, receiving_program_id, transfer_amount)
+
+            # Update to outgoing & receiving program in balances table
+            outgoing_program.transferred_from(transfer_amount)
+            receiving_program.transferred_to(transfer_amount, transfer_ratio)
+
+            # Update transfer info (outgoing, receiving, transfer_amount, numerator, denominator)
+            key = "Step " + str(i) + ": "
+
+            suggestion["path"][key] = {}
+
+            suggestion["path"][key]["outgoing"] = Program.query.get(outgoing_program_id).program_name
+            suggestion["path"][key]["receiving"] = Program.query.get(receiving_program_id).program_name
+            suggestion["path"][key]["amount"] = transfer_amount
+            suggestion["path"][key]["numerator"] = transfer.numerator
+            suggestion["path"][key]["denominator"] = transfer.denominator
+
+            i += 1
+
+            if commit:
+                db.session.commit()
+                suggestion["confirmation"] = "Your transfers have been committed. Please go to 'Activity' Page to see the transactions."
+
+            if receiving_program_id == source:
+                shortage = original_goal - user.get_balance(source).current_balance
+                if shortage > 0:
+                    suggestion["message"] = "You do not have enough points to achieve your goal. The maximum you can reach is {} point(s), which is {} point(s) short of your goal.\
+                                             Would you like to commit this transfer?".format("{:,}".format(int(user.get_balance(source).current_balance)), "{:,}".format(int(shortage)))
                 else:
-                    current_node = current_node.prev
-                    continue
+                    suggestion["message"] = "You've achieved your goal balance! Would you like to commit this transfer?"
+                return suggestion
 
-    suggestion["message"] = "You do not have enough points to achieve your goal."
+            inner_node = inner_node.next
+
     return suggestion
 
 
@@ -185,7 +250,11 @@ def calc_first_transfer_amount(user, goal_amount, path, source):
     # Step 2) result of step 1 divide by the cumulative ratios, np.prod((ratios)), yields the amount needed from the last outgoing program
     # Step 3) result of step 2 divide by the ratio between the last program the one preceding one to get the amount outgoing required
 
-    transfer_amount = ((goal_amount - sum(product_ratio_balance)) / np.prod(ratios)) / ratio_instance(path.head.data, path.head.next.data).ratio_to()
+    ratio = ratio_instance(path.head.data, path.head.next.data).ratio_to()
+
+    # Minimum, transfer either goal amount or upto balance ceiling
+    transfer_amount = min(((goal_amount - sum(product_ratio_balance)) / np.prod(ratios)) / ratio,
+                          calc_balance_ceiling(user.get_balance(path.head.data).current_balance, ratio))
 
     return transfer_amount
 

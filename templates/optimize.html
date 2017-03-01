@@ -25,13 +25,11 @@
     <!-- Page Content -->
     <div id="page-content-wrapper">
       <div class="container-fluid">
+
         <div class="row">
-          <div class="col-xs-12">
+
+          <div class="col-xs-6">
               <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><i class="fa fa-arrows-h" aria-hidden="true"></i></a>
-
-              <div id="d3-div"></div> 
-              <script src="/static/js/userD3.js"></script>
-
             
               <form id="optimization-form" action="POST">
                 <h4> Thank you for using Koi </h4>
@@ -54,6 +52,8 @@
        
           <script src="/static/js/dashboard_optimize.js"></script>
           </div>
+          <div class="col-xs-6" id="d3-div"></div> 
+          <script src="/static/js/userD3.js"></script>
         </div>
       </div>
     <!-- /#page-content-wrapper -->
@@ -68,4 +68,5 @@
     });
     </script>
 
+    <div class="se-pre-con"></div>
 {% endblock%}}

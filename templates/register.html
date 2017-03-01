@@ -7,6 +7,13 @@
 {% endblock%}}
 
 {% block body %}
+
+  {% with messages = get_flashed_messages() %}
+      {% for message in messages %}
+          <div class="alert alert-warning">{{ message }}</div>
+      {% endfor %}
+  {% endwith %}
+
   <body class="intro-header" id="no-scroll">
       <section class="register-section col-xs-5 col-xs-offset-2">
         <h1>Koi</h1>

@@ -113,7 +113,7 @@ class User(db.Model):
     def user_outgoing_collection(self, program_id):
         """Return all distinct programs that are outgoing in ratios table in collection of instances."""
 
-        balance = self.get_balance(program_id)
+        balance = self.get_balance_first(program_id)
         optimize = {
             "display_program": {},
             "outgoing": {}

@@ -11,6 +11,18 @@ $(document).ready(function() {
   // Loading and updating program balance table //
 
   function loadBalances() {
+        // Update Balance Form //
+            var updateProgram = -1;
+
+            $('#program').editableSelect({ effects: 'slide' })
+                         .on('select.editable-select', updateProgramVar);
+
+            function updateProgramVar(e, li) {
+              updateProgram = li.val();
+            }
+
+        // End Update Balance Form //
+
 
         $.get( "/balances.json", function(data) {
             var table = $("#program-balance");
@@ -97,18 +109,6 @@ $(document).ready(function() {
                 $("#update-balance-form li").addClass('es-visible');
                 $("#update-balance-form li").css("display","block");
               }
-
-            // Update Balance Form //
-            var updateProgram = -1;
-
-            $('#program').editableSelect({ effects: 'slide' })
-                         .on('select.editable-select', updateProgramVar);
-
-            function updateProgramVar(e, li) {
-              updateProgram = li.val();
-            }
-
-            // End Update Balance Form //
 
             function updateBalance(evt) {
                 evt.preventDefault();
