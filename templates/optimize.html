@@ -17,6 +17,7 @@
         <li><a href="/activity">Activity<span></span></a></li>
         <li><a href="/transfers">Transfer History<span></span></a></li>
         <li><a href="/optimize">Optimize<span></span></a></li>
+        <li><a href="/process">How Koi Optimizes<span></span></a></li>
         <li><a href="/logout">Log Out<span></span></a></li>
       </ul>
     </div>
@@ -28,8 +29,8 @@
 
         <div class="row">
 
-          <div class="col-xs-6">
-              <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><i class="fa fa-arrows-h" aria-hidden="true"></i></a>
+          <div class="col-xs-7">
+              <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><i class="fa fa-arrows-h" aria-hidden="true"></i></a><br><br>
             
               <form id="optimization-form" action="POST">
                 <h4> Thank you for using Koi </h4>
@@ -38,7 +39,7 @@
                   <label for="goal-program"><h5 id="statement-1"> Which program would you like to optimize points for?</h5></label><br>
                   <select class="form-control" name="goal-program" id="goal-program">
                     {% for program in programs | sort(attribute="program_name") %}
-                      <option value="{{ program.program_id }}">{{ program.program_name }}</option>
+                      <option value="{{ program.program_id }}">{{ program.vendor.vendor_name }} | {{ program.program_name }}</option>
                     {% endfor %}
                   </select>
                 </div>
@@ -50,10 +51,8 @@
 
               </form>                      
        
-          <script src="/static/js/dashboard_optimize.js"></script>
           </div>
-          <div class="col-xs-6" id="d3-div"></div> 
-          <script src="/static/js/userD3.js"></script>
+          <div class="col-xs-5" id="d3-div"></div> 
         </div>
       </div>
     <!-- /#page-content-wrapper -->
@@ -67,6 +66,9 @@
         $("#wrapper").toggleClass("toggled");
     });
     </script>
+
+    <script src="/static/js/dashboard_optimize.js"></script>
+    <script src="/static/js/userD3.js"></script>
 
     <div class="se-pre-con"></div>
 {% endblock%}}

@@ -124,8 +124,8 @@ $(document).ready(function() {
                 }
 
                 $('#update-balance-form')[0].reset();
-                $("#transfer-form li").addClass('es-visible');
-                $("#transfer-form li").css("display","block");
+                $("#update-balance-form li").addClass('es-visible');
+                $("#update-balance-form li").css("display","block");
                 updateProgram = -1;
             }
 
@@ -139,6 +139,7 @@ $(document).ready(function() {
 
             function appendNew(data) {
                 if ($("#program-balance").text().indexOf(data.program_name) == -1) {
+                    debugger;
 
                   var index = parseInt($("#program-balance tr:last td.index").html(),10);
 
@@ -148,22 +149,26 @@ $(document).ready(function() {
                     $("#program-balance tr:last").after('<tr id='+data.program_id+
                                                         ' role="row" class="even">'+
                                                         '<td class="dt-body-center sorting_1">'+index+'</td>'+
+                                                        '<td class="no-space"><button type="button" class="btn btn-danger"><i class="fa fa-times" aria-hidden="true"></i></button>'+'</td>'+
+                                                        '<td class="dt-left expand-width">'+data.vendor_name+'</td>'+
                                                         '<td class=" dt-left">'+data.program_name+'</td>'+
                                                         '<td class=" dt-body-right expand-width current-balance">'+data.current_balance.toLocaleString()+'</td>'+
                                                         '<td class=" dt-right updated-at">'+moment().format('M/D/YYYY, h:mm a')+'</td>'+
-                                                        '<td class=" dt-body-center">16</td></tr>');
+                                                        '</tr>');
                   } else {
                     $("#program-balance tr:last").after('<tr id='+data.program_id+
                                                         ' role="row" class="even">'+
                                                         '<td class="dt-body-center sorting_1">'+(index + 1)+'</td>'+
+                                                        '<td class="no-space"><button type="button" class="btn btn-danger"><i class="fa fa-times" aria-hidden="true"></i></button>'+'</td>'+
+                                                        '<td class="dt-left expand-width">'+data.vendor_name+'</td>'+
                                                         '<td class=" dt-left">'+data.program_name+'</td>'+
                                                         '<td class=" dt-body-right expand-width current-balance">'+data.current_balance.toLocaleString()+'</td>'+
                                                         '<td class=" dt-right updated-at">'+moment().format('M/D/YYYY, h:mm a')+'</td>'+
-                                                        '<td class=" dt-body-center">16</td></tr>');                  }
-
-                } else {
-                  $("#" + data.program_id + " td.current-balance").html(data.current_balance.toLocaleString());
-                  $("#" + data.program_id + " td.updated-at").html(moment(data.updated_at).format('M/D/YYYY, h:mm a'));
+                                                        '</tr>');
+                }
+            } else {
+              $("#" + data.program_id + " td.current-balance").html(data.current_balance.toLocaleString());
+              $("#" + data.program_id + " td.updated-at").html(moment(data.updated_at).format('M/D/YYYY, h:mm a'));
               }
             }
         });

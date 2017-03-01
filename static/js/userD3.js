@@ -19,8 +19,8 @@ $(document).ready(function(){
 
     function renderD3(url) {
     //Constants for the SVG
-    var width = 700,
-        height = 350;
+    var width = 300,
+        height = 700;
 
     //Set up the force layout
     var force = d3.layout.force()
@@ -35,7 +35,7 @@ $(document).ready(function(){
         .attr("id", "user_d3")
         .classed("svg-content-responsive", true)
         .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 800 400")
+        .attr("viewBox", "0 0 300 700")
         .attr("width", width)
         .attr("height", height);
 

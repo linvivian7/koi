@@ -14,6 +14,7 @@ svg {
   margin-right: auto;
   background-color:rgba(255,255,255,0.6);
   border-radius: 4px;
+  margin-top: -200px;
 }
 
 #user_d3 {
@@ -29,8 +30,7 @@ d3-tip {
 #d3-div {
   display: inline-block;
   position: relative;
-  width: 80%;
-  padding-bottom: 25%; /* aspect ratio */
+  padding-bottom: 100%; /* aspect ratio */
   vertical-align: top;
   overflow: hidden;
   margin-top: 5%;
@@ -39,7 +39,7 @@ d3-tip {
 #user_d3.svg-content-responsive {
   display: inline-block;
   position: absolute;
-  width: 800;
+  width: 300;
   left: 0;
 }
 

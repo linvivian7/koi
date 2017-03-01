@@ -20,10 +20,11 @@ $(document).ready(function() {
           $.get("/ratio.json", formValues, function(results) {
               if (results) {
                   var programIds = results["program_id"],
+                      vendorNames = results["vendor_name"],
                       programNames = results["program_name"];
 
                   for (i = 0; i < programIds.length; i++) {
-                      $("#receiving").append("<option class='remove' value="+programIds[i]+">"+programNames[i]+"</option>");
+                      $("#receiving").append("<option class='remove' value="+programIds[i]+">"+vendorNames[i]+" | "+programNames[i]+"</option>");
                   }
 
               $('#receiving').editableSelect({ effects: 'slide' })
@@ -68,8 +69,7 @@ $(document).ready(function() {
     function updateBalanceTransfer(results) {
 
         if ((results === "Not enough outstanding points for this transfer") || (results === "Please enter a transferable amount. See ratio above")) {
-            alert(results);
-            $('#transfer-form')[0].reset();
+            $("#transfer-form").after("<div class='alert alert-warning alert-message'>"+results+".</div>");
         } else{
             if (($("#program-balance").text().indexOf(results.outgoing.program_name) == -1 && $("#program-balance").text().indexOf(results.receiving.program_name) == -1)) {
                 window.location.reload();
@@ -85,7 +85,7 @@ $(document).ready(function() {
         }
     }
 
-  function transferBalance(evt) {
+    function transferBalance(evt) {
       evt.preventDefault();
 
       try {
@@ -95,14 +95,22 @@ $(document).ready(function() {
               "amount": $("#transfer-amount").val()
             };
 
-          $.post("/transfer-balance", formValues, updateBalanceTransfer);
+          $.post("/transfer-balance", formValues).success(updateBalanceTransfer).fail(alertUser);
       }
       catch(err) {
-        alert("Please enter a valid loyalty program");
       }
       $('#transfer-form')[0].reset();
+      $("#transfer-form li").addClass('es-visible');
+      $("#transfer-form li").css("display","block");
+      outgoingProgram = -1;
   }
+  function alertUser() {
+      $("#transfer-form").after("<div class='alert alert-warning alert-message'>Please select a valid program. </div>");
 
+      setTimeout(function() {
+        $(".alert-message").fadeOut();
+      }, 2000);
+  }
 
   function removeReceiving() {
     $("#ratio").hide();

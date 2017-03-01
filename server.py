@@ -52,7 +52,9 @@ app.jinja_env.undefined = StrictUndefined
 def homepage():
     """Return homepage."""
 
-    return render_template("homepage.html")
+    menu = ["I don't see my program", "Report a ratio", "Feature I'd like to see", "Other feedback"]
+
+    return render_template("homepage.html", menu=menu)
 
 
 # For processing form only (AJAX)
@@ -258,7 +260,7 @@ def transactions_json():
             transaction_history[key]["ending"] = "{:,}".format(transaction.ending_balance)
 
         if change < 0:
-            transaction_history[key]["change"] = "(" + "{:,}".format(change) + ")"
+            transaction_history[key]["change"] = "(" + "{:,}".format(change * -1) + ")"
         else:
             transaction_history[key]["change"] = "{:,}".format(change)
 
@@ -326,6 +328,12 @@ def d3_info():
     return jsonify(mapping(session["user"]))
 
 
+@app.route('/process')
+def display_process():
+
+    return render_template("process.html")
+
+
 ### Balance-related ###
 @app.route('/update-balance', methods=['POST'])
 def update_balance():
@@ -341,7 +349,7 @@ def update_balance():
     program = request.form.get("program")
     new_balance = int(request.form.get("balance"))
 
-    balance = user.get_balance(program)
+    balance = user.get_balance_first(program)
     update_id = Action.query.filter(Action.action_type == 'Update').one().action_id
 
     if balance:
@@ -353,10 +361,12 @@ def update_balance():
 
     db.session.commit()
 
+    vendor = Program.query.get(program).vendor.vendor_name
     balance = user.get_balance(program)
 
     new_bal = {
         "program_id": program,
+        "vendor_name": vendor,
         "program_name": Program.query.get(program).program_name,
         "updated_at": balance.updated_at,
         "current_balance": balance.current_balance
@@ -458,10 +468,12 @@ def return_ratio():
         receiving_programs = user.user_receiving_for(outgoing)
 
         program_id = [program.receiving_program for program in receiving_programs]
+        vendor_name = [program.receiving.vendor.vendor_name for program in receiving_programs]
         program_name = [program.receiving.program_name for program in receiving_programs]
 
         receiving = {
             "program_id": program_id,
+            "vendor_name": vendor_name,
             "program_name": program_name
         }
 
