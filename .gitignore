@@ -3,3 +3,5 @@ env/
 *.sh
 *.sql
 *DS*
+htmlcov/
+.coverage

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  <title>
+  Koi Dashboard
+  </title>
+{% endblock%}}
+
+{% block body %}
+   <div id="wrapper">
+
+      <!-- Sidebar -->
+      <div id="sidebar-wrapper">
+          <ul class="sidebar-nav">
+              <li class="sidebar-brand"><a href="/">Koi</a></li>
+              <li><a href="/dashboard"><i class="fa fa-fw fa-tachometer" aria-hidden="true"></i>Main</a></li>
+              <li><a href="/activity"><i class="fa fa-fw fa-history" aria-hidden="true"></i>Activity</a></li>
+              <li><a href="/transfers"><i class="fa fa-fw fa-arrows-h" aria-hidden="true"></i>Transfers</a></li>
+              <li><a href="/optimize"><i class="fa fa-fw fa-flag-checkered" aria-hidden="true"></i>Optimize</a></li>
+              <li><a href="/process"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i>Our Process</a></li>
+              <li><a href="/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i>Log Out</a></li>
+          </ul>
+      </div>
+      <!-- /#sidebar-wrapper -->
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+      <div class="container-fluid">
+        <div class="row">
+          <a href="#menu-toggle" class="btn btn-default menu-toggle"><i class="fa fa-toggle-on" aria-hidden="true"></i></a>
+          <a href="#menu-toggle" class="btn btn-default menu-toggle" style="display: none"><i class="fa fa-toggle-off" aria-hidden="true"></i></a>
+
+          <div class="col-xs-12">
+            <row>
+              <img src="/static/img/process.png" alt="Koi Optimization Process" style="width:80%;">
+            </row>
+
+          <div class="col-xs-12">
+        </div>
+      </div>
+    <!-- /#page-content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+     <!-- Menu Toggle Script -->
+    <script>
+    $(".menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+
+    $("[href]").each(function() {
+        if (this.href == window.location.href) {
+            $(this).addClass("active");
+        }
+    });
+
+    </script>
+
+    <div class="se-pre-con"></div>
+
+{% endblock%}}

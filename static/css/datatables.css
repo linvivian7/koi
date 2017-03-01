@@ -1,0 +1,83 @@
+div.dataTables_wrapper div.dataTables_paginate {
+    margin-top: 2em;
+    font-size: 11px;
+}
+
+
+div.dataTables_wrapper div.dataTables_info, div.dataTables_wrapper div.dataTables_length label, div.dataTables_wrapper div.dataTables_filter label {
+    font-size: 12px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button a {
+    background: transparent;
+    border: 1px solid #00A99E;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button a:hover {
+    background: #00A99E;
+    border: 1px solid transparent;
+    color: #fff;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: transparent;
+    border: 1px solid transparent;
+    color: #fff;
+}
+
+.pagination > .active > a, .pagination > .active > span, .pagination > .active > a:hover, .pagination > .active > span:hover, .pagination > .active > a:focus, .pagination > .active > span:focus {
+    background-color: #00A99E;
+    border-color: #00A99E;
+    color: #00A99E;
+}
+
+.pagination li.active a:focus {
+    color: #fff;
+}
+
+.pagination li.active a {
+    background-color: #00A99E !important;
+    border-color: #00A99E;
+    color: #fff;
+}
+
+table.dataTable thead>tr>th.sorting_asc, table.dataTable thead>tr>th.sorting_desc, table.dataTable thead>tr>th.sorting, table.dataTable thead>tr>td.sorting_asc, table.dataTable thead>tr>td.sorting_desc, table.dataTable thead>tr>td.sorting {
+    color: black;
+}
+
+table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, table.dataTable thead .sorting_desc:after {
+    content: "";
+}
+
+
+.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {
+    margin-top: 1em;
+}
+
+
+#transfer-history th, td, #program-balance th, td,  #transaction-history th, td {
+    font-size: 12px;
+    color: #666;
+}
+
+table.dataTable tbody tr.selected, table.dataTable tbody th.selected, table.dataTable tbody td.selected {
+    background: #abe2f3;
+}
+
+th.expand-width select {
+    width: 100%;
+}
+
+/*.dataTables_wrapper div.dataTables_filter {
+    margin-left: 0;
+    float:right;
+    text-align: right;
+}
+*/
+.table-title {
+    color: ghostwhite;
+    padding: 8px;
+    margin-bottom: 0;
+    border-radius: 5px;
+    background-color: #00A99E;
+}
