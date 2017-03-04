@@ -77,6 +77,10 @@ $(document).ready(function() {
 
         if ((results === "Not enough outstanding points for this transfer") || (results === "Please enter a transferable amount. See ratio above")) {
             $("#transfer-form").after("<div class='alert alert-warning alert-message'>"+results+".</div>");
+
+            setTimeout(function() {
+              $(".alert-message").fadeOut();
+            }, 1000);
         } else{
             if (($("#program-balance").text().indexOf(results.outgoing.program_name) == -1 && $("#program-balance").text().indexOf(results.receiving.program_name) == -1)) {
                 window.location.reload();
@@ -116,7 +120,7 @@ $(document).ready(function() {
 
       setTimeout(function() {
         $(".alert-message").fadeOut();
-      }, 2000);
+      }, 1000);
   }
 
   function removeReceiving() {

@@ -337,8 +337,20 @@ class Feedback(db.Model):
     __tablename__ = "feedback"
 
     feedback_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     email = db.Column(db.String(255), nullable=False)
+    addressed = db.Column(db.Boolean, default=False, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('feedback_categories.category_id'), nullable=False)
+    new_vendor_name = db.Column(db.String(32))
+    new_program_name = db.Column(db.String(32))
+    outgoing_name = db.Column(db.String(32))
+    receiving_name = db.Column(db.String(32))
+    new_numerator = db.Column(db.Integer)
+    new_denominator = db.Column(db.Integer)
     feedback = db.Column(db.Text, nullable=False)
+
+    user = db.relationship('User', backref=db.backref('feedback'))
+    user = db.relationship('FeedbackCategory', backref=db.backref('feedback'))
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -348,26 +360,19 @@ class Feedback(db.Model):
                                       )
 
 
-class UserFeedback(db.Model):
+class FeedbackCategory(db.Model):
     """."""
 
-    __tablename__ = "user_feedback"
+    __tablename__ = "feedback_categories"
 
-    user_feedback_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    outgoing_program = db.Column(db.String(32))
-    receiving_program = db.Column(db.String(32))
-    numerator = db.Column(db.Integer)
-    denominator = db.Column(db.Integer)
-    feedback = db.Column(db.Text)
-
-    user = db.relationship('User', backref=db.backref('user_feedback'))
+    category_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    category_name = db.Column(db.String(60))
 
     def __repr__(self):
         """Provide helpful representation when printed."""
 
-        return "<from {}: {}>".format(self.user_id,
-                                      self.feedback,
+        return "<from {}: {}>".format(self.category_id,
+                                      self.category_name,
                                       )
 
 
@@ -487,11 +492,11 @@ def init_app():
     print "Connected to DB."
 
 
-def connect_to_db(app):
+def connect_to_db(app, db_uri="postgresql:///koi"):
     """Connect the database to our Flask app."""
 
     # Configure to use our PstgreSQL database
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///koi'
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_ECHO'] = False
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app

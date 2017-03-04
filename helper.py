@@ -45,6 +45,7 @@ def generate_random_color(ntimes, base=(255, 255, 255)):
 
     return colors
 
+
 #####################################
 
 def optimize(user_id, source, goal_amount, commit=False):
@@ -420,6 +421,4 @@ def bellman_ford(graph, source):
             assert d[v] <= d[u] + graph[u][v]
 
     return d, p
-
-
 ##########################################

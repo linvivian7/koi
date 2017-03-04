@@ -30,6 +30,7 @@ from model import Balance
 from model import connect_to_db
 from model import db
 from model import Feedback
+from model import FeedbackCategory
 from model import mapping
 from model import Program
 from model import ratio_instance
@@ -53,9 +54,9 @@ app.jinja_env.undefined = StrictUndefined
 def homepage():
     """Return homepage."""
 
-    menu = ["I don't see my program", "Report a ratio", "Feature I'd like to see", "Other feedback"]
+    contact_us = FeedbackCategory.query.all()
 
-    return render_template("homepage.html", menu=menu)
+    return render_template("homepage.html", menu=contact_us)
 
 
 # For processing form only (AJAX)
@@ -135,14 +136,53 @@ def register_user():
 def contact_page():
     """ Store information from feedback form."""
 
+    user_id = session["user"]
     email = request.form.get('email')
-    feedback_content = request.form.get('feedback')
 
-    feedback = Feedback(email=email, feedback=feedback_content)
+    category_id = int(request.form.get('feedback-type').rstrip())
+
+    if category_id == 0:
+        flash("Please choose a feedback category before submission")
+        return redirect("/")
+
+    elif category_id == 1:
+        vendor = request.form.get('vendor').rstrip()
+        program = request.form.get('program').rstrip()
+
+        feedback = Feedback(email=email,
+                            user_id=user_id,
+                            category_id=category_id,
+                            new_vendor_name=vendor,
+                            new_program_name=program,
+                            )
+
+    elif category_id == 2:
+        outgoing = request.form.get('outgoing').rstrip()
+        receiving = request.form.get('receiving').rstrip()
+        numerator = int(request.form.get('numerator'))
+        denominator = int(request.form.get('denominator'))
+
+        feedback = Feedback(email=email,
+                            user_id=user_id,
+                            category_id=category_id,
+                            outgoing_name=outgoing,
+                            receiving_name=receiving,
+                            new_numerator=numerator,
+                            new_denominator=denominator,
+                            )
+    else:
+        feedback_content = request.form.get('feedback').rstrip()
+
+        feedback = Feedback(email=email,
+                            user_id=user_id,
+                            category_id=category_id,
+                            feedback=feedback_content)
+
     db.session.add(feedback)
     db.session.commit()
 
-    return "Your feedback has been received!"
+    flash("Your feedback has been received!")
+    return redirect("/")
 
 
 ###### User Dashboard routes ######
@@ -339,6 +379,10 @@ def d3_info():
 
 @app.route('/process')
 def display_process():
+
+    if "user" not in session:
+        flash("Please sign in first")
+        return redirect("/login")
 
     return render_template("process.html")
 

@@ -42,7 +42,7 @@ $(document).ready(function(){
     //Set up tooltip
     var tip = d3.tip()
         .attr('class', 'd3-tip')
-        .offset([-10, 0])
+        .offset([-50, -10])
         .html(function (d) {
         return  d.name + "";
     });
@@ -115,11 +115,11 @@ $(document).ready(function(){
         .attr("height", 20)
         .attr("width", 20);
 
-    node.append("text")
-          .attr("dx", 10)
-          .attr("dy", ".35em")
-          .text(function(d) { return d.name ;})
-          .style("stroke", "gray");
+    // node.append("text")
+    //       .attr("dx", 10)
+    //       .attr("dy", ".35em")
+    //       .text(function(d) { return d.name ;})
+    //       .style("stroke", "gray");
 
 
 

@@ -105,6 +105,20 @@ html::-webkit-scrollbar {
   color: ghostwhite;
 }
 
+#ratio-colon {
+  font-size: 40px;
+  color: ghostwhite;
+}
+
+#feedback-type {
+  height: 42px;
+}
+
+.ratio-group {
+  margin-top: -30px;
+  color: #555;
+}
+
 #login-btn, #dashboard-btn {
   float: right;
   margin: 0.5em 0 0 2em;
@@ -130,7 +144,7 @@ html::-webkit-scrollbar {
 /* Set the fixed height of the footer here */
 #push,
 #footer {
-  height: 60px;
+  height: 70px;
 }
 #footer {
   background-color: #12133d;
@@ -142,6 +156,18 @@ html::-webkit-scrollbar {
     padding-left: 20px;
     padding-right: 20px;
   }
+}
+
+#footer-text a i{
+  padding: 15px 0 10px 0;
+  color:ghostwhite;
+  font-size: 35px;
+}
+
+.homepage-flash {
+  font-family: 'Lato', sans-serif;
+  max-width: 850px;
+  margin: 2% auto 0 10%;
 }
 
 /*landing page css end*/
@@ -287,6 +313,10 @@ html::-webkit-scrollbar {
   border: 1px solid transparent;
   background: #12133d;
   font-weight: bold;
+}
+
+#submit-feedback-btn {
+  background-color: #F96872;
 }
 
 h5 a {

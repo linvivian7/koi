@@ -11,6 +11,19 @@
 
     <header class="intro-container row intro-header">
 
+    {% with messages = get_flashed_messages() %}
+      {% for message in messages %}
+
+    <div class="row homepage-flash-row">
+      <section class="homapage-flash col-xs-12">
+      
+            <div class="alert alert-warning">{{ message }}</div>
+
+        </section>
+    </div>
+      {% endfor %}
+    {% endwith %}
+
       <section class="intro-message col-xs-5 col-xs-offset-2">
         <h1>Koi</h1>
         <h3>Smart, optimal tracking</h3>
@@ -109,7 +122,7 @@
       <section id="contact-us-div" class="contact-message col-xs-4 col-xs-offset-4">
         Contact Us
 
-        <form class="feedback-form" action="/contact" method="POST" autocomplete="off">
+        <form id="feedback-form" action="/contact" method="POST" autocomplete="off">
 
           <div class="form-group">
               <label for="email-field" class="sr-only">Email Address</label>
@@ -123,55 +136,77 @@
 
           <div class="form-group">
               <label for="feedback-type" class="sr-only">Feedback Category</label>
-              <select class="form-control" id="feedback-type">
-                <option selected>Choose Category...</option>
-                {% for type in menu %}
-                 <option value="{{ type }}">{{ type }}</option>
+              <select class="form-control" name="feedback-type" id="feedback-type">
+                <option value="0" selected>Choose Category...</option>
+                {% for category in menu %}
+                 <option value="{{ category.category_id }}">{{ category.category_name }}</option>
                 {% endfor %}
               </select>
             </div>
 
-            <!-- I don't see ratio -->
-            <div class="form-group">
-                <label for="modal-program-1" class="sr-only">Program 1: </label>
-                <input type="text"
-                       name="program-1"
-                       class="form-control input-lg"
-                       placeholder="Outgoing program"
-                       >
+            <!-- I don't see my program -->
+            <div class="category-1 all-feedback"  style="display: none">
+              <div class="form-group">
+                  <label for="vendor-field" class="sr-only">Vendor: </label>
+                  <input type="text"
+                         name="vendor"
+                         class="form-control input-lg"
+                         placeholder="Vendor Name"
+                         >
+              </div>
+
+              <div class="form-group">
+                  <label for="program-field" class="sr-only">Program: </label>
+                  <input type="text"
+                         name="program"
+                         class="form-control input-lg"
+                         placeholder="Program Name"
+                         >
+              </div>
+            </div>
+            <!-- Report Ratio -->
+            <div class="category-2 all-feedback"  style="display: none">
+              <div class="form-group">
+                  <label for="outgoing-field" class="sr-only">Program 1: </label>
+                  <input type="text"
+                         name="outgoing"
+                         class="form-control input-lg"
+                         placeholder="Outgoing program"
+                         >
+              </div>
+
+              <div class="form-group">
+                  <label for="receiving-field" class="sr-only">Program 2: </label>
+                  <input type="text"
+                         name="receiving"
+                         class="form-control input-lg"
+                         placeholder="Receiving program"
+                         >
+              </div>
+
+              <div class="form-group ratio-group">
+                  <label for="denominator-field" class="sr-only">Numerator</label>
+                  <input type="number"
+                         style="width:150px"
+                         name="denominator"
+                         placeholder="1"
+                         class="input-lg"
+                         >
+                         <span id="ratio-colon">:</span>
+                  <label for="numerator-field" class="sr-only">Denominator</label>
+                  <input type="number"
+                         style="width:150px"
+                         name="numerator"
+                         placeholder="3"
+                         class="input-lg"
+                         >
+              </div>
             </div>
 
-            <div class="form-group">
-                <label for="modal-program-2" class="sr-only">Program 2: </label>
-                <input type="text"
-                       name="program-2"
-                       class="form-control input-lg"
-                       placeholder="Receiving program"
-                       >
-            </div>
-
-            <div class="form-group">
-                <label for="modal-program-2" class="sr-only">Numerator</label>
-                <input type="number"
-                       style="width:150px"
-                       name="denominator"
-                       placeholder="1"
-                       class="input-lg"
-                       >
-                       :
-                <label for="modal-program-2" class="sr-only">Denominator</label>
-                <input type="number"
-                       style="width:150px"
-                       name="numerator"
-                       placeholder="3"
-                       class="input-lg"
-                       >
-            </div>
-
-            <!-- New feature -->
-            <div class="form-group" style="display:none">
+            <!-- New Feature & Other Feedback -->
+            <div class="form-group all-feedback category-3 category-4" style="display:none">
                 <label for="feedback-field"></label>
-                <textarea rows="10" 
+                <textarea rows="9" 
                           cols="100"
                           name="feedback"
                           class="form-control input-lg"
@@ -179,29 +214,19 @@
                           ></textarea>
             </div>
 
-            <!-- Other feedback -->
-            <div class="form-group" style="display:none">
-                <label for="feedback-field"></label>
-                <textarea rows="10" 
-                          cols="100"
-                          name="feedback"
-                          class="form-control input-lg"
-                          placeholder="We'd love to hear from you!"
-                          ></textarea>
-            </div>
-
-            <button class="btn btn-lg btn-primary btn-block" 
-                    type="submit"
-                    id="submit-feedback-btn">
-              <span class="glyphicon glyphicon-send fa-fw"></span>  Submit
-            </button>
+              <button class="btn btn-lg btn-primary btn-block" 
+                      type="submit" style="display:none" id="submit-feedback-btn">
+                <span class="glyphicon glyphicon-send fa-fw"></span>  Submit
+              </button>
 
         </form>
       </section>
     </header>
 
     <footer id="footer">
-      <div class="container"></div>
+      <div class="container">
+        <p id="footer-text"><a href="https://github.com/linvivian7/koi" target="_blank"><i class="fa fa-github" aria-hidden="true"></i></a></p>
+      </div>
     </footer>
 
     <!-- End Contact Us -->

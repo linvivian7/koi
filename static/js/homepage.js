@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $(document).scrollTop(0);
+    // LOGIN //
 
     function validateForm() {
 
@@ -100,5 +100,37 @@ $(document).ready(function() {
     $("#dashboard-btn").on('click', function () {
         $(location).attr('href', '/dashboard');
     });
+
+    // END LOGIN //
+
+
+    // CONTACT US //
+
+    $("#feedback-type").on('change', function() {
+        $(".all-feedback").hide();
+        
+        var type = ".category-"+ $("#feedback-type").val();
+
+        $(type).show();
+
+        if (parseInt($("#feedback-type").val(), 10) > 0) {
+            $("#submit-feedback-btn").show();
+        }
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 });
