@@ -16,7 +16,7 @@ from model import User
 #####################################
 
 def generate_random_color(ntimes, base=(255, 255, 255)):
-    """ Generate random pastel blue-greenish colors for charts """
+    """ Generate random pastel blue-greenish and red-orange colors for charts """
 
     colors = set()
 
@@ -130,7 +130,9 @@ def optimize(user_id, source, goal_amount, commit=False):
                     suggestion["path"][key] = {}
 
                     suggestion["path"][key]["outgoing"] = Program.query.get(outgoing_program_id).program_name
+                    suggestion["path"][key]["outgoing_url"] = Program.query.get(outgoing_program_id).vendor.url
                     suggestion["path"][key]["receiving"] = Program.query.get(receiving_program_id).program_name
+                    suggestion["path"][key]["receiving_url"] = Program.query.get(receiving_program_id).vendor.url
                     suggestion["path"][key]["amount"] = transfer_amount
                     suggestion["path"][key]["numerator"] = transfer.numerator
                     suggestion["path"][key]["denominator"] = transfer.denominator
@@ -193,7 +195,9 @@ def optimize(user_id, source, goal_amount, commit=False):
                 suggestion["path"][key] = {}
 
                 suggestion["path"][key]["outgoing"] = Program.query.get(outgoing_program_id).program_name
+                suggestion["path"][key]["outgoing_url"] = Program.query.get(outgoing_program_id).vendor.url
                 suggestion["path"][key]["receiving"] = Program.query.get(receiving_program_id).program_name
+                suggestion["path"][key]["receiving_url"] = Program.query.get(receiving_program_id).vendor.url
                 suggestion["path"][key]["amount"] = transfer_amount
                 suggestion["path"][key]["numerator"] = transfer.numerator
                 suggestion["path"][key]["denominator"] = transfer.denominator
@@ -321,14 +325,14 @@ def balance_capacity(user, current):
     balance = user.get_balance(current.prev.data).current_balance
 
     current = current.prev
-
-    return floor((ratio * balance) + balance_capacity(user, current))
-
-
 def is_route_possible(user, goal_amount, node):
     """ Return True or False if path is viable """
 
     return goal_amount <= balance_capacity(user, node)
+    return floor((ratio * balance) + balance_capacity(user, current))
+
+
+
 
 
 ### For creating paths in optimization algorithm ###

@@ -55,16 +55,15 @@ svg {
 /*homed3*/
 
 #home_d3 {
-  margin-left: 20%;
-  margin-top: 15%;
-  border: 1px solid #000000;
+  margin-top: 2%;
+  /*border: 1px solid #000000;*/
 }
 
 
 #home_d3.svg-content-responsive {
   display: inline-block;
   position: absolute;
-  width: 500;
+  width: 600;
   top: 10px;
   left: 0;
 }

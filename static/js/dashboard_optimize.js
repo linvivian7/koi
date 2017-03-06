@@ -38,22 +38,46 @@ $(document).ready(function() {
 
                     var transferred = (results.path[transfer].amount * (results.path[transfer].numerator / results.path[transfer].denominator)).toLocaleString();
 
-                    $("#optimization-results").append("<h5 class='to-remove results results-color'>"+
-                                                      transfer+
-                                                      "Transfer "+
-                                                      results.path[transfer].amount.toLocaleString()+
-                                                      " point(s) from "+
-                                                      results.path[transfer].outgoing+
-                                                      " at "+
-                                                      results.path[transfer].denominator+
-                                                      " : "+
-                                                      results.path[transfer].numerator+
-                                                      " ratio to "+
-                                                      transferred+
-                                                      " point(s) at "+
-                                                      results.path[transfer].receiving+
-                                                      ".</h5>");
-              }
+                    if (results.path[transfer].outgoing_url && results.path[transfer].receiving_url) {
+                        $("#optimization-results").append("<h5 class='to-remove results'>"+
+                                                          "<span class='results-teal'>"+transfer+"</span>"+
+                                                          "Transfer <span class='results-orange'>"+
+                                                          results.path[transfer].amount.toLocaleString()+
+                                                          "</span> point(s) from "+
+                                                          "<a href='"+
+                                                          results.path[transfer].outgoing_url+
+                                                          "'>"+
+                                                          results.path[transfer].outgoing+
+                                                          "</a> at "+
+                                                          results.path[transfer].denominator+
+                                                          " : "+
+                                                          results.path[transfer].numerator+
+                                                          " ratio to "+
+                                                          "<span class='results-orange'>"+transferred+"</span>"+
+                                                          " point(s) at "+
+                                                          "<a href='"+
+                                                          results.path[transfer].receiving_url+
+                                                          "'>"+
+                                                          results.path[transfer].receiving+
+                                                          "</a>.</h5>");
+                    } else {
+                        $("#optimization-results").append("<h5 class='to-remove results'>"+
+                                                          "<span class='results-teal'>"+transfer+"</span>"+
+                                                          "Transfer <span class='results-orange'>"+
+                                                          results.path[transfer].amount.toLocaleString()+
+                                                          "</span> point(s) from "+
+                                                          results.path[transfer].outgoing+
+                                                          " at "+
+                                                          results.path[transfer].denominator+
+                                                          " : "+
+                                                          results.path[transfer].numerator+
+                                                          " ratio to "+
+                                                          "<span class='results-orange'>"+transferred+"</span>"+
+                                                          " point(s) at "+
+                                                          results.path[transfer].receiving+
+                                                          ".</h5>");
+                        }
+                  }
             }
 
             $("#optimization-results").append("<div class='alert alert-warning to-remove results' id='results-message'>"+results.message+
@@ -72,13 +96,14 @@ $(document).ready(function() {
 
     function showConfirmation(results) {
         $('#optimization-form').on('reset', removeElements);
+        $("#yes-btn").remove();
+
 
         $("#results-message").html(results.confirmation);
     }
 
 
     function commitTransfer() {
-
         try {
             var formValues = {
                 "goal_program": goalProgram,
@@ -132,7 +157,7 @@ $(document).ready(function() {
             $.get("/optimize", formValues, function(results) {
                 if (results) {
 
-                    $("#goal-program").after("<h5 id='statement-2' class='to-remove'> You currently have <span id='npoints'>"+results.display_program.balance.toLocaleString()+"</span> point(s) with "+results.display_program.program_name+".</h5>");
+                    $("#goal-program").after("<h5 id='statement-2' class='to-remove'> You currently have <span class='npoints'>"+results.display_program.balance.toLocaleString()+"</span> point(s) with "+results.display_program.program_name+".</h5>");
 
                     if (results.outgoing) {
                         $("#run-optimize").removeAttr('disabled');

@@ -43,6 +43,7 @@
     </div>
     <!-- /#wrapper -->
      <!-- Menu Toggle Script -->
+
     <script>
     $(".menu-toggle").click(function(e) {
         e.preventDefault();
@@ -54,6 +55,10 @@
             $(this).addClass("active");
         }
     });
+
+      $(".menu-toggle").on('click', function () {
+        $(".menu-toggle").toggle();
+      });
 
     </script>
 

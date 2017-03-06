@@ -19,7 +19,7 @@ $(document).ready(function(){
 
     function renderD3(url) {
     //Constants for the SVG
-    var width = 500,
+    var width = 600,
         height = 500;
 
     //Set up the force layout
@@ -35,7 +35,7 @@ $(document).ready(function(){
         .attr("id", "home_d3")
         .classed("svg-content-responsive", true)
         .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 480 480")
+        .attr("viewBox", "0 0 600 500")
         .attr("width", width)
         .attr("height", height);
 
@@ -112,16 +112,8 @@ $(document).ready(function(){
         .attr("xlink:href",  function(d) { return d.img;})
         .attr("x", function(d) { return -15;})
         .attr("y", function(d) { return -15;})
-        .attr("height", 20)
-        .attr("width", 20);
-
-    // node.append("text")
-    //       .attr("dx", 10)
-    //       .attr("dy", ".35em")
-    //       .text(function(d) { return d.name ;})
-    //       .style("stroke", "gray");
-
-
+        .attr("height", 24)
+        .attr("width", 24);
 
     //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
     force.on("tick", function () {

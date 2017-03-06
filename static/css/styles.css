@@ -34,7 +34,7 @@ html::-webkit-scrollbar {
   display: table;
   position: relative;
   width: 100%;
-  height: 100%;
+  height: 900px;
   background-color: #FFFFFF;
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -79,13 +79,48 @@ html::-webkit-scrollbar {
 #home-d3-div {
   display: inline-block;
   position: relative;
-  padding-bottom: 40%; /* aspect ratio */
+  padding-bottom: 50%; /* aspect ratio */
   vertical-align: top;
   overflow: hidden;
-  margin-top: 8%;
   text-align: center;
   font-family: 'Work Sans', sans-serif;
   font-size: 70px;
+}
+
+#about-us-div {
+  display: inline-block;
+  position: relative;
+  vertical-align: top;
+  overflow: hidden;
+  margin-top: 8.5%;
+  text-align: center;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 70px;
+}
+
+span.decide {
+  color: #F96872;
+  font-weight: bolder;
+ }
+
+#about-div img {
+  margin-left: 15px;
+  height: 20px;
+  margin-right: 15px;
+}
+
+#about-div img#click {
+  margin-right: 20px;
+}
+
+#about-div {
+  display: inline-block;
+  position: relative;
+  vertical-align: top;
+  overflow: hidden;
+  margin-top: 10%;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 17px;
 }
 
 #contact-us-div {
@@ -112,6 +147,7 @@ html::-webkit-scrollbar {
 
 #feedback-type {
   height: 42px;
+  font-size: 17px;
 }
 
 .ratio-group {
@@ -667,13 +703,22 @@ svg image, .pointer {
   color: #fff;
 }
 
-#npoints {
+.results-pink,  {
+  color: #F96872;
+}
+
+.results-teal {
+  color: #00A99E
+}
+
+.results-orange, .npoints {
   color: #FFA800;
 }
 
-.results-color {
-  color: #F96872;
+.results-blue, .results a {
+  color: #3498DB;
 }
+
 
 #yes-btn {
   background-color: #F96872;
