@@ -24,12 +24,12 @@ from flask import session
 from sqlalchemy.orm.exc import NoResultFound
 from model import Action
 from model import add_balance
+from model import add_feedback
 from model import add_transfer
 from model import add_user
 from model import Balance
 from model import connect_to_db
 from model import db
-from model import Feedback
 from model import FeedbackCategory
 from model import mapping
 from model import Program
@@ -149,12 +149,12 @@ def contact_page():
         vendor = request.form.get('vendor').rstrip()
         program = request.form.get('program').rstrip()
 
-        feedback = Feedback(email=email,
-                            user_id=user_id,
-                            category_id=category_id,
-                            new_vendor_name=vendor,
-                            new_program_name=program,
-                            )
+        add_feedback(email=email,
+                     user_id=user_id,
+                     category_id=category_id,
+                     vendor=vendor,
+                     program=program,
+                     )
 
     elif category_id == 2:
         outgoing = request.form.get('outgoing').rstrip()
@@ -162,24 +162,21 @@ def contact_page():
         numerator = int(request.form.get('numerator'))
         denominator = int(request.form.get('denominator'))
 
-        feedback = Feedback(email=email,
-                            user_id=user_id,
-                            category_id=category_id,
-                            outgoing_name=outgoing,
-                            receiving_name=receiving,
-                            new_numerator=numerator,
-                            new_denominator=denominator,
-                            )
+        add_feedback(email=email,
+                     user_id=user_id,
+                     category_id=category_id,
+                     outgoing=outgoing,
+                     receiving=receiving,
+                     numerator=numerator,
+                     denominator=denominator,
+                     )
     else:
         feedback_content = request.form.get('feedback').rstrip()
 
-        feedback = Feedback(email=email,
-                            user_id=user_id,
-                            category_id=category_id,
-                            feedback=feedback_content)
-
-    db.session.add(feedback)
-    db.session.commit()
+        add_feedback(email=email,
+                     user_id=user_id,
+                     category_id=category_id,
+                     feedback_content=feedback_content)
 
     flash("Your feedback has been received!")
     return redirect("/")
