@@ -166,7 +166,7 @@ $(document).ready(function(){
         .enter().append("marker")
         .attr("id", function(d) { return d; })
         .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 10)
+        .attr("refX", 15)
         .attr("refY", 0)
         .attr("markerWidth", 10)
         .attr("markerHeight", 10)
