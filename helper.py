@@ -1,5 +1,5 @@
 """ Helper function """
-
+import pdb
 from math import floor
 from math import log
 import numpy as np
@@ -50,6 +50,7 @@ def generate_random_color(ntimes, base=(255, 255, 255)):
 
 def optimize(user_id, source, goal_amount, commit=False):
     """ Optimizes points transfer """
+    # pdb.set_trace()
 
     user = User.query.get(user_id)
     goal = user.get_balance_first(source)
@@ -80,7 +81,8 @@ def optimize(user_id, source, goal_amount, commit=False):
     # example predecessor: {164: 212, 6: None, 170: None, 16: None, 212: 16, 187: None}
 
     cost, predecessor = bellman_ford(graph, source)
-    min_cost = [flow for flow in sorted(cost.items(), key=lambda (node, cost): cost) if flow[1] != float('inf')]
+    min_cost = [flow for flow in sorted(cost.items(), key=lambda (node, cost): cost) if flow[1] != float('inf') and flow[0] != source]
+    min_cost.insert(0, (source, 0))
 
     # If no other programs are connected to goal program
     if len(min_cost) == 1:
@@ -325,14 +327,14 @@ def balance_capacity(user, current):
     balance = user.get_balance(current.prev.data).current_balance
 
     current = current.prev
+
+    return floor((ratio * balance) + balance_capacity(user, current))
+
+
 def is_route_possible(user, goal_amount, node):
     """ Return True or False if path is viable """
 
     return goal_amount <= balance_capacity(user, node)
-    return floor((ratio * balance) + balance_capacity(user, current))
-
-
-
 
 
 ### For creating paths in optimization algorithm ###
