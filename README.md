@@ -6,7 +6,13 @@
 > - User password is hashed upon login via flask.bcrypt.
 > - The webapp is by no means a commercial product and does not aim to function as one. 
 
-![Koi Homepage](https://lh3.googleusercontent.com/-TvL6pvy9lnM/WL2-sBoFRGI/AAAAAAAAQaM/oRrKYalmyl8PF8XNiJvCTEJqx_OLp-CzgCLcB/s0/Homepage_vF.png "Homepage_vF.png")![About Koi](https://lh3.googleusercontent.com/-Aam-PGFHtGU/WL3AhHSMsBI/AAAAAAAAQag/13O4ZXXfsa4uO8tspypMxf688m9DQ4sBgCLcB/s0/About.png "About.png")![Contact Us](https://lh3.googleusercontent.com/-FbPIjBSiqYc/WL3BFgwJsrI/AAAAAAAAQao/3iOfm3a9zG0poHRUdeeA5-rWd88dl_93gCLcB/s0/ContactUs.png "ContactUs.png")
+![Koi Homepage](https://lh3.googleusercontent.com/-TvL6pvy9lnM/WL2-sBoFRGI/AAAAAAAAQaM/oRrKYalmyl8PF8XNiJvCTEJqx_OLp-CzgCLcB/s0/Homepage_vF.png "Homepage_vF.png")
+![About Koi](https://lh3.googleusercontent.com/-I9TpDXnqmnI/WMBJbAfEmUI/AAAAAAAAQhY/va8jQdJapNUuEYMOkcUV9eboiMfSVTU0QCLcB/s0/Visualize.png "Visualize.png")
+![Contact Us](https://lh3.googleusercontent.com/-FbPIjBSiqYc/WL3BFgwJsrI/AAAAAAAAQao/3iOfm3a9zG0poHRUdeeA5-rWd88dl_93gCLcB/s0/ContactUs.png "ContactUs.png")
+
+![enter image description here](https://lh3.googleusercontent.com/-RDWu8rnRiSg/WMBQnQlBV4I/AAAAAAAAQjI/bWkB9plOczku8e0c3KM49D8ZmZLnb71gQCLcB/s0/demo1.gif "demo1.gif")
+
+![enter image description here](https://lh3.googleusercontent.com/-tkWBTmO8XUs/WMBOg2iNTjI/AAAAAAAAQio/VrT95qvrSXkJ8Hd20OwsZ7yxPNeJVMdrgCLcB/s0/demo2.gif "demo2.gif")
 ----------
 
 ### Navigate
