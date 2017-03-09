@@ -120,18 +120,4 @@ $(document).ready(function() {
     });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 });
