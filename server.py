@@ -146,14 +146,7 @@ def register_user():
                 token=token,
                 _external=True)
 
-            body = """Your account was successfully created. Please verify your email\
-            within 24 hours. Click the link below\
-            to confirm your email address and activate your account:\n
-            {}\n
-
-            Questions? Comments? Fill out feedback at https://koirewards.herokuapp.com/.
-
-            """.format(confirm_url)
+            body = """Your account was successfully created. Please verify your email within 24 hours. Click the link below to confirm your email address and activate your account:\n{}\nQuestions? Comments? Fill out feedback at https://koirewards.herokuapp.com/.\n- Koi Team :)""".format(confirm_url)
 
             msg = 'Subject: {}\n\n{}'.format(subject, body)
 
