@@ -82,15 +82,13 @@ $(document).ready(function() {
         }
 
     function loginUser(results) {
-        if (results === "This email has not been registered" ||
-            results === "This is not a valid email/password combination") {
+        if (results === "Successful login") {
+            $(location).attr('href', '/dashboard');
+        } else {
                 $('.modal-content').prepend("<div class='alert alert-warning' id='login-flash'>"+results+"</div>");
                 $('#login-form #password-field').val("");
-
                 setTimeout(function () {
                     $('.alert-warning').remove();}, 1000);
-        } else {
-            $(location).attr('href', '/dashboard');
         }
     }
 

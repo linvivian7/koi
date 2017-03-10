@@ -12,6 +12,7 @@ from helper import generate_random_color
 from jinja2 import StrictUndefined
 from flask_bcrypt import Bcrypt
 from flask_moment import Moment
+from flask import abort
 from flask import flash
 from flask import Flask
 from flask import jsonify
@@ -19,6 +20,7 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import session
+from flask import url_for
 
 # SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
@@ -37,6 +39,7 @@ from model import ratio_instance
 from model import User
 from model import Vendor
 
+import smtplib
 
 app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET']
@@ -46,6 +49,10 @@ bcrypt = Bcrypt(app)
 moment = Moment(app)
 
 app.jinja_env.undefined = StrictUndefined
+
+# move to security.py
+from itsdangerous import URLSafeTimedSerializer
+ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
 
 ###### Homepage-related routes ######
@@ -76,9 +83,11 @@ def show_login():
 
     # Validate log in information
     if bcrypt.check_password_hash(user.password, password):
-        session["user"] = user.user_id
-
-        return "You've been succesfully logged in"
+        if user.is_email_confirmed is False:
+            return "Please verify your email first"
+        else:
+            session["user"] = user.user_id
+            return "Successful login"
 
     else:
         return "This is not a valid email/password combination"
@@ -122,13 +131,65 @@ def register_user():
             user = add_user(email, pw_hash, fname, lname)
             db.session.commit()
 
-            session["user"] = user.user_id
+            gmail_user = os.environ['MAIL_USERNAME']
+            gmail_password = os.environ['MAIL_PASSWORD']
 
-            return redirect("/dashboard")
+            sender = gmail_user
+            to = user.email
+
+            subject = "[Welcome to Koi] Account Confirmation"
+
+            token = ts.dumps(user.email, salt='email-confirm-key')
+
+            confirm_url = url_for(
+                'confirm_email',
+                token=token,
+                _external=True)
+
+            body = """Your account was successfully created. Please verify your email\
+            within 24 hours. Click the link below\
+            to confirm your email address and activate your account:\n
+            {}\n
+
+            Questions? Comments? Fill out feedback at https://koirewards.herokuapp.com/.
+
+            """.format(confirm_url)
+
+            msg = 'Subject: {}\n\n{}'.format(subject, body)
+
+            try:
+                server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+                server.ehlo()
+                server.login(gmail_user, gmail_password)
+                server.sendmail(sender, to, msg)
+                server.close()
+            except:
+                print 'Something went wrong...'
+
+            flash("A confirmation email has been sent! Please verify your account.")
+            return redirect("/")
 
         else:
             flash("Please enter a valid email.")
             return redirect('/register')
+
+
+@app.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        email = ts.loads(token, salt="email-confirm-key", max_age=86400)
+    except:
+        abort(404)
+
+    user = User.query.filter_by(email=email).first()
+
+    user.is_email_confirmed = True
+
+    db.session.add(user)
+    db.session.commit()
+
+    flash("Your account has been verified! Please log in.")
+    return redirect('/')
 
 
 # For processing form only (AJAX)

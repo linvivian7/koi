@@ -90,6 +90,7 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     fname = db.Column(db.String(32), nullable=False)
     lname = db.Column(db.String(32), nullable=False)
+    is_email_confirmed = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         """Provide helpful representation when printed."""
