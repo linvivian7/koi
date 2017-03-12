@@ -190,7 +190,7 @@ def confirm_email(token):
 def contact_page():
     """ Store information from feedback form."""
 
-    user_id = session["user"]
+    user_id = session.get("user", None)
     email = request.form.get('email')
 
     category_id = int(request.form.get('feedback-type').rstrip())
