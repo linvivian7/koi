@@ -5,13 +5,15 @@ $(document).ready(function(){
     var dispatcher = d3.dispatch('jsonLoad');
 
     $("a").on('click', function() {
-        if (this.href === "https://koirewards.herokuapp.com/") {
+        if ((this.href === "https://koirewards.herokuapp.com/") ||
+            (this.href === "http://koirewards.herokuapp.com/")) {
            $("#user_d3").remove();
         }
     });
 
     $(window).on('load',function(){
         if ((window.location.href === "https://koirewards.herokuapp.com/") ||
+            (window.location.href === "http://koirewards.herokuapp.com/") ||
             (window.location.href === "data:text/html,chromewebdata")) {
             renderD3(url);
         }
