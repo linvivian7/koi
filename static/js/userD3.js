@@ -5,7 +5,7 @@ $(document).ready(function(){
     var dispatcher = d3.dispatch('jsonLoad');
 
     $("a").on('click', function() {
-        if ((this.href !== "https://koirewards.herokuapp.com/optimize#menu-toggle") ||
+        if ((this.href !== "https://koirewards.herokuapp.com/optimize#menu-toggle") &&
             (this.href !== "http://koirewards.herokuapp.com/optimize#menu-toggle")) {
            $("#user_d3").remove();
         }
@@ -14,6 +14,8 @@ $(document).ready(function(){
     $(window).on('load',function(){
         if ((window.location.href === "https://koirewards.herokuapp.com/optimize") ||
             (window.location.href === "http://koirewards.herokuapp.com/optimize") ||
+            (window.location.href === "https://koirewards.herokuapp.com/optimize#menu-toggle") ||
+            (window.location.href === "http://koirewards.herokuapp.com/optimize#menu-toggle") ||
             (window.location.href === "data:text/html,chromewebdata")) {
             renderD3(url);
         }
