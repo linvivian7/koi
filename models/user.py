@@ -5,6 +5,7 @@ from program import Program
 from transaction_history import TransactionHistory
 from transfer import Transfer
 from program import Vendor
+from action import Action
 
 
 class User(db.Model):
@@ -175,6 +176,15 @@ class User(db.Model):
                                   .all()
 
         return transfers
+
+    def add_balance(self, program_id, current_balance):
+        """ Convenient add_balance wrapper """
+
+        action_id = Action.query.filter(Action.action_type == 'New').one().action_id
+        balance = Balance(user_id=self.user_id, program_id=program_id, current_balance=current_balance, action_id=action_id)
+        db.session.add(balance)
+
+        return balance
 
     @staticmethod
     def confirm_user(email):

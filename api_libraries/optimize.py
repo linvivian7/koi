@@ -1,4 +1,3 @@
-from models import add_balance
 from models import db
 from models import Program
 from models import ratio_instance
@@ -15,27 +14,19 @@ def optimize(user_id, source, goal_amount, commit=False):
     """ Optimizes points transfer """
 
     user = User.query.get(user_id)
-    goal = user.get_balance_first(source)
     original_goal = goal_amount
+    result = check_goal(user, source, goal_amount, commit)
 
-    # counter for paths returned to DOM
     suggestion = {
         "path": {},
         "message": ""
     }
 
-    if goal:
-        if goal_amount <= goal.current_balance:
-            suggestion["message"] = add_message(status="fulfilled")
-            return suggestion
-        else:
-            goal_amount = goal_amount - goal.current_balance
-    else:
-        add_balance(user_id, source, 0)
+    if type(result) == str:
+        suggestion["message"] = result
+        return suggestion
 
-    if commit:
-        db.session.commit()
-
+    goal_amount = result
     min_cost, predecessor = graph.bellman_ford_outputs(user_id, source)
 
     # If no other programs are connected to goal program
@@ -48,7 +39,6 @@ def optimize(user_id, source, goal_amount, commit=False):
 
         # example path: None -- 212 -- 16 -- None
         path = make_path(current, source, predecessor)
-
         current_node = path.tail  # current_node is a node instance
 
         while current_node != path.head:
@@ -66,14 +56,29 @@ def optimize(user_id, source, goal_amount, commit=False):
 
     # example path: None -- 212 -- 16 -- None
     path = make_path(current, source, predecessor)
-    current_node = path.tail  # current_node is a node instance
-
     suggestion["path"], suggestion["message"] = process(path, user, goal_amount, source, original_goal, commit)
 
     return suggestion
 
 
 #####################################
+
+def check_goal(user, source, goal_amount, commit):
+    goal = user.get_balance_first(source)
+
+    if goal:
+        if goal_amount <= goal.current_balance:
+            return add_message(status="fulfilled")
+        else:
+            goal_amount = goal_amount - goal.current_balance
+    else:
+        user.add_balance(source, 0)
+
+    if commit:
+        db.session.commit()
+
+    return goal_amount
+
 
 def process(path, user, goal_amount, source, original_goal, commit):
     inner_node = path.head

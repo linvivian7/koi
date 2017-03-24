@@ -25,7 +25,6 @@ from flask import url_for
 # SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 from models import Action
-from models import add_balance
 from models import connect_to_db
 from models import add_feedback
 from models import FeedbackCategory
@@ -445,7 +444,7 @@ def update_balance():
         balance.action_id = update_id
 
     else:
-        add_balance(user_id, program, new_balance)
+        user.add_balance(program, new_balance)
 
     db.session.commit()
 
@@ -486,7 +485,6 @@ def transfer_balance():
         flash("Please sign in first")
         return redirect("/login")
 
-    user_id = session["user"]
     user = User.query.get(session["user"])
 
     outgoing_id = int(request.form.get("outgoing"))

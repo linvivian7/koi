@@ -26,20 +26,3 @@ class Transfer(db.Model):
                                                                                     self.outgoing_amount,
                                                                                     self.transferred_at,
                                                                                     )
-
-
-# def add_transfer(user_id, outgoing_id, receiving_id, transfer_amount):
-#     """ Convenient transfer wrapper """
-
-#     transfer = Transfer(user_id=user_id, outgoing_program=outgoing_id, receiving_program=receiving_id, outgoing_amount=transfer_amount)
-#     db.session.add(transfer)
-
-#     outgoing_program = user.get_balance(outgoing_id)
-#     receiving_program = user.get_balance(receiving_id)
-#     transfer_ratio = ratio_instance(outgoing_id, receiving_id).ratio_to()
-
-#     # Update balance for outgoing & receiving program in balances table
-#     outgoing_program.transferred_from(transfer_amount)
-#     receiving_program.transferred_to(transfer_amount, transfer_ratio)
-
-#     return transfer

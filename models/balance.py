@@ -39,13 +39,3 @@ class Balance(db.Model):
 
         self.current_balance = self.current_balance - amount
         self.action_id = Action.query.filter(Action.action_type == 'Transfer').one().action_id
-
-
-def add_balance(user_id, program_id, current_balance):
-    """ Convenient add_balance wrapper """
-
-    action_id = Action.query.filter(Action.action_type == 'New').one().action_id
-    balance = Balance(user_id=user_id, program_id=program_id, current_balance=current_balance, action_id=action_id)
-    db.session.add(balance)
-
-    return balance

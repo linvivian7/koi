@@ -1,5 +1,5 @@
 from models.action import Action
-from models.balance import Balance, add_balance
+from models.balance import Balance
 from models.feedback import Feedback, add_feedback
 from models.feedback import FeedbackCategory
 from models.mapping import mapping
