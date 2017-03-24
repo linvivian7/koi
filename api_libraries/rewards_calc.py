@@ -3,6 +3,17 @@ import numpy as np
 from models import ratio_instance
 
 
+def calc_transfer_amount(user, goal_amount=None, path=None, source=None, outgoing_id=None, receiving_id=None, is_first=False):
+
+    if is_first:
+        transfer_amount = calc_first_transfer_amount(user, goal_amount, path, source)
+    else:
+        edge_ratio = ratio_instance(outgoing_id, receiving_id).ratio_to()
+        transfer_amount = calc_balance_ceiling(user.get_balance(outgoing_id).current_balance, edge_ratio)
+
+    return transfer_amount
+
+
 def calc_first_transfer_amount(user, goal_amount, path, source):
     """ The first transfer, from the "outest program", is the only one that is not the full balance capacity. """
 

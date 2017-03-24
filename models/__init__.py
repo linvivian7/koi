@@ -8,4 +8,4 @@ from models.program import Program
 from models.ratio import Ratio, ratio_instance
 from models.user import User, add_user
 from models.program import Vendor
-from models.transfer import Transfer, add_transfer
+from models.transfer import Transfer

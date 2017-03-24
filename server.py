@@ -33,7 +33,6 @@ from models import mapping
 from models import Program
 from models import ratio_instance
 from models import User, add_user
-from models import add_transfer
 from models import db
 
 import smtplib
@@ -506,11 +505,7 @@ def transfer_balance():
     if amount % ratio.denominator != 0:
         return "Please enter a transferable amount. See ratio above"
 
-    add_transfer(user_id, outgoing_id, receiving_id, amount)
-
-    # Update to receiving & outgoing program in balances table
-    balance_from.transferred_from(amount)
-    balance_to.transferred_to(amount, ratio.ratio_to())
+    user.add_transfer(outgoing_id, receiving_id, amount)
 
     db.session.commit()
 
