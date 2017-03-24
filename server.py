@@ -5,8 +5,8 @@ import re
 from collections import OrderedDict
 
 # For calculation
-from helper import optimize
-from helper import generate_random_color
+from api_libraries import optimize
+from api_libraries import generate_random_color
 
 # Flask-related
 from jinja2 import StrictUndefined
@@ -24,20 +24,17 @@ from flask import url_for
 
 # SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
-from model import Action
-from model import add_balance
-from model import add_feedback
-from model import add_transfer
-from model import add_user
-from model import Balance
-from model import connect_to_db
-from model import db
-from model import FeedbackCategory
-from model import mapping
-from model import Program
-from model import ratio_instance
-from model import User
-from model import Vendor
+from models import Action
+from models import add_balance
+from models import connect_to_db
+from models import add_feedback
+from models import FeedbackCategory
+from models import mapping
+from models import Program
+from models import ratio_instance
+from models import User, add_user
+from models import add_transfer
+from models import db
 
 import smtplib
 
@@ -129,7 +126,6 @@ def register_user():
 
         if match_obj:
             user = add_user(email, pw_hash, fname, lname)
-            db.session.commit()
 
             gmail_user = os.environ['MAIL_USERNAME']
             gmail_password = os.environ['MAIL_PASSWORD']
@@ -174,12 +170,7 @@ def confirm_email(token):
     except:
         abort(404)
 
-    user = User.query.filter_by(email=email).first()
-
-    user.is_email_confirmed = True
-
-    db.session.add(user)
-    db.session.commit()
+    User.confirm_user(email)
 
     flash("Your account has been verified! Please log in.")
     return redirect('/')
@@ -246,7 +237,7 @@ def user_dashboard():
         flash("Please log in before navigating to the dashboard")
         return redirect('/')
 
-    user = User.query.options(db.joinedload('balances')).get(session["user"])
+    user = User.query.get(session["user"])
 
     programs = Program.query.all()  # For update-balance form
     outgoing = user.user_outgoing()  # For transfer-balance form
@@ -259,9 +250,8 @@ def donut_chart_data():
     """Return data about user's points."""
 
     user = User.query.get(session["user"])
-    base = Balance.query.filter_by(user_id=session["user"]).options(db.joinedload('program'))
-    balances = base.all()
-    count = base.count()
+    balances = user.get_balances()
+    count = user.get_balances_count()
     colors = generate_random_color(ntimes=count)
 
     data_dict = {
@@ -293,14 +283,9 @@ def balances_json():
         flash("Please log in before navigating to the dashboard")
         return redirect('/')
 
-    balances = db.session.query(Balance.program_id,
-                                Vendor.vendor_name,
-                                Program.program_name,
-                                Balance.updated_at,
-                                Balance.current_balance, Vendor.vendor_name)\
-        .join(Program)\
-        .join(Vendor)\
-        .filter(Balance.user_id == session["user"]).all()
+    user = User.query.get(session["user"])
+
+    balances = user.program_balances()
 
     i = 1
     program_balances = {}
@@ -484,12 +469,9 @@ def remove_balance():
     """Delete user balance."""
 
     if "user" in session:
-        user = User.query.get(session["user"])
         program = request.form.get("program_id")
-        balance = user.get_balance(program)
-
-        db.session.delete(balance)
-        db.session.commit()
+        user = User.query.get(session["user"])
+        user.delete_balance(program)
 
         return "Balance deleted"
 
